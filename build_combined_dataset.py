@@ -7,9 +7,9 @@ This script is Step 3a of the pipeline:
   3b. Train YOLO on the combined 26-class dataset
   4. Run combined model on syntax images
 
-Combined class mapping:
-  0-24: Syntax vessel segments (same as original syntax YOLO indices)
-  25:   Stenosis (remapped from original stenosis class 0)
+The ARCADE dataset uses a shared 26-class scheme:
+  0-24: Syntax vessel segments
+  25:   Stenosis (already class 25 in existing labels — no remapping needed)
 """
 
 import argparse
@@ -42,16 +42,12 @@ def build_combined_class_names(config: dict) -> dict:
 
 
 def remap_stenosis_label_line(line: str) -> str:
-    """Remap a stenosis YOLO label line: class 0 -> class 25.
+    """Pass through stenosis YOLO label lines as-is.
 
-    Input format:  '0 x1 y1 x2 y2 ... xn yn'
-    Output format: '25 x1 y1 x2 y2 ... xn yn'
+    The existing labels already use the shared 26-class scheme where
+    stenosis = class 25. No remapping needed.
     """
-    parts = line.strip().split()
-    if not parts:
-        return ""
-    parts[0] = str(STENOSIS_COMBINED_CLASS)
-    return " ".join(parts)
+    return line.strip()
 
 
 def prediction_to_yolo_line(pred: dict) -> str:
@@ -109,7 +105,7 @@ def build_combined_split(
         stem = img_path.stem
         img_name = img_path.name
 
-        # --- Stenosis GT labels (remap class 0 -> 25) ---
+        # --- Stenosis GT labels (already class 25 in shared scheme) ---
         combined_lines = []
         stenosis_label_path = stenosis_labels_dir / f"{stem}.txt"
         has_stenosis = False
