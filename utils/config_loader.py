@@ -22,7 +22,7 @@ def load_config(config_path: str) -> dict:
     # Resolve path fields to absolute
     path_keys = [
         "dataset_root", "output_dir", "mappings_dir",
-        "syntax_data_yaml", "stenosis_data_yaml",
+        "syntax_data_yaml", "stenosis_data_yaml", "combined_data_yaml",
     ]
     for key in path_keys:
         if key in config:
@@ -33,9 +33,11 @@ def load_config(config_path: str) -> dict:
         ("preprocessing", "output_dir"),
         ("cross_inference", "syntax_weights"),
         ("cross_inference", "stenosis_weights"),
+        ("cross_inference", "combined_weights"),
         ("cross_inference", "output_dir"),
         ("intersection", "overlay_output_dir"),
         ("intersection", "results_output_dir"),
+        ("combined_dataset", "output_dir"),
     ]
     for section, key in nested_paths:
         if section in config and key in config[section]:
@@ -61,7 +63,14 @@ def get_training_args(config: dict, task: str) -> dict:
     t = config["training"]
     a = config["augmentation"]
 
-    data_yaml = config["syntax_data_yaml"] if task == "syntax" else config["stenosis_data_yaml"]
+    if task == "syntax":
+        data_yaml = config["syntax_data_yaml"]
+    elif task == "stenosis":
+        data_yaml = config["stenosis_data_yaml"]
+    elif task == "combined":
+        data_yaml = config["combined_data_yaml"]
+    else:
+        raise ValueError(f"Unknown task: {task}")
 
     args = {
         "data": data_yaml,
@@ -116,5 +125,7 @@ def get_data_yaml_path(config: dict, task: str) -> str:
         return config["syntax_data_yaml"]
     elif task == "stenosis":
         return config["stenosis_data_yaml"]
+    elif task == "combined":
+        return config["combined_data_yaml"]
     else:
-        raise ValueError(f"Unknown task: {task}. Must be 'syntax' or 'stenosis'.")
+        raise ValueError(f"Unknown task: {task}. Must be 'syntax', 'stenosis', or 'combined'.")

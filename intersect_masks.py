@@ -193,6 +193,10 @@ def _load_gt_as_predictions(task_dir: Path, split: str) -> dict:
     images_by_id = {img["id"]: img for img in coco["images"]}
     cats_by_id = {cat["id"]: str(cat["name"]) for cat in coco["categories"]}
 
+    # Build proper COCO ID -> 0-indexed YOLO mapping (sorted by COCO ID)
+    sorted_cat_ids = sorted(cats_by_id.keys())
+    coco_id_to_yolo = {cid: idx for idx, cid in enumerate(sorted_cat_ids)}
+
     # Group annotations by image
     preds_by_image = {}
     for ann in coco["annotations"]:
@@ -213,7 +217,7 @@ def _load_gt_as_predictions(task_dir: Path, split: str) -> dict:
                 normalized.append([polygon[i] / w, polygon[i + 1] / h])
 
             pred = {
-                "class_id": ann["category_id"] - 1,
+                "class_id": coco_id_to_yolo.get(ann["category_id"], 0),
                 "class_name": cats_by_id.get(ann["category_id"], str(ann["category_id"])),
                 "confidence": 1.0,
                 "bbox_xywh": ann.get("bbox", []),
