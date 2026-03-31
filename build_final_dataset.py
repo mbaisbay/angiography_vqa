@@ -33,7 +33,22 @@ from utils.mask_utils import polygon_to_binary_mask
 
 
 SPLITS = ["train", "val", "test"]
-STENOSIS_CLASS = 25
+STENOSIS_CLASS = None  # Set dynamically from data.yaml in main()
+
+
+def detect_stenosis_class(config: dict) -> int:
+    """Detect the stenosis class ID from the stenosis data.yaml."""
+    stenosis_yaml = Path(config["stenosis_data_yaml"])
+    if stenosis_yaml.exists():
+        with open(stenosis_yaml) as f:
+            data = yaml.safe_load(f)
+        names = data.get("names", {})
+        if isinstance(names, list):
+            names = {i: n for i, n in enumerate(names)}
+        for cls_id, name in names.items():
+            if str(name) == "stenosis":
+                return int(cls_id)
+    return 25  # fallback for original 26-class scheme
 
 
 def polygon_to_yolo_line(cls_id: int, polygon: list) -> str:
@@ -127,6 +142,17 @@ def filter_stenosis_predictions(preds: list, vessel_mask: np.ndarray,
     return filtered
 
 
+def get_task_root(config: dict, task: str) -> Path:
+    """Get the root path for a task from its data.yaml."""
+    key = f"{task}_data_yaml"
+    yaml_path = Path(config[key])
+    if yaml_path.exists():
+        with open(yaml_path) as f:
+            data = yaml.safe_load(f)
+        return Path(data["path"])
+    return Path(config["dataset_root"]) / task
+
+
 def process_stenosis_side(config: dict, ci_data: dict, output_dir: Path,
                           min_syntax_conf: float, use_symlinks: bool) -> dict:
     """Process stenosis-side images: stenosis GT + syntax predictions.
@@ -134,11 +160,11 @@ def process_stenosis_side(config: dict, ci_data: dict, output_dir: Path,
     Stenosis labels are from ground truth (reliable).
     Syntax labels are from cross-inference (filtered by confidence).
     """
-    dataset_root = Path(config["dataset_root"])
+    stenosis_root = get_task_root(config, "stenosis")
     stats = {"images": 0, "stenosis_labels": 0, "syntax_added": 0, "syntax_filtered": 0}
 
     for split in SPLITS:
-        stenosis_dir = dataset_root / "stenosis" / split
+        stenosis_dir = stenosis_root / split
         images_dir = stenosis_dir / "images"
         labels_dir = stenosis_dir / "labels"
         if not images_dir.exists():
@@ -211,7 +237,7 @@ def process_syntax_side(config: dict, ci_data_list: list, output_dir: Path,
     Args:
         ci_data_list: List of (name, ci_data) tuples from different models.
     """
-    dataset_root = Path(config["dataset_root"])
+    syntax_root = get_task_root(config, "syntax")
     stats = {
         "images": 0, "images_with_stenosis": 0,
         "syntax_labels": 0, "stenosis_added": 0,
@@ -220,7 +246,7 @@ def process_syntax_side(config: dict, ci_data_list: list, output_dir: Path,
     }
 
     for split in SPLITS:
-        syntax_dir = dataset_root / "syntax" / split
+        syntax_dir = syntax_root / split
         images_dir = syntax_dir / "images"
         labels_dir = syntax_dir / "labels"
         if not images_dir.exists():
@@ -309,25 +335,25 @@ def process_syntax_side(config: dict, ci_data_list: list, output_dir: Path,
     return stats
 
 
-def generate_data_yaml(output_dir: Path, yaml_path: Path) -> None:
-    """Generate data.yaml for the final dataset."""
-    class_names = {}
-    syntax_cats = {
-        1: "1", 2: "2", 3: "3", 4: "4", 5: "5", 6: "6", 7: "7", 8: "8",
-        9: "9", 10: "9a", 11: "10", 12: "10a", 13: "11", 14: "12", 15: "12a",
-        16: "13", 17: "14", 18: "14a", 19: "15", 20: "16", 21: "16a",
-        22: "16b", 23: "16c", 24: "12b", 25: "14b",
-    }
-    for i, coco_id in enumerate(sorted(syntax_cats.keys())):
-        class_names[i] = syntax_cats[coco_id]
-    class_names[25] = "stenosis"
+def generate_data_yaml(output_dir: Path, yaml_path: Path, config: dict) -> None:
+    """Generate data.yaml for the final dataset, reading class scheme from stenosis data.yaml."""
+    stenosis_yaml = Path(config["stenosis_data_yaml"])
+    if stenosis_yaml.exists():
+        with open(stenosis_yaml) as f:
+            src = yaml.safe_load(f)
+        class_names = src["names"]
+        nc = src["nc"]
+    else:
+        class_names = {i: str(i) for i in range(26)}
+        class_names[25] = "stenosis"
+        nc = 26
 
     data = {
         "path": str(output_dir.resolve()),
         "train": "train/images",
         "val": "val/images",
         "test": "test/images",
-        "nc": 26,
+        "nc": nc,
         "names": class_names,
     }
     with open(yaml_path, "w") as f:
@@ -357,10 +383,14 @@ def main():
     ci_dir = Path(config["cross_inference"]["output_dir"])
     output_dir = dataset_root / "final"
 
+    global STENOSIS_CLASS
+    STENOSIS_CLASS = detect_stenosis_class(config)
+
     print("=" * 60)
     print("Building Final Quality-Filtered Dataset")
     print("=" * 60)
     print(f"  Output: {output_dir}")
+    print(f"  Stenosis class ID: {STENOSIS_CLASS}")
     print(f"  Syntax confidence threshold: {args.min_syntax_conf}")
     print(f"  Stenosis confidence threshold: {args.min_stenosis_conf}")
     print(f"  Stenosis-vessel overlap threshold: {args.min_overlap}")
@@ -429,7 +459,7 @@ def main():
 
     # Generate data.yaml
     yaml_path = Path(config["_base_dir"]) / "data_final.yaml"
-    generate_data_yaml(output_dir, yaml_path)
+    generate_data_yaml(output_dir, yaml_path, config)
 
     # Summary
     total = stats_1.get("images", 0) + stats_2.get("images", 0)
