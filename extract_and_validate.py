@@ -567,23 +567,53 @@ def main():
         json.dump(full_report, f, indent=2, default=str)
     print(f"\n  Full report saved: {report_path}")
 
-    # Final count
+    # Final count — from actual final dataset label files (not cross-inference JSONs)
+    final_dir = dataset_root / "final"
     print(f"\n{'='*60}")
-    print("FINAL DATASET COUNTS")
+    print("FINAL DATASET COUNTS (from label files)")
     print(f"{'='*60}")
-    for direction, ci_path in ci_files.items():
-        if not ci_path.exists():
-            continue
-        r = full_report.get(direction, {}).get("summary", {})
-        print(f"  {direction}: {r.get('with_both', 0)} images with BOTH syntax + stenosis "
-              f"(out of {r.get('images', 0)})")
 
-    both_total = sum(
-        full_report.get(d, {}).get("summary", {}).get("with_both", 0)
-        for d in ci_files
-    )
-    print(f"\n  TOTAL images with both syntax + stenosis: ~{both_total}")
-    print(f"  All outputs saved to: {output_dir}")
+    if final_dir.exists():
+        total_images = 0
+        with_syntax = 0
+        with_stenosis = 0
+        with_both = 0
+
+        for split in SPLITS:
+            labels_dir = final_dir / split / "labels"
+            if not labels_dir.exists():
+                continue
+            for label_file in sorted(labels_dir.glob("*.txt")):
+                total_images += 1
+                has_syntax = False
+                has_stenosis = False
+                with open(label_file) as f:
+                    for line in f:
+                        parts = line.strip().split()
+                        if not parts:
+                            continue
+                        cls_id = int(parts[0])
+                        if cls_id == STENOSIS_CLASS:
+                            has_stenosis = True
+                        else:
+                            has_syntax = True
+                if has_syntax:
+                    with_syntax += 1
+                if has_stenosis:
+                    with_stenosis += 1
+                if has_syntax and has_stenosis:
+                    with_both += 1
+
+        print(f"  Final dataset dir: {final_dir}")
+        print(f"  Total label files: {total_images}")
+        print(f"  With syntax:       {with_syntax}")
+        print(f"  With stenosis:     {with_stenosis}")
+        print(f"  With BOTH:         {with_both}")
+    else:
+        print(f"  Final dataset not found at {final_dir}")
+        print(f"  Run build_final_dataset.py first.")
+
+    print(f"\n  All outputs saved to: {output_dir}")
     print(f"{'='*60}")
 
 
