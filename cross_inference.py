@@ -83,9 +83,10 @@ def main():
     )
     parser.add_argument(
         "--direction", type=str,
-        choices=["syntax_on_stenosis", "stenosis_on_syntax", "both"],
+        choices=["syntax_on_stenosis", "stenosis_on_syntax", "combined_on_syntax", "both"],
         default="both",
-        help="Which cross-inference to run (default: both)"
+        help="Which cross-inference to run (default: both). "
+             "'combined_on_syntax' runs the combined 26-class model on syntax images."
     )
     args = parser.parse_args()
 
@@ -104,6 +105,8 @@ def main():
         directions.append("syntax_on_stenosis")
     if args.direction in ("stenosis_on_syntax", "both"):
         directions.append("stenosis_on_syntax")
+    if args.direction == "combined_on_syntax":
+        directions.append("combined_on_syntax")
 
     for direction in directions:
         print(f"\n{'='*60}")
@@ -114,10 +117,14 @@ def main():
             model_path = ci["syntax_weights"]
             target_task = "stenosis"
             mapping_path = mappings_dir / "syntax_categories.json"
-        else:
+        elif direction == "stenosis_on_syntax":
             model_path = ci["stenosis_weights"]
             target_task = "syntax"
             mapping_path = mappings_dir / "stenosis_categories.json"
+        elif direction == "combined_on_syntax":
+            model_path = ci["combined_weights"]
+            target_task = "syntax"
+            mapping_path = mappings_dir / "combined_categories.json"
 
         if not Path(model_path).exists():
             print(f"  [ERROR] Model weights not found: {model_path}")

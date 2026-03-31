@@ -3,11 +3,12 @@
 # =============================================================================
 
 # === PATHS ===
-dataset_root: "./ARCADE"
+dataset_root: "./arcade/submission"
 output_dir: "./runs"
 mappings_dir: "./mappings"
 syntax_data_yaml: "./data_syntax.yaml"
 stenosis_data_yaml: "./data_stenosis.yaml"
+combined_data_yaml: "./data_combined.yaml"
 
 # === MODEL ===
 model_variant: "yolov8x-seg"
@@ -70,7 +71,8 @@ cross_inference:
   syntax_weights: "./runs/syntax/weights/best.pt"
   stenosis_weights: "./runs/stenosis/weights/best.pt"
   output_dir: "./runs/cross_inference"
-  splits: ["test"]   # Which splits to run cross-inference on
+  combined_weights: "./runs/combined/weights/best.pt"
+  splits: ["train", "val", "test"]   # Which splits to run cross-inference on
 
 # === MASK INTERSECTION ===
 intersection:
@@ -111,6 +113,12 @@ syntax_categories:
   23: "16c"
   24: "12b"
   25: "14b"
+
+# === COMBINED DATASET (for step 3 of the pipeline) ===
+combined_dataset:
+  output_dir: "./arcade/submission/combined"
+  min_confidence: 0.5        # Filter cross-inference predictions below this threshold
+  use_symlinks: true          # Symlink images instead of copying
 
 stenosis_categories:
   26: "stenosis"
