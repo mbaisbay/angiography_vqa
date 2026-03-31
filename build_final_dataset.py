@@ -310,8 +310,8 @@ def process_syntax_side(config: dict, ci_data_list: list, output_dir: Path,
             if has_stenosis:
                 stats["images_with_stenosis"] += 1
 
-            # Write label
-            with open(out_labels / f"{stem}.txt", "w") as f:
+            # Write label (use syn_ prefix to avoid overwriting stenosis-side labels)
+            with open(out_labels / f"syn_{stem}.txt", "w") as f:
                 f.write("\n".join(lines) + "\n" if lines else "")
 
             # Link image (use different prefix to avoid collisions with stenosis images)
@@ -322,13 +322,6 @@ def process_syntax_side(config: dict, ci_data_list: list, output_dir: Path,
                 else:
                     import shutil
                     shutil.copy2(img_path, out_img)
-
-            # Label file also needs the prefix
-            # Rename the label file to match
-            old_label = out_labels / f"{stem}.txt"
-            new_label = out_labels / f"syn_{stem}.txt"
-            if old_label.exists():
-                old_label.rename(new_label)
 
             stats["images"] += 1
 
