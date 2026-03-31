@@ -110,6 +110,11 @@ def evaluate_segmentation_arcade(model_path: str, coco_json_path: str,
                 continue
             gt_by_image[image_name][cat_name].append(gt_poly)
 
+    # Build image dimensions lookup from COCO JSON
+    image_dims = {}
+    for img in coco["images"]:
+        image_dims[img["file_name"]] = (img["width"], img["height"])
+
     # Run predictions
     yolo_to_name = category_mapping["yolo_to_name"]
     per_image_f1 = []
@@ -122,6 +127,9 @@ def evaluate_segmentation_arcade(model_path: str, coco_json_path: str,
         image_name = Path(result.path).name
         gt_classes = gt_by_image.get(image_name, {})
 
+        # Use actual image dimensions from COCO JSON (fallback to 512x512)
+        img_w, img_h = image_dims.get(image_name, (512, 512))
+
         # Group predictions by class
         pred_by_class = defaultdict(list)
         if result.masks is not None and len(result.masks) > 0:
@@ -129,7 +137,7 @@ def evaluate_segmentation_arcade(model_path: str, coco_json_path: str,
                 cls_id = int(result.boxes.cls[i].item())
                 cls_name = yolo_to_name.get(cls_id, str(cls_id))
                 polygon = result.masks.xyn[i].tolist()
-                pred_poly = coords_to_shapely(polygon, 512, 512, normalized=True)
+                pred_poly = coords_to_shapely(polygon, img_w, img_h, normalized=True)
                 if not pred_poly.is_empty:
                     pred_by_class[cls_name].append(pred_poly)
 

@@ -28,27 +28,12 @@ from pathlib import Path
 import cv2
 import numpy as np
 
-from utils.config_loader import load_config
+from utils.config_loader import load_config, detect_stenosis_class
 from utils.mask_utils import polygon_to_binary_mask
 
 
 SPLITS = ["train", "val", "test"]
 STENOSIS_CLASS = None  # Set dynamically from data.yaml in main()
-
-
-def detect_stenosis_class(config: dict) -> int:
-    """Detect the stenosis class ID from the stenosis data.yaml."""
-    stenosis_yaml = Path(config["stenosis_data_yaml"])
-    if stenosis_yaml.exists():
-        with open(stenosis_yaml) as f:
-            data = yaml.safe_load(f)
-        names = data.get("names", {})
-        if isinstance(names, list):
-            names = {i: n for i, n in enumerate(names)}
-        for cls_id, name in names.items():
-            if str(name) == "stenosis":
-                return int(cls_id)
-    return 25  # fallback for original 26-class scheme
 
 
 def polygon_to_yolo_line(cls_id: int, polygon: list) -> str:
@@ -310,8 +295,8 @@ def process_syntax_side(config: dict, ci_data_list: list, output_dir: Path,
             if has_stenosis:
                 stats["images_with_stenosis"] += 1
 
-            # Write label
-            with open(out_labels / f"{stem}.txt", "w") as f:
+            # Write label directly with syn_ prefix to avoid collisions with stenosis-side files
+            with open(out_labels / f"syn_{stem}.txt", "w") as f:
                 f.write("\n".join(lines) + "\n" if lines else "")
 
             # Link image (use different prefix to avoid collisions with stenosis images)
@@ -322,13 +307,6 @@ def process_syntax_side(config: dict, ci_data_list: list, output_dir: Path,
                 else:
                     import shutil
                     shutil.copy2(img_path, out_img)
-
-            # Label file also needs the prefix
-            # Rename the label file to match
-            old_label = out_labels / f"{stem}.txt"
-            new_label = out_labels / f"syn_{stem}.txt"
-            if old_label.exists():
-                old_label.rename(new_label)
 
             stats["images"] += 1
 
@@ -458,7 +436,7 @@ def main():
         stats_2 = {"images": 0, "images_with_stenosis": 0}
 
     # Generate data.yaml
-    yaml_path = Path(config["_base_dir"]) / "data_final.yaml"
+    yaml_path = Path(config.get("final_data_yaml", Path(config["_base_dir"]) / "data_final.yaml"))
     generate_data_yaml(output_dir, yaml_path, config)
 
     # Summary

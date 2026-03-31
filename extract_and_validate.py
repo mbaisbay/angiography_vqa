@@ -25,7 +25,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import yaml
 
-from utils.config_loader import load_config
+from utils.config_loader import load_config, detect_stenosis_class
 from utils.mask_utils import polygon_to_binary_mask
 from utils.visualization import draw_masks_overlay, VESSEL_PALETTE, STENOSIS_COLOR
 
@@ -34,21 +34,6 @@ SPLITS = ["train", "val", "test"]
 
 # Set dynamically in main() from data.yaml
 STENOSIS_CLASS = None
-
-
-def detect_stenosis_class(config: dict) -> int:
-    """Detect the stenosis class ID from the stenosis data.yaml."""
-    stenosis_yaml = Path(config["stenosis_data_yaml"])
-    if stenosis_yaml.exists():
-        with open(stenosis_yaml) as f:
-            data = yaml.safe_load(f)
-        names = data.get("names", {})
-        if isinstance(names, list):
-            names = {i: n for i, n in enumerate(names)}
-        for cls_id, name in names.items():
-            if str(name) == "stenosis":
-                return int(cls_id)
-    return 25  # fallback
 
 
 def load_cross_inference(json_path: Path) -> dict:
