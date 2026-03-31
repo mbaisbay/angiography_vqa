@@ -1,0 +1,28 @@
+# Model weights
+*.pt
+runs/
+mappings/
+
+# Generated datasets
+arcade/submission/combined/
+arcade/submission/final/
+arcade/submission/syntax_filtered/
+arcade/submission/stenosis_filtered/
+
+# YOLO cache files
+*.cache
+labels.cache
+
+# Data yamls (generated)
+data_syntax.yaml
+data_stenosis.yaml
+data_combined.yaml
+data_final.yaml
+
+# Large data files
+*.json
+!config.yaml
+
+# Python
+__pycache__/
+*.pyc
