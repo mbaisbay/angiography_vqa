@@ -6,6 +6,7 @@ from pathlib import Path
 from collections import defaultdict
 
 import numpy as np
+import yaml
 from shapely.geometry import Polygon
 from shapely.validation import make_valid
 
@@ -77,12 +78,17 @@ def coords_to_shapely(polygon_coords: list, width: int = 512, height: int = 512,
 
 def evaluate_segmentation_arcade(model_path: str, coco_json_path: str,
                                   images_dir: str, category_mapping: dict,
-                                  inference_args: dict) -> dict:
+                                  inference_args: dict,
+                                  allowed_classes: set = None) -> dict:
     """Evaluate using ARCADE-compatible polygon area F1 metric.
 
     For each predicted mask, compute F1 against all GT masks of the same class
     for that image, take the maximum. Pad with zeros for unmatched GT masks.
     Mean F1 per image, then overall mean.
+
+    Args:
+        allowed_classes: If provided, only evaluate these class names.
+            Classes not in this set are ignored in both GT and predictions.
     """
     model = YOLO(model_path)
 
@@ -101,6 +107,11 @@ def evaluate_segmentation_arcade(model_path: str, coco_json_path: str,
             continue
         image_name = img_info["file_name"]
         cat_name = cats_by_id.get(ann["category_id"], str(ann["category_id"]))
+
+        # Skip classes not in the allowed set
+        if allowed_classes is not None and cat_name not in allowed_classes:
+            continue
+
         w, h = img_info["width"], img_info["height"]
 
         for polygon in ann.get("segmentation", []):
@@ -137,6 +148,8 @@ def evaluate_segmentation_arcade(model_path: str, coco_json_path: str,
             for i in range(len(result.masks)):
                 cls_id = int(result.boxes.cls[i].item())
                 cls_name = yolo_to_name.get(cls_id, str(cls_id))
+                if allowed_classes is not None and cls_name not in allowed_classes:
+                    continue
                 polygon = result.masks.xyn[i].tolist()
                 pred_poly = coords_to_shapely(polygon, img_w, img_h, normalized=True)
                 if not pred_poly.is_empty:
@@ -262,6 +275,11 @@ def main():
         choices=["ultralytics", "arcade", "both"],
         help="Evaluation method for syntax/stenosis (default: both)"
     )
+    parser.add_argument(
+        "--no-filter", action="store_true",
+        help="Disable class filtering: evaluate all 26 COCO classes instead of "
+             "only the classes in data.yaml (default: filter to trained classes)"
+    )
     args = parser.parse_args()
 
     config = load_config(args.config)
@@ -308,6 +326,23 @@ def main():
             # ARCADE-compatible F1
             if args.method in ("arcade", "both"):
                 print(f"\n  [ARCADE Polygon F1]")
+
+                # Build allowed_classes from data.yaml (unless --no-filter)
+                allowed_classes = None
+                if not args.no_filter:
+                    data_yaml_path = Path(config[f"{task}_data_yaml"])
+                    if data_yaml_path.exists():
+                        with open(data_yaml_path) as f:
+                            dy = yaml.safe_load(f)
+                        names = dy.get("names", {})
+                        if isinstance(names, list):
+                            allowed_classes = {str(n) for n in names}
+                        else:
+                            allowed_classes = {str(v) for v in names.values()}
+                        print(f"    Filtering to {len(allowed_classes)} trained classes from {data_yaml_path.name}")
+                    else:
+                        print(f"    [WARN] data.yaml not found, evaluating all classes")
+
                 # Find test COCO JSON
                 test_json = None
                 for candidate in [
@@ -323,7 +358,8 @@ def main():
                 else:
                     images_dir = str(dataset_root / task / "test" / "images")
                     arcade_results = evaluate_segmentation_arcade(
-                        weights, str(test_json), images_dir, mapping, inference_args
+                        weights, str(test_json), images_dir, mapping, inference_args,
+                        allowed_classes=allowed_classes,
                     )
                     results["arcade_f1"] = arcade_results
                     print(f"    Overall Mean F1: {arcade_results['overall_mean_f1']}")
