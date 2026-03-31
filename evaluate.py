@@ -13,6 +13,7 @@ from ultralytics import YOLO
 
 from utils.config_loader import load_config, get_inference_args
 from utils.coco_to_yolo import load_category_mapping
+from cross_inference import build_category_mapping_from_data_yaml
 
 
 def shapely_f1(pred_polygon: Polygon, gt_polygon: Polygon) -> float:
@@ -284,7 +285,13 @@ def main():
                 print(f"  [ERROR] Weights not found: {weights}")
                 continue
 
-            mapping = load_category_mapping(str(mappings_dir / f"{task}_categories.json"))
+            mapping_path = mappings_dir / f"{task}_categories.json"
+            if mapping_path.exists():
+                mapping = load_category_mapping(str(mapping_path))
+            else:
+                print(f"  [INFO] Mapping file not found: {mapping_path}")
+                print(f"         Building from data.yaml instead.")
+                mapping = build_category_mapping_from_data_yaml(config, task)
             results = {}
 
             # Ultralytics standard metrics
