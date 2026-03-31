@@ -10,6 +10,36 @@ from utils.config_loader import load_config, get_inference_args
 from utils.coco_to_yolo import load_category_mapping
 
 
+def build_category_mapping_from_config(config: dict, task: str) -> dict:
+    """Build a category mapping dict from config when no mapping JSON exists.
+
+    This handles the case where labels were pre-generated and prepare_data.py
+    was never run to create the mappings/ JSON files.
+    """
+    if task in ("syntax", "syntax_on_stenosis"):
+        config_cats = config["syntax_categories"]
+    elif task in ("stenosis", "stenosis_on_syntax"):
+        config_cats = config["stenosis_categories"]
+    elif task in ("combined", "combined_on_syntax"):
+        config_cats = dict(config["syntax_categories"])
+        config_cats.update(config["stenosis_categories"])
+    else:
+        raise ValueError(f"Unknown task for mapping: {task}")
+
+    # Sort by COCO ID, build 0-indexed mapping
+    sorted_ids = sorted(config_cats.keys())
+    class_names = [str(config_cats[cid]) for cid in sorted_ids]
+    yolo_to_name = {i: name for i, name in enumerate(class_names)}
+    coco_to_yolo = {cid: i for i, cid in enumerate(sorted_ids)}
+
+    return {
+        "coco_to_yolo": coco_to_yolo,
+        "yolo_to_name": yolo_to_name,
+        "class_names": class_names,
+        "num_classes": len(class_names),
+    }
+
+
 def run_cross_inference(model_path: str, images_dir: str, inference_args: dict,
                         category_mapping: dict) -> list:
     """Run a model on a set of images and collect predictions.
@@ -131,7 +161,12 @@ def main():
             print(f"  Run train.py first.")
             continue
 
-        category_mapping = load_category_mapping(str(mapping_path))
+        if mapping_path.exists():
+            category_mapping = load_category_mapping(str(mapping_path))
+        else:
+            print(f"  [INFO] Mapping file not found: {mapping_path}")
+            print(f"         Building from config categories instead.")
+            category_mapping = build_category_mapping_from_config(config, direction)
         print(f"  Model: {model_path}")
         print(f"  Target images: {target_task}")
         print(f"  Splits: {splits}")
