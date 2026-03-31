@@ -68,7 +68,7 @@ def build_class_filter(counts: Counter, min_count: int,
     for cls_id in sorted(counts.keys()):
         if cls_id == STENOSIS_OLD_ID:
             continue  # Handle stenosis separately at the end
-        if counts[cls_id] > min_count:
+        if counts[cls_id] >= min_count:
             kept_ids.append(cls_id)
 
     # Add stenosis as last class

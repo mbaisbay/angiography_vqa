@@ -4,6 +4,25 @@ import yaml
 from pathlib import Path
 
 
+def detect_stenosis_class(config: dict) -> int:
+    """Detect the stenosis class ID from the stenosis data.yaml.
+
+    Returns the 0-indexed class ID for 'stenosis' in the current class scheme.
+    Falls back to 25 (original 26-class scheme) if data.yaml is unavailable.
+    """
+    stenosis_yaml = Path(config["stenosis_data_yaml"])
+    if stenosis_yaml.exists():
+        with open(stenosis_yaml) as f:
+            data = yaml.safe_load(f)
+        names = data.get("names", {})
+        if isinstance(names, list):
+            names = {i: n for i, n in enumerate(names)}
+        for cls_id, name in names.items():
+            if str(name) == "stenosis":
+                return int(cls_id)
+    return 25  # fallback for original 26-class scheme
+
+
 def load_config(config_path: str) -> dict:
     """Load and validate the pipeline configuration from a YAML file.
 
@@ -23,6 +42,7 @@ def load_config(config_path: str) -> dict:
     path_keys = [
         "dataset_root", "output_dir", "mappings_dir",
         "syntax_data_yaml", "stenosis_data_yaml", "combined_data_yaml",
+        "final_data_yaml",
     ]
     for key in path_keys:
         if key in config:
@@ -69,6 +89,8 @@ def get_training_args(config: dict, task: str) -> dict:
         data_yaml = config["stenosis_data_yaml"]
     elif task == "combined":
         data_yaml = config["combined_data_yaml"]
+    elif task == "final":
+        data_yaml = config["final_data_yaml"]
     else:
         raise ValueError(f"Unknown task: {task}")
 
@@ -127,5 +149,7 @@ def get_data_yaml_path(config: dict, task: str) -> str:
         return config["stenosis_data_yaml"]
     elif task == "combined":
         return config["combined_data_yaml"]
+    elif task == "final":
+        return config["final_data_yaml"]
     else:
-        raise ValueError(f"Unknown task: {task}. Must be 'syntax', 'stenosis', or 'combined'.")
+        raise ValueError(f"Unknown task: {task}. Must be 'syntax', 'stenosis', 'combined', or 'final'.")

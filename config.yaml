@@ -9,6 +9,7 @@ mappings_dir: "./mappings"
 syntax_data_yaml: "./data_syntax.yaml"
 stenosis_data_yaml: "./data_stenosis.yaml"
 combined_data_yaml: "./data_combined.yaml"
+final_data_yaml: "./data_final.yaml"
 
 # === MODEL ===
 model_variant: "yolov8x-seg"

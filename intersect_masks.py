@@ -7,6 +7,7 @@ from pathlib import Path
 import cv2
 
 from utils.config_loader import load_config
+from utils.coco_to_yolo import load_category_mapping
 from utils.mask_utils import assign_stenosis_to_vessels
 from utils.visualization import draw_assignment_visualization
 
@@ -49,6 +50,19 @@ def main():
     syntax_on_stenosis_path = ci_dir / "syntax_on_stenosis.json"
     stenosis_on_syntax_path = ci_dir / "stenosis_on_syntax.json"
 
+    # Load category mappings if available (supports filtered 13-class scheme)
+    mappings_dir = Path(config["mappings_dir"])
+    stenosis_mapping = None
+    syntax_mapping = None
+    for task, var_name in [("stenosis", "stenosis_mapping"), ("syntax", "syntax_mapping")]:
+        mapping_path = mappings_dir / f"{task}_categories.json"
+        if mapping_path.exists():
+            mapping = load_category_mapping(str(mapping_path))
+            if var_name == "stenosis_mapping":
+                stenosis_mapping = mapping
+            else:
+                syntax_mapping = mapping
+
     print("=" * 60)
     print("Mask Intersection: Vessel-Stenosis Assignment")
     print("=" * 60)
@@ -72,7 +86,7 @@ def main():
             vessel_by_image = {r["image_name"]: r["predictions"] for r in split_results}
 
             # Load stenosis GT annotations for this split
-            stenosis_gt = load_stenosis_gt(dataset_root, split)
+            stenosis_gt = load_stenosis_gt(dataset_root, split, stenosis_mapping)
 
             split_assignments = []
             for image_name, vessel_preds in vessel_by_image.items():
@@ -117,7 +131,7 @@ def main():
         for split, split_results in stenosis_results.items():
             stenosis_by_image = {r["image_name"]: r["predictions"] for r in split_results}
 
-            vessel_gt = load_vessel_gt(dataset_root, split)
+            vessel_gt = load_vessel_gt(dataset_root, split, syntax_mapping)
 
             split_assignments = []
             for image_name, stenosis_preds in stenosis_by_image.items():
@@ -166,21 +180,32 @@ def main():
     print(f"{'='*60}")
 
 
-def load_stenosis_gt(dataset_root: Path, split: str) -> dict:
+def load_stenosis_gt(dataset_root: Path, split: str,
+                     category_mapping: dict = None) -> dict:
     """Load stenosis ground truth from COCO JSON and convert to prediction format.
 
     Returns dict: {image_name: [list of prediction-like dicts]}.
     """
-    return _load_gt_as_predictions(dataset_root / "stenosis", split)
+    return _load_gt_as_predictions(dataset_root / "stenosis", split, category_mapping)
 
 
-def load_vessel_gt(dataset_root: Path, split: str) -> dict:
+def load_vessel_gt(dataset_root: Path, split: str,
+                   category_mapping: dict = None) -> dict:
     """Load vessel segment ground truth from COCO JSON and convert to prediction format."""
-    return _load_gt_as_predictions(dataset_root / "syntax", split)
+    return _load_gt_as_predictions(dataset_root / "syntax", split, category_mapping)
 
 
-def _load_gt_as_predictions(task_dir: Path, split: str) -> dict:
-    """Load COCO GT annotations and format like model predictions for mask intersection."""
+def _load_gt_as_predictions(task_dir: Path, split: str,
+                            category_mapping: dict = None) -> dict:
+    """Load COCO GT annotations and format like model predictions for mask intersection.
+
+    Args:
+        task_dir: Path to task directory (e.g., arcade/submission/syntax).
+        split: Dataset split (train/val/test).
+        category_mapping: Optional pre-built mapping with 'coco_to_yolo' dict.
+            If provided, uses this instead of building a 26-class mapping from
+            the COCO JSON. This supports the filtered 13-class scheme.
+    """
     ann_dir = task_dir / split / "annotations"
     json_candidates = list(ann_dir.glob("*.json")) + list(ann_dir.glob("*.JSON"))
 
@@ -193,15 +218,23 @@ def _load_gt_as_predictions(task_dir: Path, split: str) -> dict:
     images_by_id = {img["id"]: img for img in coco["images"]}
     cats_by_id = {cat["id"]: str(cat["name"]) for cat in coco["categories"]}
 
-    # Build proper COCO ID -> 0-indexed YOLO mapping (sorted by COCO ID)
-    sorted_cat_ids = sorted(cats_by_id.keys())
-    coco_id_to_yolo = {cid: idx for idx, cid in enumerate(sorted_cat_ids)}
+    # Use provided mapping if available, otherwise build from COCO JSON
+    if category_mapping is not None:
+        coco_id_to_yolo = category_mapping["coco_to_yolo"]
+    else:
+        sorted_cat_ids = sorted(cats_by_id.keys())
+        coco_id_to_yolo = {cid: idx for idx, cid in enumerate(sorted_cat_ids)}
 
     # Group annotations by image
     preds_by_image = {}
     for ann in coco["annotations"]:
         img_info = images_by_id.get(ann["image_id"])
         if img_info is None:
+            continue
+
+        coco_cat_id = ann["category_id"]
+        # Skip annotations for classes not in the mapping (filtered out)
+        if coco_cat_id not in coco_id_to_yolo:
             continue
 
         image_name = img_info["file_name"]
@@ -217,8 +250,8 @@ def _load_gt_as_predictions(task_dir: Path, split: str) -> dict:
                 normalized.append([polygon[i] / w, polygon[i + 1] / h])
 
             pred = {
-                "class_id": coco_id_to_yolo.get(ann["category_id"], 0),
-                "class_name": cats_by_id.get(ann["category_id"], str(ann["category_id"])),
+                "class_id": coco_id_to_yolo[coco_cat_id],
+                "class_name": cats_by_id.get(coco_cat_id, str(coco_cat_id)),
                 "confidence": 1.0,
                 "bbox_xywh": ann.get("bbox", []),
                 "polygon_normalized": normalized,
