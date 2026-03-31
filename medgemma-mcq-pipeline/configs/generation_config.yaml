@@ -1,0 +1,64 @@
+# =============================================================================
+# MedGemma MCQ Generation Pipeline — Configuration
+# =============================================================================
+
+model:
+  backend: "vllm"  # ollama | vllm | transformers
+  model_id: "google/medgemma-27b-it"
+  temperature: 0.7
+  top_p: 0.9
+  max_tokens: 1024
+
+generation:
+  mcq_types:
+    - vessel_identification
+    - stenosis_severity
+    - coronary_dominance
+    - syntax_scoring
+    - lesion_morphology
+    - view_identification
+    - clinical_reasoning
+  num_per_image: 1
+  retry_attempts: 3
+  batch_size: 8          # Number of concurrent requests for batch processing
+  log_dir: "./logs"
+
+validation:
+  min_distractors: 3
+  max_distractors: 3
+  max_length_ratio: 3.0  # longest/shortest option — flags "longest answer is correct" flaw
+  self_review: false
+
+datasets:
+  arcade:
+    image_dir: "/data/ARCADE/images/"
+    metadata_file: "/data/ARCADE/metadata.json"
+    available_mcq_types:
+      - vessel_identification
+      - stenosis_severity
+  chd_syntax:
+    image_dir: "/data/CHD_Syntax/images/"
+    metadata_file: "/data/CHD_Syntax/metadata.pkl"
+    available_mcq_types:
+      - vessel_identification
+      - stenosis_severity
+      - syntax_scoring
+      - lesion_morphology
+      - coronary_dominance
+      - view_identification
+      - clinical_reasoning
+  cardiosyntax:
+    image_dir: "/data/CardioSyntax/images/"
+    metadata_file: "/data/CardioSyntax/metadata.pkl"
+    available_mcq_types:
+      - syntax_scoring
+      - lesion_morphology
+      - coronary_dominance
+      - clinical_reasoning
+  coronary_dominance:
+    image_dir: "/data/CoronaryDominance/studies/"
+    metadata_file: "/data/CoronaryDominance/metadata.json"
+    available_mcq_types:
+      - coronary_dominance
+      - vessel_identification
+      - view_identification
