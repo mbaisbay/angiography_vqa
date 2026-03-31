@@ -46,16 +46,48 @@ def polygon_to_yolo_line(cls_id: int, polygon: list) -> str:
     return f"{cls_id} " + " ".join(coords)
 
 
-def filter_stenosis_predictions(preds: list, vessel_preds: list,
+def parse_yolo_label_polygons(label_path: Path) -> list:
+    """Parse YOLO label file and extract polygons for vessel classes (0-24).
+
+    Returns list of polygon coordinate lists (each is [[x,y], ...]).
+    """
+    polygons = []
+    if not label_path.exists():
+        return polygons
+    with open(label_path) as f:
+        for line in f:
+            parts = line.strip().split()
+            if len(parts) < 7:  # class + at least 3 points
+                continue
+            cls_id = int(parts[0])
+            if cls_id >= STENOSIS_CLASS:  # skip stenosis labels
+                continue
+            coords = list(map(float, parts[1:]))
+            poly = [[coords[i], coords[i + 1]] for i in range(0, len(coords), 2)]
+            polygons.append(poly)
+    return polygons
+
+
+def build_vessel_mask_from_gt(label_path: Path, mask_size: int) -> np.ndarray:
+    """Build vessel union mask from GT YOLO label file."""
+    vessel_union = np.zeros((mask_size, mask_size), dtype=np.uint8)
+    for poly in parse_yolo_label_polygons(label_path):
+        if len(poly) >= 3:
+            mask = polygon_to_binary_mask(poly, mask_size)
+            vessel_union = np.maximum(vessel_union, mask)
+    return vessel_union
+
+
+def filter_stenosis_predictions(preds: list, vessel_mask: np.ndarray,
                                 min_conf: float, min_overlap: float,
                                 min_area_frac: float, mask_size: int) -> list:
     """Filter stenosis predictions by confidence, spatial overlap, and area.
 
     Args:
         preds: Stenosis predictions to filter.
-        vessel_preds: Vessel predictions for spatial check.
+        vessel_mask: Precomputed vessel union mask (from GT labels or predictions).
         min_conf: Minimum confidence threshold.
-        min_overlap: Minimum overlap ratio with vessel union mask.
+        min_overlap: Minimum overlap ratio with vessel mask.
         min_area_frac: Minimum polygon area as fraction of image (e.g., 0.0005).
         mask_size: Mask rasterization size.
 
@@ -64,15 +96,6 @@ def filter_stenosis_predictions(preds: list, vessel_preds: list,
     """
     if not preds:
         return []
-
-    # Build vessel union mask for spatial check
-    vessel_union = np.zeros((mask_size, mask_size), dtype=np.uint8)
-    if vessel_preds and min_overlap > 0:
-        for vp in vessel_preds:
-            poly = vp.get("polygon_normalized", [])
-            if len(poly) >= 3:
-                mask = polygon_to_binary_mask(poly, mask_size)
-                vessel_union = np.maximum(vessel_union, mask)
 
     total_pixels = mask_size * mask_size
     filtered = []
@@ -92,9 +115,9 @@ def filter_stenosis_predictions(preds: list, vessel_preds: list,
         if area / total_pixels < min_area_frac:
             continue
 
-        # 3. Spatial overlap check
-        if min_overlap > 0 and vessel_union.sum() > 0:
-            overlap = (sten_mask & vessel_union).sum()
+        # 3. Spatial overlap check (stenosis must be ON a vessel)
+        if min_overlap > 0 and vessel_mask.sum() > 0:
+            overlap = (sten_mask & vessel_mask).sum()
             if area > 0 and (overlap / area) < min_overlap:
                 continue
 
@@ -229,11 +252,13 @@ def process_syntax_side(config: dict, ci_data: dict, output_dir: Path,
             # Stenosis predictions from combined model (quality-filtered)
             all_preds = preds_by_image.get(img_name, [])
             stenosis_preds = [p for p in all_preds if p["class_id"] == STENOSIS_CLASS]
-            vessel_preds = [p for p in all_preds if p["class_id"] != STENOSIS_CLASS]
             stats["stenosis_total_before_filter"] += len(stenosis_preds)
 
+            # Use GT syntax labels for vessel mask (much more accurate than model predictions)
+            gt_vessel_mask = build_vessel_mask_from_gt(gt_label, mask_size)
+
             filtered = filter_stenosis_predictions(
-                stenosis_preds, vessel_preds,
+                stenosis_preds, gt_vessel_mask,
                 min_conf=min_stenosis_conf,
                 min_overlap=min_overlap,
                 min_area_frac=min_area_frac,
