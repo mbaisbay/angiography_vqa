@@ -1,0 +1,19 @@
+path: /home/c504-5090-2/Desktop/Miras/arcade/arcade/submission/stenosis_filtered
+train: train/images
+val: val/images
+test: test/images
+nc: 13
+names:
+  0: '1'
+  1: '2'
+  2: '3'
+  3: '4'
+  4: '5'
+  5: '6'
+  6: '7'
+  7: '8'
+  8: '9'
+  9: '11'
+  10: '13'
+  11: '16'
+  12: stenosis

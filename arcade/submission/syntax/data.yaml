@@ -1,0 +1,32 @@
+path: /home/c504-5090-2/Desktop/Miras/arcade/arcade/submission/syntax
+train: train/images
+val: val/images
+test: test/images
+nc: 26
+names:
+  0: '1'
+  1: '2'
+  2: '3'
+  3: '4'
+  4: '5'
+  5: '6'
+  6: '7'
+  7: '8'
+  8: '9'
+  9: 9a
+  10: '10'
+  11: 10a
+  12: '11'
+  13: '12'
+  14: 12a
+  15: '13'
+  16: '14'
+  17: 14a
+  18: '15'
+  19: '16'
+  20: 16a
+  21: 16b
+  22: 16c
+  23: 12b
+  24: 14b
+  25: stenosis
