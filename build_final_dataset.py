@@ -22,6 +22,7 @@ import argparse
 import json
 import os
 import yaml
+from collections import defaultdict
 from pathlib import Path
 
 import cv2
@@ -198,14 +199,17 @@ def process_stenosis_side(config: dict, ci_data: dict, output_dir: Path,
     return stats
 
 
-def process_syntax_side(config: dict, ci_data: dict, output_dir: Path,
+def process_syntax_side(config: dict, ci_data_list: list, output_dir: Path,
                         min_stenosis_conf: float, min_overlap: float,
                         min_area_frac: float, mask_size: int,
                         use_symlinks: bool) -> dict:
     """Process syntax-side images: syntax GT + stenosis predictions (quality-filtered).
 
     Syntax labels are from ground truth (reliable).
-    Stenosis labels are from cross-inference (aggressively filtered).
+    Stenosis labels come from one or more cross-inference sources, merged.
+
+    Args:
+        ci_data_list: List of (name, ci_data) tuples from different models.
     """
     dataset_root = Path(config["dataset_root"])
     stats = {
@@ -227,10 +231,14 @@ def process_syntax_side(config: dict, ci_data: dict, output_dir: Path,
         out_images.mkdir(parents=True, exist_ok=True)
         out_labels.mkdir(parents=True, exist_ok=True)
 
-        # Index combined model predictions
-        preds_by_image = {}
-        for entry in ci_data.get(split, []):
-            preds_by_image[entry["image_name"]] = entry["predictions"]
+        # Index predictions from all sources by image name
+        all_preds_by_image = defaultdict(list)
+        for source_name, ci_data in ci_data_list:
+            for entry in ci_data.get(split, []):
+                img_name = entry["image_name"]
+                for p in entry["predictions"]:
+                    if p["class_id"] == STENOSIS_CLASS:
+                        all_preds_by_image[img_name].append(p)
 
         image_files = sorted(images_dir.glob("*.png")) + sorted(images_dir.glob("*.PNG"))
 
@@ -249,9 +257,8 @@ def process_syntax_side(config: dict, ci_data: dict, output_dir: Path,
                             lines.append(line)
                             stats["syntax_labels"] += 1
 
-            # Stenosis predictions from combined model (quality-filtered)
-            all_preds = preds_by_image.get(img_name, [])
-            stenosis_preds = [p for p in all_preds if p["class_id"] == STENOSIS_CLASS]
+            # Stenosis predictions from ALL sources (merged, then quality-filtered)
+            stenosis_preds = all_preds_by_image.get(img_name, [])
             stats["stenosis_total_before_filter"] += len(stenosis_preds)
 
             # Use GT syntax labels for vessel mask (much more accurate than model predictions)
@@ -387,13 +394,23 @@ def main():
     print("Direction 2: Syntax images (syntax GT + stenosis predictions)")
     print(f"{'='*60}")
 
-    ci_combined_on_syntax = ci_dir / "combined_on_syntax.json"
-    if ci_combined_on_syntax.exists():
-        with open(ci_combined_on_syntax) as f:
-            ci_data_2 = json.load(f)
+    # Load all available stenosis prediction sources for syntax images
+    ci_sources = []
+    for name, filename in [
+        ("combined_model", "combined_on_syntax.json"),
+        ("stenosis_model", "stenosis_on_syntax.json"),
+    ]:
+        path = ci_dir / filename
+        if path.exists():
+            with open(path) as f:
+                ci_sources.append((name, json.load(f)))
+            print(f"  Loaded: {name} ({path})")
+        else:
+            print(f"  [SKIP] {name}: {path} not found")
 
+    if ci_sources:
         stats_2 = process_syntax_side(
-            config, ci_data_2, output_dir,
+            config, ci_sources, output_dir,
             min_stenosis_conf=args.min_stenosis_conf,
             min_overlap=args.min_overlap,
             min_area_frac=args.min_area_frac,
@@ -407,7 +424,7 @@ def main():
         print(f"  Stenosis filtered out: {stats_2['stenosis_filtered_conf']}")
         print(f"  Images with stenosis (after filter): {stats_2['images_with_stenosis']}")
     else:
-        print(f"  [SKIP] {ci_combined_on_syntax} not found")
+        print(f"  [SKIP] No stenosis prediction sources found")
         stats_2 = {"images": 0, "images_with_stenosis": 0}
 
     # Generate data.yaml
