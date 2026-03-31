@@ -208,7 +208,8 @@ def process_stenosis_side(config: dict, ci_data: dict, output_dir: Path,
                     stats["syntax_added"] += 1
 
             # Write label
-            with open(out_labels / f"{stem}.txt", "w") as f:
+            label_out_path = out_labels / f"{stem}.txt"
+            with open(label_out_path, "w") as f:
                 f.write("\n".join(lines) + "\n" if lines else "")
 
             # Link image
@@ -221,6 +222,14 @@ def process_stenosis_side(config: dict, ci_data: dict, output_dir: Path,
                     shutil.copy2(img_path, out_img)
 
             stats["images"] += 1
+
+    # Debug: verify files were written
+    for split in SPLITS:
+        d = output_dir / split / "labels"
+        if d.exists():
+            all_files = list(d.glob("*.txt"))
+            non_syn = [f for f in all_files if not f.name.startswith("syn_")]
+            print(f"    [DEBUG] {split}: {len(all_files)} total labels, {len(non_syn)} stenosis-side (non-syn)")
 
     return stats
 
@@ -324,6 +333,15 @@ def process_syntax_side(config: dict, ci_data_list: list, output_dir: Path,
                     shutil.copy2(img_path, out_img)
 
             stats["images"] += 1
+
+    # Debug: verify files were written
+    for split in SPLITS:
+        d = output_dir / split / "labels"
+        if d.exists():
+            all_files = list(d.glob("*.txt"))
+            syn_files = [f for f in all_files if f.name.startswith("syn_")]
+            non_syn = [f for f in all_files if not f.name.startswith("syn_")]
+            print(f"    [DEBUG] {split}: {len(all_files)} total, {len(syn_files)} syn_, {len(non_syn)} non-syn")
 
     return stats
 
