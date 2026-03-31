@@ -10,27 +10,51 @@ from utils.config_loader import load_config, get_inference_args
 from utils.coco_to_yolo import load_category_mapping
 
 
-def build_category_mapping_from_config(config: dict, task: str) -> dict:
-    """Build a category mapping dict from config when no mapping JSON exists.
+def build_category_mapping_from_data_yaml(config: dict, task: str) -> dict:
+    """Build a category mapping from data.yaml files (supports filtered schemes).
 
-    This handles the case where labels were pre-generated and prepare_data.py
-    was never run to create the mappings/ JSON files.
+    Reads class names from the data.yaml that filter_classes.py or
+    fix_data_yaml.py generated, rather than from config.yaml categories.
+    Falls back to config categories if data.yaml not found.
     """
-    if task in ("syntax", "syntax_on_stenosis"):
-        config_cats = config["syntax_categories"]
-    elif task in ("stenosis", "stenosis_on_syntax"):
-        config_cats = config["stenosis_categories"]
-    elif task in ("combined", "combined_on_syntax"):
-        config_cats = dict(config["syntax_categories"])
-        config_cats.update(config["stenosis_categories"])
-    else:
-        raise ValueError(f"Unknown task for mapping: {task}")
+    import yaml
 
-    # Sort by COCO ID, build 0-indexed mapping
-    sorted_ids = sorted(config_cats.keys())
-    class_names = [str(config_cats[cid]) for cid in sorted_ids]
+    # Determine which data.yaml to read
+    if task in ("syntax", "syntax_on_stenosis"):
+        yaml_key = "syntax_data_yaml"
+    elif task in ("stenosis", "stenosis_on_syntax"):
+        yaml_key = "stenosis_data_yaml"
+    elif task in ("combined", "combined_on_syntax"):
+        yaml_key = "combined_data_yaml"
+    else:
+        yaml_key = "stenosis_data_yaml"  # fallback
+
+    yaml_path = Path(config.get(yaml_key, ""))
+    if yaml_path.exists():
+        with open(yaml_path) as f:
+            data = yaml.safe_load(f)
+        names = data.get("names", {})
+        if isinstance(names, list):
+            names = {i: n for i, n in enumerate(names)}
+        else:
+            names = {int(k): v for k, v in names.items()}
+        class_names = [str(names[i]) for i in sorted(names.keys())]
+    else:
+        # Fallback: build from config categories
+        if task in ("syntax", "syntax_on_stenosis"):
+            config_cats = config["syntax_categories"]
+        elif task in ("stenosis", "stenosis_on_syntax"):
+            config_cats = config["stenosis_categories"]
+        elif task in ("combined", "combined_on_syntax"):
+            config_cats = dict(config["syntax_categories"])
+            config_cats.update(config["stenosis_categories"])
+        else:
+            config_cats = config["stenosis_categories"]
+        sorted_ids = sorted(config_cats.keys())
+        class_names = [str(config_cats[cid]) for cid in sorted_ids]
+
     yolo_to_name = {i: name for i, name in enumerate(class_names)}
-    coco_to_yolo = {cid: i for i, cid in enumerate(sorted_ids)}
+    coco_to_yolo = {i: i for i in range(len(class_names))}
 
     return {
         "coco_to_yolo": coco_to_yolo,
@@ -166,7 +190,7 @@ def main():
         else:
             print(f"  [INFO] Mapping file not found: {mapping_path}")
             print(f"         Building from config categories instead.")
-            category_mapping = build_category_mapping_from_config(config, direction)
+            category_mapping = build_category_mapping_from_data_yaml(config, direction)
         print(f"  Model: {model_path}")
         print(f"  Target images: {target_task}")
         print(f"  Splits: {splits}")
