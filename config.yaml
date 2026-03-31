@@ -12,25 +12,28 @@ combined_data_yaml: "./data_combined.yaml"
 final_data_yaml: "./data_final.yaml"
 
 # === MODEL ===
-model_variant: "yolov8x-seg"
-pretrained_weights: "yolov8x-seg.pt"
+# Options: "yolov8x-seg", "yolo11x-seg", "yolo26m-seg"
+model_variant: "yolo11x-seg"
+pretrained_weights: "yolo11x-seg.pt"
 
 # === TRAINING HYPERPARAMETERS ===
 training:
-  epochs: 100
+  epochs: 150
   batch_size: 8
-  image_size: 512
+  image_size: 640               # Was 512 — more pixels for thin vessel branches
   lr0: 0.01
-  lrf: 0.01
+  lrf: 0.001                    # Was 0.01 — enables actual cosine LR decay (10x reduction)
   optimizer: "SGD"
   momentum: 0.937
   weight_decay: 0.0005
-  patience: 20
+  patience: 25
   device: "0"
   workers: 4
   seed: 42
   amp: true
   cos_lr: true
+  dropout: 0.1                  # Was 0.0 — reduces overfitting (early stopping was at epoch 61-71)
+  multi_scale: 0.5              # Train at ±50% of target size for scale robustness
 
 # === AUGMENTATION ===
 augmentation:
@@ -46,7 +49,7 @@ augmentation:
   fliplr: 0.5
   mosaic: 0.5
   mixup: 0.1
-  copy_paste: 0.0
+  copy_paste: 0.2              # Was 0.0 — helps with instance segmentation of rare classes
 
 # === PREPROCESSING ===
 preprocessing:
