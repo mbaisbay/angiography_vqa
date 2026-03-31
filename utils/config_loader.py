@@ -128,6 +128,11 @@ def get_training_args(config: dict, task: str) -> dict:
         "mixup": a["mixup"],
         "copy_paste": a["copy_paste"],
     }
+    # Optional training args (added for improved pipeline)
+    if "dropout" in t:
+        args["dropout"] = t["dropout"]
+    if "multi_scale" in t:
+        args["multi_scale"] = t["multi_scale"]
     return args
 
 

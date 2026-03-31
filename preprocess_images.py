@@ -50,9 +50,20 @@ def preprocess_image(image: np.ndarray, config: dict) -> np.ndarray:
 
 
 def preprocess_task(config: dict, task: str) -> None:
-    """Preprocess all images for a given task."""
+    """Preprocess all images for a given task.
+
+    Handles both original (syntax/stenosis) and filtered (syntax_filtered/stenosis_filtered)
+    directories. Prefers the filtered directory if it exists.
+    """
     dataset_root = Path(config["dataset_root"])
-    task_dir = dataset_root / task
+
+    # Prefer filtered directory if it exists (pipeline uses filtered data)
+    filtered_dir = dataset_root / f"{task}_filtered"
+    if filtered_dir.exists():
+        task_dir = filtered_dir
+    else:
+        task_dir = dataset_root / task
+
     prep = config["preprocessing"]
     mode = prep["mode"]
 

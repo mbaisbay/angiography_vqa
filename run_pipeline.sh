@@ -14,12 +14,19 @@ echo "============================================"
 echo "YOLO Pipeline started at $TIMESTAMP"
 echo "============================================"
 
-# STEP 0: Filter classes (keep >300 annotations only)
+# STEP 0a: Filter classes (keep >=300 annotations only)
 echo ""
 echo "============================================"
-echo "[STEP 0/7] Filtering classes (>300 only)..."
+echo "[STEP 0a/8] Filtering classes (>=300 only)..."
 echo "============================================"
 python filter_classes.py --config $CONFIG --min-count 300
+
+# STEP 0b: Preprocess images (CLAHE + white top-hat, following ARCADE Enhanced recipe)
+echo ""
+echo "============================================"
+echo "[STEP 0b/8] Preprocessing images (CLAHE + top-hat)..."
+echo "============================================"
+python preprocess_images.py --config $CONFIG
 
 # STEP 1: Train syntax model (12 filtered classes)
 echo ""
