@@ -32,9 +32,23 @@ from utils.visualization import draw_masks_overlay, VESSEL_PALETTE, STENOSIS_COL
 
 SPLITS = ["train", "val", "test"]
 
-# Combined class mapping
-SYNTAX_CLASSES = list(range(25))   # 0-24
-STENOSIS_CLASS = 25
+# Set dynamically in main() from data.yaml
+STENOSIS_CLASS = None
+
+
+def detect_stenosis_class(config: dict) -> int:
+    """Detect the stenosis class ID from the stenosis data.yaml."""
+    stenosis_yaml = Path(config["stenosis_data_yaml"])
+    if stenosis_yaml.exists():
+        with open(stenosis_yaml) as f:
+            data = yaml.safe_load(f)
+        names = data.get("names", {})
+        if isinstance(names, list):
+            names = {i: n for i, n in enumerate(names)}
+        for cls_id, name in names.items():
+            if str(name) == "stenosis":
+                return int(cls_id)
+    return 25  # fallback
 
 
 def load_cross_inference(json_path: Path) -> dict:
@@ -430,12 +444,21 @@ def threshold_sensitivity(ci_data: dict, direction: str, output_dir: Path) -> di
 # =========================================================================
 
 def build_class_names(config: dict) -> dict:
-    """Build combined 26-class name mapping."""
+    """Build class name mapping from data.yaml (supports filtered schemes)."""
+    stenosis_yaml = Path(config["stenosis_data_yaml"])
+    if stenosis_yaml.exists():
+        with open(stenosis_yaml) as f:
+            data = yaml.safe_load(f)
+        names = data.get("names", {})
+        if isinstance(names, list):
+            return {i: n for i, n in enumerate(names)}
+        return {int(k): v for k, v in names.items()}
+    # Fallback: build from config
     names = {}
     syntax_cats = config["syntax_categories"]
     for i, coco_id in enumerate(sorted(syntax_cats.keys())):
         names[i] = syntax_cats[coco_id]
-    names[STENOSIS_CLASS] = "stenosis"
+    names[max(names.keys()) + 1] = "stenosis"
     return names
 
 
@@ -455,6 +478,10 @@ def main():
     ci_dir = Path(config["cross_inference"]["output_dir"])
     output_dir = Path(config["output_dir"]) / "validation"
     output_dir.mkdir(parents=True, exist_ok=True)
+
+    global STENOSIS_CLASS
+    STENOSIS_CLASS = detect_stenosis_class(config)
+    print(f"  Stenosis class ID: {STENOSIS_CLASS}")
 
     class_names = build_class_names(config)
 
