@@ -1,15 +1,14 @@
-"""Build a combined 26-class YOLO dataset from stenosis GT + syntax cross-inference predictions.
+"""Build a combined YOLO dataset from stenosis GT + syntax cross-inference predictions.
 
 This script is Step 3a of the pipeline:
   1. Train YOLO on syntax data
   2. Cross-inference: syntax model on stenosis images (produces syntax_on_stenosis.json)
   3a. THIS SCRIPT: merge stenosis GT labels + syntax predictions -> combined dataset
-  3b. Train YOLO on the combined 26-class dataset
+  3b. Train YOLO on the combined dataset
   4. Run combined model on syntax images
 
-The ARCADE dataset uses a shared 26-class scheme:
-  0-24: Syntax vessel segments
-  25:   Stenosis (already class 25 in existing labels — no remapping needed)
+Reads class scheme from the existing data.yaml files (supports both 26-class
+original and 13-class filtered variants). Stenosis is always the last class.
 """
 
 import argparse
@@ -24,20 +23,48 @@ from utils.coco_to_yolo import save_category_mapping
 
 SPLITS = ["train", "val", "test"]
 
-# Syntax classes 0-24, stenosis becomes class 25
-STENOSIS_COMBINED_CLASS = 25
-NUM_SYNTAX_CLASSES = 25
+
+def load_class_scheme(data_yaml_path: Path) -> tuple:
+    """Load class names and count from a data.yaml file.
+
+    Returns (names_dict, nc) where names_dict is {id: name}.
+    """
+    with open(data_yaml_path) as f:
+        data = yaml.safe_load(f)
+    nc = data["nc"]
+    names = data["names"]
+    # names can be a list or dict
+    if isinstance(names, list):
+        names = {i: n for i, n in enumerate(names)}
+    else:
+        names = {int(k): v for k, v in names.items()}
+    return names, nc
+
+
+def find_stenosis_class_id(names: dict) -> int:
+    """Find the class ID for 'stenosis' in the names dict."""
+    for cls_id, name in names.items():
+        if name == "stenosis":
+            return cls_id
+    raise ValueError("No 'stenosis' class found in data.yaml names")
 
 
 def build_combined_class_names(config: dict) -> dict:
-    """Build the 26-class name mapping for the combined dataset."""
+    """Build the combined class name mapping by reading from stenosis data.yaml.
+
+    The stenosis data.yaml already has the correct filtered class scheme.
+    """
+    stenosis_yaml = Path(config["stenosis_data_yaml"])
+    if stenosis_yaml.exists():
+        names, _ = load_class_scheme(stenosis_yaml)
+        return names
+
+    # Fallback: build from config categories
     syntax_cats = config["syntax_categories"]
-    # syntax_cats is {coco_id: name} with coco_ids 1-25
-    # YOLO indices are 0-24, sorted by coco_id
     names = {}
     for i, coco_id in enumerate(sorted(syntax_cats.keys())):
         names[i] = syntax_cats[coco_id]
-    names[STENOSIS_COMBINED_CLASS] = "stenosis"
+    names[len(names)] = "stenosis"
     return names
 
 
@@ -195,9 +222,17 @@ def main():
     args = parser.parse_args()
 
     config = load_config(args.config)
-    dataset_root = Path(config["dataset_root"])
     combined_cfg = config["combined_dataset"]
     combined_dir = Path(combined_cfg["output_dir"])
+
+    # Read stenosis data path from data.yaml (supports filtered datasets)
+    stenosis_yaml_path = Path(config["stenosis_data_yaml"])
+    if stenosis_yaml_path.exists():
+        with open(stenosis_yaml_path) as f:
+            stenosis_data = yaml.safe_load(f)
+        stenosis_root = Path(stenosis_data["path"])
+    else:
+        stenosis_root = Path(config["dataset_root"]) / "stenosis"
 
     min_confidence = args.min_confidence or combined_cfg.get("min_confidence", 0.5)
     use_symlinks = combined_cfg.get("use_symlinks", True)
@@ -217,7 +252,7 @@ def main():
     print("=" * 60)
     print("Building Combined Dataset (stenosis GT + syntax predictions)")
     print("=" * 60)
-    print(f"  Source: {dataset_root / 'stenosis'}")
+    print(f"  Source: {stenosis_root}")
     print(f"  Cross-inference: {ci_json_path}")
     print(f"  Output: {combined_dir}")
     print(f"  Min confidence: {min_confidence}")
@@ -243,8 +278,8 @@ def main():
 
     for split in SPLITS:
         print(f"\n  [{split.upper()}]")
-        stenosis_labels_dir = dataset_root / "stenosis" / split / "labels"
-        stenosis_images_dir = dataset_root / "stenosis" / split / "images"
+        stenosis_labels_dir = stenosis_root / split / "labels"
+        stenosis_images_dir = stenosis_root / split / "images"
 
         if not stenosis_images_dir.exists():
             print(f"    Skipping: {stenosis_images_dir} not found")
