@@ -26,7 +26,7 @@ import numpy as np
 import yaml
 
 from utils.config_loader import load_config
-from utils.mask_utils import polygon_to_binary_mask, compute_intersection_over_smaller
+from utils.mask_utils import polygon_to_binary_mask
 from utils.visualization import draw_masks_overlay, VESSEL_PALETTE, STENOSIS_COLOR
 
 
@@ -240,7 +240,7 @@ def validate_spatial_consistency(ci_data: dict, direction: str,
             for vp in vessel_preds:
                 poly = vp.get("polygon_normalized", [])
                 if len(poly) >= 3:
-                    mask = polygon_to_binary_mask(poly, mask_size, mask_size)
+                    mask = polygon_to_binary_mask(poly, mask_size)
                     vessel_union = np.maximum(vessel_union, mask)
 
             # Check each stenosis against vessel union
@@ -249,7 +249,7 @@ def validate_spatial_consistency(ci_data: dict, direction: str,
                 poly = sp.get("polygon_normalized", [])
                 if len(poly) < 3:
                     continue
-                sten_mask = polygon_to_binary_mask(poly, mask_size, mask_size)
+                sten_mask = polygon_to_binary_mask(poly, mask_size)
                 sten_area = sten_mask.sum()
                 if sten_area == 0:
                     continue
