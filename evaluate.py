@@ -156,7 +156,9 @@ def evaluate_segmentation_arcade(model_path: str, coco_json_path: str,
                     pred_by_class[cls_name].append(pred_poly)
 
         # Compute F1 per class for this image
-        all_classes = set(list(gt_classes.keys()) + list(pred_by_class.keys()))
+        # Only evaluate classes with GT — predictions for classes without GT
+        # (e.g., vessel predictions on stenosis-only images) are ignored
+        all_classes = set(gt_classes.keys())
         image_scores = []
 
         for cls_name in all_classes:
