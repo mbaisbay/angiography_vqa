@@ -84,10 +84,40 @@ def generate_experiment_config(base_config_path: str, exp_name: str,
                                overrides: dict, configs_dir: str) -> str:
     """Load base config, apply overrides, write per-experiment YAML.
 
+    All relative paths are resolved to absolute (using the base config's
+    parent dir) so the generated config works from any location.
+
     Returns path to the generated config file.
     """
+    base_config_path = Path(base_config_path).resolve()
+    base_dir = base_config_path.parent
+
     with open(base_config_path) as f:
         config = yaml.safe_load(f)
+
+    # Resolve all relative paths to absolute (relative to base config dir)
+    path_keys = [
+        "dataset_root", "output_dir", "mappings_dir",
+        "syntax_data_yaml", "stenosis_data_yaml", "combined_data_yaml",
+        "final_data_yaml",
+    ]
+    for key in path_keys:
+        if key in config:
+            config[key] = str((base_dir / config[key]).resolve())
+
+    nested_paths = [
+        ("preprocessing", "output_dir"),
+        ("cross_inference", "syntax_weights"),
+        ("cross_inference", "stenosis_weights"),
+        ("cross_inference", "combined_weights"),
+        ("cross_inference", "output_dir"),
+        ("intersection", "overlay_output_dir"),
+        ("intersection", "results_output_dir"),
+        ("combined_dataset", "output_dir"),
+    ]
+    for section, key in nested_paths:
+        if section in config and key in config[section]:
+            config[section][key] = str((base_dir / config[section][key]).resolve())
 
     # Deep merge nested dicts (training, augmentation)
     for section in ("training", "augmentation", "preprocessing", "inference"):
@@ -99,8 +129,8 @@ def generate_experiment_config(base_config_path: str, exp_name: str,
         if key in overrides:
             config[key] = overrides[key]
 
-    # Isolate output to runs/<exp_name>
-    exp_output = f"./runs/{exp_name}"
+    # Isolate output to runs/<exp_name> (absolute)
+    exp_output = str((base_dir / "runs" / exp_name).resolve())
     config["output_dir"] = exp_output
     config["cross_inference"]["syntax_weights"] = f"{exp_output}/syntax/weights/best.pt"
     config["cross_inference"]["output_dir"] = f"{exp_output}/cross_inference"
@@ -133,18 +163,18 @@ def run_command(cmd: list, description: str) -> tuple:
     return result.returncode == 0, elapsed
 
 
-def load_metrics(exp_name: str) -> dict:
+def load_metrics(exp_output: str) -> dict:
     """Load evaluation metrics for an experiment."""
-    metrics_path = Path(f"runs/{exp_name}/evaluation/syntax_metrics.json")
+    metrics_path = Path(exp_output) / "evaluation" / "syntax_metrics.json"
     if metrics_path.exists():
         with open(metrics_path) as f:
             return json.load(f)
     return {}
 
 
-def load_training_losses(exp_name: str) -> dict:
+def load_training_losses(exp_output: str) -> dict:
     """Read first/last epoch losses from results.csv."""
-    csv_path = Path(f"runs/{exp_name}/syntax/results.csv")
+    csv_path = Path(exp_output) / "syntax" / "results.csv"
     if not csv_path.exists():
         return {}
     with open(csv_path) as f:
@@ -200,7 +230,9 @@ def print_comparison(results: dict):
             best_exp = exp_name
 
     if best_exp:
+        best_config = results[best_exp].get("config", "")
         print(f"\n  BEST: {best_exp} (ARCADE F1 = {best_f1:.4f})")
+        print(f"  Config:  {best_config}")
         print(f"  Weights: runs/{best_exp}/syntax/weights/best.pt")
 
     # Per-class breakdown for best
@@ -273,7 +305,9 @@ def main():
             sys.exit(1)
 
     # Step 2: Generate all configs upfront
+    base_dir = Path(args.config).resolve().parent
     configs = {}
+    exp_outputs = {}
     for exp_name in exp_names:
         overrides = {k: v for k, v in EXPERIMENTS[exp_name].items()
                      if k != "description"}
@@ -281,6 +315,7 @@ def main():
             args.config, exp_name, overrides, "runs/configs"
         )
         configs[exp_name] = config_path
+        exp_outputs[exp_name] = str((base_dir / "runs" / exp_name).resolve())
         print(f"  Generated config: {config_path}")
 
     # Step 3: Run experiments sequentially
@@ -310,9 +345,9 @@ def main():
                 f"Evaluate: {exp_name}",
             )
             if eval_ok:
-                metrics = load_metrics(exp_name)
+                metrics = load_metrics(exp_outputs[exp_name])
 
-        losses = load_training_losses(exp_name)
+        losses = load_training_losses(exp_outputs[exp_name])
 
         results[exp_name] = {
             "description": desc,
