@@ -13,27 +13,27 @@ final_data_yaml: "./data_final.yaml"
 
 # === MODEL ===
 # Options: "yolov8x-seg", "yolo11x-seg", "yolo26m-seg"
-model_variant: "yolo11x-seg"
-pretrained_weights: "yolo11x-seg.pt"
+model_variant: "yolov8x-seg"
+pretrained_weights: "yolov8x-seg.pt"
 
 # === TRAINING HYPERPARAMETERS ===
 training:
-  epochs: 150
+  epochs: 100
   batch_size: 8
   image_size: 512               # Native ARCADE resolution
   lr0: 0.01
-  lrf: 0.001                    # Was 0.01 — enables actual cosine LR decay (10x reduction)
+  lrf: 0.001                    # Enables proper cosine LR decay (10x reduction)
   optimizer: "SGD"
   momentum: 0.937
   weight_decay: 0.0005
-  patience: 25
+  patience: 20
   device: "0"
   workers: 4
   seed: 42
   amp: true
   cos_lr: true
-  dropout: 0.1                  # Was 0.0 — reduces overfitting (early stopping was at epoch 61-71)
-  multi_scale: 0.5              # Train at ±50% of target size for scale robustness
+  dropout: 0.0
+  multi_scale: false
 
 # === AUGMENTATION ===
 augmentation:
@@ -49,11 +49,11 @@ augmentation:
   fliplr: 0.5
   mosaic: 0.5
   mixup: 0.1
-  copy_paste: 0.2              # Was 0.0 — helps with instance segmentation of rare classes
+  copy_paste: 0.0
 
 # === PREPROCESSING ===
 preprocessing:
-  enabled: true
+  enabled: false
   mode: "separate"   # "inplace" or "separate" (separate preserves originals)
   output_dir: "./ARCADE_preprocessed"
   clahe:
@@ -73,7 +73,7 @@ inference:
 # === CROSS-INFERENCE ===
 cross_inference:
   syntax_weights: "./runs/syntax/weights/best.pt"
-  stenosis_weights: "./runs/stenosis/weights/best.pt"
+  stenosis_weights: "./runs/combined/weights/best.pt"
   output_dir: "./runs/cross_inference"
   combined_weights: "./runs/combined/weights/best.pt"
   splits: ["train", "val", "test"]   # Which splits to run cross-inference on
