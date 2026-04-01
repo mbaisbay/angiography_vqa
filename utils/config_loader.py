@@ -158,3 +158,35 @@ def get_data_yaml_path(config: dict, task: str) -> str:
         return config["final_data_yaml"]
     else:
         raise ValueError(f"Unknown task: {task}. Must be 'syntax', 'stenosis', 'combined', or 'final'.")
+
+
+def get_task_root(config: dict, task: str) -> str:
+    """Return the root directory for a task from its data.yaml path field.
+
+    Reads the same data.yaml that training uses, so the path is consistent
+    whether preprocessing rewrote it to ARCADE_preprocessed/ or it still
+    points to the _filtered/ directory.
+
+    Falls back to dataset_root/task if data.yaml doesn't exist.
+    """
+    yaml_path = Path(get_data_yaml_path(config, task))
+    if yaml_path.exists():
+        with open(yaml_path) as f:
+            data = yaml.safe_load(f)
+        return str(Path(data["path"]))
+    return str(Path(config["dataset_root"]) / task)
+
+
+def get_task_images_dir(config: dict, task: str, split: str) -> str:
+    """Return the correct images directory for a task and split.
+
+    Reads the data.yaml 'path' field so it works regardless of whether
+    preprocessing rewrote the path to ARCADE_preprocessed/ or it still
+    points to the _filtered/ directory.
+    """
+    return str(Path(get_task_root(config, task)) / split / "images")
+
+
+def get_task_annotations_dir(config: dict, task: str, split: str) -> str:
+    """Return the correct annotations directory for a task and split."""
+    return str(Path(get_task_root(config, task)) / split / "annotations")

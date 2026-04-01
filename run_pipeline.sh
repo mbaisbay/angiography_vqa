@@ -7,8 +7,27 @@
 
 set -e  # Exit on any error
 
+# Parse arguments
+SMOKE_TEST=false
+for arg in "$@"; do
+    case $arg in
+        --smoke-test)
+            SMOKE_TEST=true
+            ;;
+    esac
+done
+
 CONFIG="config.yaml"
 TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')
+
+# Smoke test mode: quick 5-epoch pipeline validation
+if [ "$SMOKE_TEST" = true ]; then
+    echo "============================================"
+    echo "Running SMOKE TEST at $TIMESTAMP"
+    echo "============================================"
+    python smoke_test.py --config $CONFIG --epochs 5 --task syntax
+    exit $?
+fi
 
 echo "============================================"
 echo "YOLO Pipeline started at $TIMESTAMP"

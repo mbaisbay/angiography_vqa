@@ -12,7 +12,7 @@ from shapely.validation import make_valid
 
 from ultralytics import YOLO
 
-from utils.config_loader import load_config, get_inference_args
+from utils.config_loader import load_config, get_inference_args, get_task_images_dir, get_task_annotations_dir
 from utils.coco_to_yolo import load_category_mapping
 from cross_inference import build_category_mapping_from_data_yaml
 
@@ -343,20 +343,19 @@ def main():
                     else:
                         print(f"    [WARN] data.yaml not found, evaluating all classes")
 
-                # Find test COCO JSON
+                # Find test COCO JSON (use data.yaml path to match training)
+                annotations_dir = Path(get_task_annotations_dir(config, task, "test"))
                 test_json = None
-                for candidate in [
-                    dataset_root / task / "test" / "annotations" / "test.json",
-                    dataset_root / task / "test" / "annotations" / "test.JSON",
-                ]:
+                for candidate_name in ["test.json", "test.JSON"]:
+                    candidate = annotations_dir / candidate_name
                     if candidate.exists():
                         test_json = candidate
                         break
 
                 if test_json is None:
-                    print(f"    [ERROR] Test annotations not found")
+                    print(f"    [ERROR] Test annotations not found in {annotations_dir}")
                 else:
-                    images_dir = str(dataset_root / task / "test" / "images")
+                    images_dir = get_task_images_dir(config, task, "test")
                     arcade_results = evaluate_segmentation_arcade(
                         weights, str(test_json), images_dir, mapping, inference_args,
                         allowed_classes=allowed_classes,

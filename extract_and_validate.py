@@ -25,7 +25,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import yaml
 
-from utils.config_loader import load_config, detect_stenosis_class
+from utils.config_loader import load_config, detect_stenosis_class, get_task_root
 from utils.mask_utils import polygon_to_binary_mask
 from utils.visualization import draw_masks_overlay, VESSEL_PALETTE, STENOSIS_COLOR
 
@@ -485,11 +485,11 @@ def main():
 
         ci_data = load_cross_inference(ci_path)
 
-        # Determine which images directory to use
+        # Determine which images directory to use (from data.yaml, matches training)
         if direction == "syntax_on_stenosis":
-            images_dir = dataset_root / "stenosis"
+            images_dir = Path(get_task_root(config, "stenosis"))
         else:
-            images_dir = dataset_root / "syntax"
+            images_dir = Path(get_task_root(config, "syntax"))
 
         # 1. Extract summary
         summary = extract_summary(ci_data, direction)
