@@ -20,7 +20,7 @@ pretrained_weights: "yolo11x-seg.pt"
 training:
   epochs: 150
   batch_size: 8
-  image_size: 640               # Was 512 — more pixels for thin vessel branches
+  image_size: 512               # Native ARCADE resolution (images are 512x512)
   lr0: 0.01
   lrf: 0.001                    # Was 0.01 — enables actual cosine LR decay (10x reduction)
   optimizer: "SGD"
