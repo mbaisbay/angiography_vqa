@@ -17,75 +17,62 @@ echo "============================================"
 # STEP 0a: Filter classes (keep >=300 annotations only)
 echo ""
 echo "============================================"
-echo "[STEP 0a/8] Filtering classes (>=300 only)..."
+echo "[STEP 0a] Filtering classes (>=300 only)..."
 echo "============================================"
 python filter_classes.py --config $CONFIG --min-count 300
 
 # STEP 0b: Preprocess images (CLAHE + white top-hat, following ARCADE Enhanced recipe)
 echo ""
 echo "============================================"
-echo "[STEP 0b/8] Preprocessing images (CLAHE + top-hat)..."
+echo "[STEP 0b] Preprocessing images (CLAHE + top-hat)..."
 echo "============================================"
 python preprocess_images.py --config $CONFIG
 
-# STEP 1: Train syntax model (12 filtered classes)
+# STEP 1: Train syntax model (12 filtered vessel classes + stenosis)
 echo ""
 echo "============================================"
-echo "[STEP 1/7] Training SYNTAX model..."
+echo "[STEP 1/6] Training SYNTAX model..."
 echo "============================================"
 python train.py --config $CONFIG --task syntax
 
 # STEP 2: Cross-inference: syntax model on stenosis images
 echo ""
 echo "============================================"
-echo "[STEP 2/7] Cross-inference: syntax on stenosis..."
+echo "[STEP 2/6] Cross-inference: syntax on stenosis..."
 echo "============================================"
 python cross_inference.py --config $CONFIG --direction syntax_on_stenosis
 
 # STEP 3: Build combined dataset + train combined model
 echo ""
 echo "============================================"
-echo "[STEP 3a/7] Building combined dataset..."
+echo "[STEP 3a/6] Building combined dataset..."
 echo "============================================"
 python build_combined_dataset.py --config $CONFIG --min-confidence 0.5
 
 echo ""
 echo "============================================"
-echo "[STEP 3b/7] Training COMBINED model..."
+echo "[STEP 3b/6] Training COMBINED model..."
 echo "============================================"
 python train.py --config $CONFIG --task combined
 
-# STEP 4: Train dedicated stenosis model
+# STEP 4: Run combined model on syntax images (cross-inference)
 echo ""
 echo "============================================"
-echo "[STEP 4/7] Training STENOSIS model..."
-echo "============================================"
-python train.py --config $CONFIG --task stenosis
-
-# STEP 5: Run both models on syntax images
-echo ""
-echo "============================================"
-echo "[STEP 5a/7] Cross-inference: combined on syntax..."
+echo "[STEP 4/6] Cross-inference: combined on syntax..."
 echo "============================================"
 python cross_inference.py --config $CONFIG --direction combined_on_syntax
 
+# STEP 5: Build final quality-filtered dataset
 echo ""
 echo "============================================"
-echo "[STEP 5b/7] Cross-inference: stenosis on syntax..."
-echo "============================================"
-python cross_inference.py --config $CONFIG --direction stenosis_on_syntax
-
-# STEP 6: Build final quality-filtered dataset
-echo ""
-echo "============================================"
-echo "[STEP 6/7] Building final dataset..."
+echo "[STEP 5/6] Building final dataset..."
 echo "============================================"
 python build_final_dataset.py --config $CONFIG
 
-# STEP 7: Validate quality
+# STEP 6: Validate quality
 echo ""
 echo "============================================"
-echo "[STEP 7/7] Running validation..."
+echo "[STEP 6/6] Running validation..."
 echo "============================================"
 python extract_and_validate.py --config $CONFIG
 
@@ -104,7 +91,6 @@ echo "  Filtered data:  arcade/submission/stenosis_filtered/"
 echo "  Combined data:  arcade/submission/combined/"
 echo "  Final dataset:  arcade/submission/final/"
 echo "  Model weights:  runs/syntax/weights/best.pt"
-echo "                  runs/stenosis/weights/best.pt"
 echo "                  runs/combined/weights/best.pt"
 echo "  Validation:     runs/validation/"
 echo "  Log:            pipeline.log (if piped with tee)"
