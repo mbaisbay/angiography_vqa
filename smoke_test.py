@@ -97,6 +97,8 @@ def main():
     smoke_config["cross_inference"]["output_dir"] = "./runs_smoke/cross_inference"
     # Lower confidence threshold for underfitted smoke models
     smoke_config["inference"]["confidence_threshold"] = 0.05
+    # Pin image size for fast smoke tests
+    smoke_config["training"]["image_size"] = 512
 
     smoke_config_path = config_path.parent / "config_smoke.yaml"
     with open(smoke_config_path, "w") as f:
