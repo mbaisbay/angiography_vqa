@@ -199,7 +199,7 @@ def main():
     class_names_26[25] = "stenosis"
 
     print("=" * 60)
-    print(f"Filtering classes with min_count > {args.min_count}")
+    print(f"Filtering classes with min_count >= {args.min_count}")
     print("=" * 60)
 
     # Count across BOTH tasks (syntax + stenosis use same 26-class scheme)

@@ -28,7 +28,7 @@ from pathlib import Path
 import cv2
 import numpy as np
 
-from utils.config_loader import load_config, detect_stenosis_class
+from utils.config_loader import load_config, detect_stenosis_class, get_task_root
 from utils.mask_utils import polygon_to_binary_mask
 
 
@@ -127,17 +127,6 @@ def filter_stenosis_predictions(preds: list, vessel_mask: np.ndarray,
     return filtered
 
 
-def get_task_root(config: dict, task: str) -> Path:
-    """Get the root path for a task from its data.yaml."""
-    key = f"{task}_data_yaml"
-    yaml_path = Path(config[key])
-    if yaml_path.exists():
-        with open(yaml_path) as f:
-            data = yaml.safe_load(f)
-        return Path(data["path"])
-    return Path(config["dataset_root"]) / task
-
-
 def process_stenosis_side(config: dict, ci_data: dict, output_dir: Path,
                           min_syntax_conf: float, use_symlinks: bool) -> dict:
     """Process stenosis-side images: stenosis GT + syntax predictions.
@@ -145,7 +134,7 @@ def process_stenosis_side(config: dict, ci_data: dict, output_dir: Path,
     Stenosis labels are from ground truth (reliable).
     Syntax labels are from cross-inference (filtered by confidence).
     """
-    stenosis_root = get_task_root(config, "stenosis")
+    stenosis_root = Path(get_task_root(config, "stenosis"))
     stats = {"images": 0, "stenosis_labels": 0, "syntax_added": 0, "syntax_filtered": 0}
 
     for split in SPLITS:
@@ -222,7 +211,7 @@ def process_syntax_side(config: dict, ci_data_list: list, output_dir: Path,
     Args:
         ci_data_list: List of (name, ci_data) tuples from different models.
     """
-    syntax_root = get_task_root(config, "syntax")
+    syntax_root = Path(get_task_root(config, "syntax"))
     stats = {
         "images": 0, "images_with_stenosis": 0,
         "syntax_labels": 0, "stenosis_added": 0,

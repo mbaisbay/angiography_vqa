@@ -6,7 +6,7 @@ from pathlib import Path
 
 from ultralytics import YOLO
 
-from utils.config_loader import load_config, get_inference_args
+from utils.config_loader import load_config, get_inference_args, get_task_images_dir
 from utils.coco_to_yolo import load_category_mapping
 
 
@@ -198,7 +198,7 @@ def main():
         all_results = {}
 
         for split in splits:
-            images_dir = dataset_root / target_task / split / "images"
+            images_dir = Path(get_task_images_dir(config, target_task, split))
             if not images_dir.exists():
                 print(f"  [SKIP] {split}: {images_dir} not found")
                 continue
