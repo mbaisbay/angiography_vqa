@@ -149,6 +149,12 @@ def filter_task(task_dir: Path, output_dir: Path, old_to_new: dict,
                     shutil.copy2(img, dst)
             stats["images"] += 1
 
+        # Copy annotations (COCO JSON) — needed by evaluate.py
+        src_annotations = task_dir / split / "annotations"
+        dst_annotations = output_dir / split / "annotations"
+        if src_annotations.exists() and not dst_annotations.exists():
+            shutil.copytree(str(src_annotations), str(dst_annotations))
+
     return stats
 
 

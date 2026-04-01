@@ -188,5 +188,14 @@ def get_task_images_dir(config: dict, task: str, split: str) -> str:
 
 
 def get_task_annotations_dir(config: dict, task: str, split: str) -> str:
-    """Return the correct annotations directory for a task and split."""
-    return str(Path(get_task_root(config, task)) / split / "annotations")
+    """Return the correct annotations directory for a task and split.
+
+    Falls back to original dataset_root if annotations weren't copied
+    to filtered/preprocessed directories.
+    """
+    primary = Path(get_task_root(config, task)) / split / "annotations"
+    if primary.exists():
+        return str(primary)
+    # Fallback: original dataset_root (annotations may not have been copied)
+    fallback = Path(config["dataset_root"]) / task / split / "annotations"
+    return str(fallback)
