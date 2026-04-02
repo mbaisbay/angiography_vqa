@@ -40,9 +40,6 @@ EXPERIMENTS = OrderedDict([
         "description": "YOLO11x-seg architecture",
         "model_variant": "yolo11x-seg",
         "pretrained_weights": "yolo11x-seg.pt",
-        "training": {
-            "amp": False,
-        },
     }),
     ("exp3_sgd_cosine", {
         "description": "SGD optimizer (baseline-matched params)",
