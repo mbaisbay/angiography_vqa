@@ -5,12 +5,12 @@ Each experiment trains a syntax model with different hyperparameters,
 then evaluates with ARCADE polygon F1. A comparison table is printed
 at the end so you can pick the best config.
 
-Experiments test one variable at a time vs the SGD baseline:
-  1. Baseline SGD (restored working config that achieved ~0.5 F1)
-  2. AdamW optimizer (with appropriately lower LR)
-  3. LR schedule variations (lower LR + longer warmup)
-  4. Augmentation tuning (disable aggressive YOLO defaults)
-  5. Combined best settings
+Round 2: Closing the 0.19→0.59 F1 gap by testing lrf and AMP:
+  1. Higher final LR (lrf=0.01, matching original 0.59 config)
+  2. Re-enable AMP (was working with SGD+batch8)
+  3. Exact match of original 0.59 config (lrf=0.01 + amp=true)
+  4. Original config + longer training (patience=50, epochs=150)
+  5. Original config + batch=16 (test larger batch with AMP)
 
 Usage:
     python run_experiments.py                              # run all 5
@@ -39,49 +39,40 @@ import yaml
 # Nested dicts (training, augmentation) are deep-merged.
 
 EXPERIMENTS = OrderedDict([
-    ("exp1_baseline", {
-        "description": "Baseline SGD (restored working config, ~0.5 F1)",
-        # No overrides — uses config.yaml as-is (SGD, batch=8, epochs=100)
-    }),
-    ("exp2_adamw", {
-        "description": "AdamW optimizer (lower LR for adaptive method)",
+    ("exp1_lrf_high", {
+        "description": "Higher final LR (lrf=0.01, matching original 0.59 config)",
         "training": {
-            "optimizer": "AdamW",
-            "lr0": 0.001,
-            "weight_decay": 0.001,
+            "lrf": 0.01,
         },
     }),
-    ("exp3_lr_schedule", {
-        "description": "SGD + lower LR + longer cosine decay",
+    ("exp2_amp_on", {
+        "description": "Re-enable AMP (was working with SGD+batch8)",
         "training": {
-            "lr0": 0.005,
-            "lrf": 0.0001,
-            "warmup_epochs": 5,
+            "amp": True,
         },
     }),
-    ("exp4_augmentation", {
-        "description": "Reduced augmentation (disable erasing + randaugment)",
-        "augmentation": {
-            "mosaic": 0.3,
-            "mixup": 0.0,
-            "erasing": 0.0,
-            "auto_augment": False,
+    ("exp3_original_match", {
+        "description": "Exact match of original 0.59 config (lrf=0.01 + amp=true)",
+        "training": {
+            "lrf": 0.01,
+            "amp": True,
         },
     }),
-    ("exp5_combined_best", {
-        "description": "SGD + warmup + reduced aug + longer training",
+    ("exp4_original_patience50", {
+        "description": "Original config + patience=50 (let it train longer)",
         "training": {
+            "lrf": 0.01,
+            "amp": True,
+            "patience": 50,
             "epochs": 150,
-            "patience": 40,
-            "lr0": 0.005,
-            "lrf": 0.0001,
-            "warmup_epochs": 5,
         },
-        "augmentation": {
-            "mosaic": 0.3,
-            "mixup": 0.0,
-            "erasing": 0.0,
-            "auto_augment": False,
+    }),
+    ("exp5_original_batch16", {
+        "description": "Original config + batch=16 (test larger batch with AMP)",
+        "training": {
+            "lrf": 0.01,
+            "amp": True,
+            "batch_size": 16,
         },
     }),
 ])
