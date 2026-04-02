@@ -267,6 +267,8 @@ def main():
                         help="Comma-separated experiment numbers to run, e.g. '1,3,5'")
     parser.add_argument("--epochs", type=int, default=None,
                         help="Override training epochs for all experiments (e.g. 20 for quick validation)")
+    parser.add_argument("--device", type=str, default=None,
+                        help="Override GPU device for all experiments (e.g. '1' for GPU 1)")
     args = parser.parse_args()
 
     exp_names = list(EXPERIMENTS.keys())
@@ -320,6 +322,9 @@ def main():
             overrides.setdefault("training", {})
             overrides["training"]["epochs"] = args.epochs
             overrides["training"]["patience"] = args.epochs  # disable early stopping
+        if args.device is not None:
+            overrides.setdefault("training", {})
+            overrides["training"]["device"] = args.device
         config_path = generate_experiment_config(
             args.config, exp_name, overrides, "runs/configs"
         )
