@@ -18,15 +18,15 @@ pretrained_weights: "yolov8x-seg.pt"
 
 # === TRAINING HYPERPARAMETERS ===
 training:
-  epochs: 120
-  batch_size: 16
+  epochs: 100
+  batch_size: 8
   image_size: 512               # Native ARCADE resolution
   lr0: 0.01
   lrf: 0.001                    # Enables proper cosine LR decay (10x reduction)
-  optimizer: "AdamW"
+  optimizer: "SGD"
   momentum: 0.937
   weight_decay: 0.0005
-  patience: 25
+  patience: 20
   device: "0"
   workers: 4
   seed: 42
