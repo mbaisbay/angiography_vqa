@@ -5,6 +5,13 @@ Each experiment trains a syntax model with different hyperparameters,
 then evaluates with ARCADE polygon F1. A comparison table is printed
 at the end so you can pick the best config.
 
+Experiments test one variable at a time vs the SGD baseline:
+  1. Baseline SGD (restored working config that achieved ~0.5 F1)
+  2. AdamW optimizer (with appropriately lower LR)
+  3. LR schedule variations (lower LR + longer warmup)
+  4. Augmentation tuning (disable aggressive YOLO defaults)
+  5. Combined best settings
+
 Usage:
     python run_experiments.py                              # run all 5
     python run_experiments.py --skip-preprocess             # already preprocessed
@@ -33,46 +40,48 @@ import yaml
 
 EXPERIMENTS = OrderedDict([
     ("exp1_baseline", {
-        "description": "Baseline (current paper-aligned config)",
-        # No overrides — uses config.yaml as-is
+        "description": "Baseline SGD (restored working config, ~0.5 F1)",
+        # No overrides — uses config.yaml as-is (SGD, batch=8, epochs=100)
     }),
-    ("exp2_yolo11x", {
-        "description": "YOLO11x-seg architecture",
-        "model_variant": "yolo11x-seg",
-        "pretrained_weights": "yolo11x-seg.pt",
-    }),
-    ("exp3_sgd_cosine", {
-        "description": "SGD optimizer (baseline-matched params)",
+    ("exp2_adamw", {
+        "description": "AdamW optimizer (lower LR for adaptive method)",
         "training": {
-            "optimizer": "SGD",
-            "momentum": 0.937,
-            "warmup_epochs": 3,
+            "optimizer": "AdamW",
+            "lr0": 0.001,
+            "weight_decay": 0.001,
         },
     }),
-    ("exp4_heavy_aug", {
-        "description": "Moderate augmentation + dropout regularization",
+    ("exp3_lr_schedule", {
+        "description": "SGD + lower LR + longer cosine decay",
+        "training": {
+            "lr0": 0.005,
+            "lrf": 0.0001,
+            "warmup_epochs": 5,
+        },
+    }),
+    ("exp4_augmentation", {
+        "description": "Reduced augmentation (disable erasing + randaugment)",
+        "augmentation": {
+            "mosaic": 0.3,
+            "mixup": 0.0,
+            "erasing": 0.0,
+            "auto_augment": False,
+        },
+    }),
+    ("exp5_combined_best", {
+        "description": "SGD + warmup + reduced aug + longer training",
         "training": {
             "epochs": 150,
             "patience": 40,
-            "dropout": 0.15,
+            "lr0": 0.005,
+            "lrf": 0.0001,
+            "warmup_epochs": 5,
         },
         "augmentation": {
-            "mosaic": 0.7,
-            "mixup": 0.3,
-            "copy_paste": 0.0,
-            "degrees": 15.0,
-            "scale": 0.3,
-            "translate": 0.2,
-        },
-    }),
-    ("exp5_low_lr_long", {
-        "description": "Low LR + strong weight decay + 150 epochs",
-        "training": {
-            "epochs": 150,
-            "lr0": 0.005,
-            "lrf": 0.0005,
-            "weight_decay": 0.001,
-            "warmup_epochs": 5,
+            "mosaic": 0.3,
+            "mixup": 0.0,
+            "erasing": 0.0,
+            "auto_augment": False,
         },
     }),
 ])

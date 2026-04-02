@@ -128,6 +128,11 @@ def get_training_args(config: dict, task: str) -> dict:
         "mixup": a["mixup"],
         "copy_paste": a["copy_paste"],
     }
+    # Optional augmentation args (override YOLO defaults when specified)
+    if "erasing" in a:
+        args["erasing"] = a["erasing"]
+    if "auto_augment" in a:
+        args["auto_augment"] = a["auto_augment"]
     # Optional training args (added for improved pipeline)
     if "dropout" in t:
         args["dropout"] = t["dropout"]
