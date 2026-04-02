@@ -36,8 +36,15 @@ if [ "$SKIP_PREPROCESS" = false ]; then
     echo ""
     echo "[PREP] Filtering classes..."
     python filter_classes.py --config config.yaml --min-count 300
-    echo "[PREP] Preprocessing images..."
-    python preprocess_images.py --config config.yaml
+
+    # Only run image preprocessing if enabled in config
+    PREPROCESS_ENABLED=$(python -c "import yaml; print(yaml.safe_load(open('config.yaml'))['preprocessing']['enabled'])" 2>/dev/null)
+    if [ "$PREPROCESS_ENABLED" = "True" ]; then
+        echo "[PREP] Preprocessing images (CLAHE + top-hat)..."
+        python preprocess_images.py --config config.yaml
+    else
+        echo "[PREP] Image preprocessing disabled in config, skipping."
+    fi
     echo "[PREP] Done."
 fi
 

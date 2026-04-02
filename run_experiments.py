@@ -129,6 +129,10 @@ def generate_experiment_config(base_config_path: str, exp_name: str,
         if key in overrides:
             config[key] = overrides[key]
 
+    # Disable preprocessing in experiment configs — the 0.59 baseline was trained
+    # on raw images. Preprocessing (CLAHE + top-hat) degrades model performance.
+    config["preprocessing"]["enabled"] = False
+
     # Isolate output to runs/<exp_name> (absolute)
     exp_output = str((base_dir / "runs" / exp_name).resolve())
     config["output_dir"] = exp_output
@@ -344,11 +348,14 @@ def main():
         print(f"  {desc}")
         print(f"{'#'*70}")
 
-        # Clean up stale output dir to prevent YOLO from resuming corrupted checkpoints
+        # Clean up stale output dir to prevent YOLO from resuming corrupted
+        # checkpoints or appending to old results.csv (which causes epoch
+        # count anomalies like 191 epochs with epochs=100).
         exp_dir = Path(exp_outputs[exp_name])
         if exp_dir.exists():
             print(f"  Cleaning up stale output: {exp_dir}")
             shutil.rmtree(exp_dir)
+        exp_dir.mkdir(parents=True, exist_ok=True)
 
         # Train
         train_ok, elapsed = run_command(

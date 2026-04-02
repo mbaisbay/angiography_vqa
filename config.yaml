@@ -53,7 +53,7 @@ augmentation:
 
 # === PREPROCESSING ===
 preprocessing:
-  enabled: true
+  enabled: false
   mode: "separate"   # "inplace" or "separate" (separate preserves originals)
   output_dir: "./ARCADE_preprocessed"
   clahe:
