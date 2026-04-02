@@ -30,7 +30,7 @@ training:
   device: "0"
   workers: 4
   seed: 42
-  amp: true
+  amp: false
   cos_lr: true
   dropout: 0.0
   multi_scale: false
