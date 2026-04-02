@@ -41,6 +41,19 @@ if [ "$SKIP_PREPROCESS" = false ]; then
     echo "[PREP] Done."
 fi
 
+# Pre-flight check: verify data YAML paths are valid for this machine
+if [ "$SKIP_PREPROCESS" = true ]; then
+    SYNTAX_PATH=$(python -c "import yaml; print(yaml.safe_load(open('data_syntax.yaml'))['path'])" 2>/dev/null)
+    if [ -n "$SYNTAX_PATH" ] && [ ! -d "$SYNTAX_PATH" ]; then
+        echo ""
+        echo "  [ERROR] data_syntax.yaml points to a non-existent path:"
+        echo "    $SYNTAX_PATH"
+        echo "  This likely means the data YAMLs have stale paths from another machine."
+        echo "  Fix: re-run WITHOUT --skip-preprocess to regenerate filtered datasets."
+        exit 1
+    fi
+fi
+
 # Step 2: Launch all 5 experiments in parallel, one per GPU
 echo ""
 echo "============================================"
