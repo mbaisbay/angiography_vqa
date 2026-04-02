@@ -3,6 +3,7 @@
 import argparse
 from pathlib import Path
 
+import yaml
 from ultralytics import YOLO
 
 from utils.config_loader import load_config, get_training_args
@@ -35,6 +36,17 @@ def main():
         raise FileNotFoundError(
             f"Data YAML not found: {data_yaml}\n"
             f"Run prepare_data.py first to generate it."
+        )
+
+    # Verify dataset path inside data YAML points to an existing directory
+    with open(data_yaml) as f:
+        _data = yaml.safe_load(f)
+    dataset_path = Path(_data.get("path", ""))
+    if not dataset_path.exists():
+        raise FileNotFoundError(
+            f"Dataset path in {data_yaml} does not exist: {dataset_path}\n"
+            f"The path may be from a different machine.\n"
+            f"Run filter_classes.py (or fix_data_yaml.py) to regenerate data YAMLs with correct paths."
         )
 
     print("=" * 60)
