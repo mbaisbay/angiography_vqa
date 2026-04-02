@@ -10,12 +10,14 @@ Usage:
     python run_experiments.py --skip-preprocess             # already preprocessed
     python run_experiments.py --experiments 2,4             # run only exp 2 and 4
     python run_experiments.py --skip-preprocess --experiments 4  # re-run one
+    python run_experiments.py --skip-preprocess --epochs 20     # quick 20-epoch validation
 """
 
 import argparse
 import copy
 import csv
 import json
+import shutil
 import subprocess
 import sys
 import time
@@ -40,39 +42,37 @@ EXPERIMENTS = OrderedDict([
         "pretrained_weights": "yolo11x-seg.pt",
     }),
     ("exp3_sgd_cosine", {
-        "description": "SGD optimizer + higher momentum",
+        "description": "SGD optimizer (baseline-matched params)",
         "training": {
             "optimizer": "SGD",
-            "momentum": 0.965,
-            "lrf": 0.01,
-            "warmup_epochs": 5,
+            "momentum": 0.937,
+            "warmup_epochs": 3,
         },
     }),
     ("exp4_heavy_aug", {
-        "description": "Heavy augmentation + dropout regularization",
+        "description": "Moderate augmentation + dropout regularization",
         "training": {
             "epochs": 150,
             "patience": 40,
             "dropout": 0.15,
         },
         "augmentation": {
-            "mosaic": 1.0,
+            "mosaic": 0.7,
             "mixup": 0.3,
-            "copy_paste": 0.3,
-            "degrees": 30.0,
-            "scale": 0.5,
+            "copy_paste": 0.0,
+            "degrees": 15.0,
+            "scale": 0.3,
             "translate": 0.2,
         },
     }),
-    ("exp5_low_lr_multiscale", {
-        "description": "Low LR + multi-scale + strong weight decay",
+    ("exp5_low_lr_long", {
+        "description": "Low LR + strong weight decay + 150 epochs",
         "training": {
             "epochs": 150,
             "lr0": 0.005,
             "lrf": 0.0005,
             "weight_decay": 0.001,
             "warmup_epochs": 5,
-            "multi_scale": True,
         },
     }),
 ])
@@ -265,6 +265,8 @@ def main():
                         help="Skip filter + preprocess (if already done)")
     parser.add_argument("--experiments", type=str, default=None,
                         help="Comma-separated experiment numbers to run, e.g. '1,3,5'")
+    parser.add_argument("--epochs", type=int, default=None,
+                        help="Override training epochs for all experiments (e.g. 20 for quick validation)")
     args = parser.parse_args()
 
     exp_names = list(EXPERIMENTS.keys())
@@ -280,6 +282,8 @@ def main():
     print("  ARCADE YOLO Experiment Runner")
     print("=" * 70)
     print(f"  Base config:  {args.config}")
+    if args.epochs is not None:
+        print(f"  Epoch override: {args.epochs} (validation mode)")
     print(f"  Experiments:  {len(exp_names)}")
     for i, name in enumerate(exp_names, 1):
         desc = EXPERIMENTS[name].get("description", "")
@@ -311,6 +315,11 @@ def main():
     for exp_name in exp_names:
         overrides = {k: v for k, v in EXPERIMENTS[exp_name].items()
                      if k != "description"}
+        # Apply --epochs override to all experiments
+        if args.epochs is not None:
+            overrides.setdefault("training", {})
+            overrides["training"]["epochs"] = args.epochs
+            overrides["training"]["patience"] = args.epochs  # disable early stopping
         config_path = generate_experiment_config(
             args.config, exp_name, overrides, "runs/configs"
         )
@@ -329,6 +338,12 @@ def main():
         print(f"  EXPERIMENT {i}/{len(exp_names)}: {exp_name}")
         print(f"  {desc}")
         print(f"{'#'*70}")
+
+        # Clean up stale output dir to prevent YOLO from resuming corrupted checkpoints
+        exp_dir = Path(exp_outputs[exp_name])
+        if exp_dir.exists():
+            print(f"  Cleaning up stale output: {exp_dir}")
+            shutil.rmtree(exp_dir)
 
         # Train
         train_ok, elapsed = run_command(
