@@ -14,9 +14,9 @@ description: "YOLO26 ablation: YOLO26m-seg with auto optimizer, higher lr"
 model: yolo26m-seg.pt
 
 # === PATHS ===
-arcade_root: ../arcade/submission
-data_dir: ../arcade_experiments/data
-results_dir: ../arcade_experiments/results/run3_yolo26m
+arcade_root: ../../arcade/submission
+data_dir: ../data
+results_dir: ../results/run3_yolo26m
 
 # === TRAINING ===
 imgsz: 512

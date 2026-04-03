@@ -10,9 +10,9 @@ model: yolo11m-seg.pt
 
 # === PATHS ===
 # These are set by run_pipeline.py at runtime; defaults here for standalone use
-arcade_root: ../arcade/submission
-data_dir: ../arcade_experiments/data
-results_dir: ../arcade_experiments/results/run1_yolo11m
+arcade_root: ../../arcade/submission
+data_dir: ../data
+results_dir: ../results/run1_yolo11m
 
 # === TRAINING ===
 imgsz: 512

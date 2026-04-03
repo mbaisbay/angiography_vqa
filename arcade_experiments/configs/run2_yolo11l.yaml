@@ -9,9 +9,9 @@ description: "Size ablation: YOLO11l-seg (larger variant of Run 1)"
 model: yolo11l-seg.pt
 
 # === PATHS ===
-arcade_root: ../arcade/submission
-data_dir: ../arcade_experiments/data
-results_dir: ../arcade_experiments/results/run2_yolo11l
+arcade_root: ../../arcade/submission
+data_dir: ../data
+results_dir: ../results/run2_yolo11l
 
 # === TRAINING ===
 imgsz: 512

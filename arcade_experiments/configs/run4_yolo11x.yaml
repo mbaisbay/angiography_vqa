@@ -9,9 +9,9 @@ description: "X-size ablation: YOLO11x-seg (largest YOLO11, smaller batch)"
 model: yolo11x-seg.pt
 
 # === PATHS ===
-arcade_root: ../arcade/submission
-data_dir: ../arcade_experiments/data
-results_dir: ../arcade_experiments/results/run4_yolo11x
+arcade_root: ../../arcade/submission
+data_dir: ../data
+results_dir: ../results/run4_yolo11x
 
 # === TRAINING ===
 imgsz: 512

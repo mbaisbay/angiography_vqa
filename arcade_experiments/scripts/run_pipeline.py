@@ -226,9 +226,12 @@ def run_pipeline(
 ) -> None:
     """Run the full iterative cross-training pipeline."""
     cfg = load_run_config(config_path)
+    config_dir = Path(config_path).resolve().parent
+
     arcade_root = Path(arcade_root).resolve()
-    data_dir = Path(cfg.get("data_dir", "data")).resolve()
-    results_dir = Path(cfg.get("results_dir", "results")).resolve()
+    # Resolve config paths relative to the config file's directory
+    data_dir = (config_dir / cfg.get("data_dir", "../data")).resolve()
+    results_dir = (config_dir / cfg.get("results_dir", "../results")).resolve()
     results_dir.mkdir(parents=True, exist_ok=True)
 
     use_o2m = cfg.get("pseudo_label", {}).get("use_one_to_many", False)
