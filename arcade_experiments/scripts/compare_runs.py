@@ -205,6 +205,11 @@ def main():
 
     results_root = Path(args.results_root)
 
+    if not results_root.exists():
+        print(f"Results directory not found: {results_root}")
+        print("Run the pipeline first to generate results.")
+        return
+
     # Find run directories
     if args.runs:
         run_dirs = {name: results_root / name for name in args.runs}
