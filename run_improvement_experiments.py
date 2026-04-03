@@ -33,6 +33,8 @@ import cv2
 import numpy as np
 import yaml
 
+from utils.config_loader import load_config as _load_config_resolved
+
 
 # ── Configuration ─────────────────────────────────────────────────
 
@@ -264,8 +266,8 @@ def deep_merge(base: dict, overrides: dict) -> dict:
 
 
 def load_config(path: str) -> dict:
-    with open(path) as f:
-        return yaml.safe_load(f)
+    """Load config with all paths resolved to absolute."""
+    return _load_config_resolved(path)
 
 
 def write_config(config: dict, path: str) -> None:
@@ -403,8 +405,8 @@ def run_single_experiment(exp_name: str, exp_def: dict,
     if overrides:
         config = deep_merge(config, overrides)
 
-    # Set output paths for this experiment
-    config["output_dir"] = f"./runs/improvements/{exp_name}"
+    # Set output paths for this experiment (absolute to avoid path issues)
+    config["output_dir"] = str(Path("./runs/improvements", exp_name).resolve())
 
     # Handle HPO separately
     if exp_def.get("is_hpo"):
@@ -427,7 +429,7 @@ def run_single_experiment(exp_name: str, exp_def: dict,
         preprocess_dataset(syntax_src, preprocessed_dir, preprocessing)
 
         # Create data YAML pointing to preprocessed images
-        exp_data_yaml = f"./data_syntax_{exp_name}.yaml"
+        exp_data_yaml = str(Path(f"./data_syntax_{exp_name}.yaml").resolve())
         create_data_yaml(preprocessed_dir, config["syntax_data_yaml"],
                          exp_data_yaml)
         config["syntax_data_yaml"] = exp_data_yaml
@@ -436,16 +438,17 @@ def run_single_experiment(exp_name: str, exp_def: dict,
     custom_model = exp_def.get("custom_model")
     model_weights = config["pretrained_weights"]
     if custom_model == "yolov8x-seg-p2":
-        p2_yaml_path = f"./models/{custom_model}.yaml"
-        Path("./models").mkdir(exist_ok=True)
+        p2_yaml_path = str(Path(f"./models/{custom_model}.yaml").resolve())
+        Path(p2_yaml_path).parent.mkdir(exist_ok=True)
         write_p2_model_yaml(p2_yaml_path)
         # For custom architecture, load from YAML instead of .pt
         # but initialize with pretrained backbone weights
         model_weights = p2_yaml_path
 
-    # Write experiment config
-    exp_config_path = f"./runs/improvements/{exp_name}/config.yaml"
-    Path(f"./runs/improvements/{exp_name}").mkdir(parents=True, exist_ok=True)
+    # Write experiment config (use absolute path)
+    exp_dir = Path("./runs/improvements", exp_name).resolve()
+    exp_config_path = str(exp_dir / "config.yaml")
+    exp_dir.mkdir(parents=True, exist_ok=True)
     write_config(config, exp_config_path)
 
     # Build training command
