@@ -1,0 +1,61 @@
+# =============================================================================
+# Run 1 (Primary): YOLO11m-seg — ARCADE Iterative Cross-Training
+# =============================================================================
+
+run_name: run1_yolo11m
+description: "Primary run: YOLO11m-seg with AdamW, backbone freezing"
+
+# === MODEL ===
+model: yolo11m-seg.pt
+
+# === PATHS ===
+# These are set by run_pipeline.py at runtime; defaults here for standalone use
+arcade_root: ../../arcade/submission
+data_dir: ../data
+results_dir: ../results/run1_yolo11m
+
+# === TRAINING ===
+imgsz: 512
+batch: 16
+epochs: 200
+patience: 25
+optimizer: AdamW
+lr0: 0.001
+lrf: 0.01
+weight_decay: 0.005
+momentum: 0.937
+warmup_epochs: 5
+freeze: 10
+freeze_epochs: 15          # epochs for Stage A (frozen backbone)
+seed: 42
+deterministic: true
+amp: true
+cos_lr: true
+device: "0"
+workers: 4
+
+# === AUGMENTATION ===
+mosaic: 0.0
+mixup: 0.0
+copy_paste: 0.0
+fliplr: 0.5
+flipud: 0.0
+degrees: 20.0
+scale: 0.4
+translate: 0.1
+hsv_h: 0.0
+hsv_s: 0.0
+hsv_v: 0.3
+erasing: 0.0
+shear: 0.0
+perspective: 0.0
+
+# === PSEUDO-LABELING ===
+pseudo_label:
+  initial_conf: 0.85
+  conf_decay: 0.05
+  min_conf: 0.65
+  use_one_to_many: false    # Only for YOLO26
+
+# === ITERATION ===
+iterations: 3
