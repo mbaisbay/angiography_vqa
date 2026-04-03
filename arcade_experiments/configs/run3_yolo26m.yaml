@@ -1,0 +1,65 @@
+# =============================================================================
+# Run 3 (YOLO26 ablation): YOLO26m-seg — ARCADE Iterative Cross-Training
+# =============================================================================
+# IMPORTANT: Requires ultralytics >= 8.4.33 to avoid known YOLO26 bugs
+#   - ProgLoss resume bug
+#   - Grayscale crash bug
+#   - Always use warmup_epochs >= 3 to avoid NaN loss
+# =============================================================================
+
+run_name: run3_yolo26m
+description: "YOLO26 ablation: YOLO26m-seg with auto optimizer, higher lr"
+
+# === MODEL ===
+model: yolo26m-seg.pt
+
+# === PATHS ===
+arcade_root: ../arcade/submission
+data_dir: ../arcade_experiments/data
+results_dir: ../arcade_experiments/results/run3_yolo26m
+
+# === TRAINING ===
+imgsz: 512
+batch: 16
+epochs: 200
+patience: 25
+optimizer: auto              # Let Ultralytics pick MuSGD vs AdamW
+lr0: 0.01                    # YOLO26 default; do NOT use 0.001 with warmup_epochs=0
+lrf: 0.01
+weight_decay: 0.0005
+momentum: 0.937
+warmup_epochs: 3             # ALWAYS use warmup >= 3 with YOLO26
+freeze: 10
+freeze_epochs: 15
+seed: 42
+deterministic: true
+amp: true
+cos_lr: true
+device: "0"
+workers: 4
+
+# === AUGMENTATION ===
+mosaic: 0.0
+mixup: 0.0
+copy_paste: 0.0
+fliplr: 0.5
+flipud: 0.0
+degrees: 20.0
+scale: 0.4
+translate: 0.1
+hsv_h: 0.0
+hsv_s: 0.0
+hsv_v: 0.3
+erasing: 0.0
+shear: 0.0
+perspective: 0.0
+
+# === PSEUDO-LABELING ===
+pseudo_label:
+  initial_conf: 0.85
+  conf_decay: 0.05
+  min_conf: 0.65
+  use_one_to_many: true      # YOLO26: use one-to-many head for more candidates
+
+# === ITERATION ===
+iterations: 3
