@@ -110,8 +110,12 @@ def merge_syntax_images(
         stem = img_path.stem
         stats["images"] += 1
 
+        # Prefix output filenames to avoid collision with stenosis
+        out_name = f"syntax_{img_path.name}"
+        out_stem = f"syntax_{stem}"
+
         # Symlink image
-        dst_img = images_dst / img_path.name
+        dst_img = images_dst / out_name
         if not dst_img.exists():
             os.symlink(img_path.resolve(), dst_img)
 
@@ -119,7 +123,7 @@ def merge_syntax_images(
         gt_lines = read_label_lines(labels_src / f"{stem}.txt")
         stats["gt_labels"] += len(gt_lines)
 
-        # Pseudo stenosis labels (class 10)
+        # Pseudo stenosis labels (class 10) — stored under original stem
         pseudo_lines = []
         if add_pseudo and pseudo_stenosis_dir:
             pseudo_path = pseudo_stenosis_dir / f"{stem}.txt"
@@ -130,8 +134,8 @@ def merge_syntax_images(
         merged = merge_label_files(gt_lines, pseudo_lines)
         stats["merged_labels"] += len(merged)
 
-        # Write
-        label_path = labels_dst / f"{stem}.txt"
+        # Write with prefixed name
+        label_path = labels_dst / f"{out_stem}.txt"
         with open(label_path, "w") as f:
             f.write("\n".join(merged) + "\n" if merged else "")
 
@@ -175,8 +179,12 @@ def merge_stenosis_images(
         stem = img_path.stem
         stats["images"] += 1
 
+        # Prefix output filenames to avoid collision with syntax
+        out_name = f"stenosis_{img_path.name}"
+        out_stem = f"stenosis_{stem}"
+
         # Symlink image
-        dst_img = images_dst / img_path.name
+        dst_img = images_dst / out_name
         if not dst_img.exists():
             os.symlink(img_path.resolve(), dst_img)
 
@@ -185,7 +193,7 @@ def merge_stenosis_images(
         gt_lines = remap_label_lines(gt_lines_raw, STENOSIS_CLASS_ID)
         stats["gt_labels"] += len(gt_lines)
 
-        # Pseudo syntax labels (classes 0-9)
+        # Pseudo syntax labels (classes 0-9) — stored under original stem
         pseudo_lines = []
         if add_pseudo and pseudo_syntax_dir:
             pseudo_path = pseudo_syntax_dir / f"{stem}.txt"
@@ -196,8 +204,8 @@ def merge_stenosis_images(
         merged = merge_label_files(gt_lines, pseudo_lines)
         stats["merged_labels"] += len(merged)
 
-        # Write
-        label_path = labels_dst / f"{stem}.txt"
+        # Write with prefixed name
+        label_path = labels_dst / f"{out_stem}.txt"
         with open(label_path, "w") as f:
             f.write("\n".join(merged) + "\n" if merged else "")
 
