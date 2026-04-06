@@ -1,0 +1,8 @@
+ultralytics>=8.4.33
+opencv-python>=4.8.0
+pycocotools>=2.0.7
+pyyaml>=6.0
+numpy>=1.24.0
+shapely>=2.0.0
+matplotlib>=3.7.0
+pandas>=2.0.0
