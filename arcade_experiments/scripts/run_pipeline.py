@@ -25,15 +25,27 @@ from pathlib import Path
 
 from train import load_run_config, train_two_stage
 from predict_pseudo_labels import generate_pseudo_labels, print_stats, save_stats
-from merge_datasets import merge_datasets
+from merge_datasets import merge_datasets, get_stenosis_class_id
 from evaluate import evaluate_model
 
 
 def data_prep(arcade_root: Path, data_dir: Path, min_count: int = 300,
-              skip_images: bool = False) -> dict:
-    """Run data preparation (Step 0)."""
+              skip_images: bool = False, splits_dir: Path = None) -> dict:
+    """Run data preparation (Step 0).
+
+    Args:
+        arcade_root: Path to arcade/submission directory.
+        data_dir: Output data directory.
+        min_count: Minimum training instances to keep a SYNTAX class.
+        skip_images: Skip grayscale image conversion.
+        splits_dir: If set, use stratified splits from this directory
+                    instead of the original ARCADE splits.
+    """
     print("\n" + "#" * 60)
     print("# STEP 0: Data Preparation")
+    print(f"#   min_count={min_count}")
+    if splits_dir:
+        print(f"#   splits_dir={splits_dir}")
     print("#" * 60)
 
     from prepare_data import (
@@ -41,11 +53,14 @@ def data_prep(arcade_root: Path, data_dir: Path, min_count: int = 300,
         convert_images, generate_dataset_yamls,
     )
 
-    syntax_mapping = prepare_syntax(arcade_root, data_dir, min_count)
-    prepare_stenosis(arcade_root, data_dir)
+    # Use stratified splits dir as the source if provided
+    source_root = splits_dir if splits_dir else arcade_root
+
+    syntax_mapping = prepare_syntax(source_root, data_dir, min_count)
+    prepare_stenosis(source_root, data_dir)
 
     if not skip_images:
-        convert_images(arcade_root, data_dir)
+        convert_images(source_root, data_dir)
 
     generate_dataset_yamls(data_dir, syntax_mapping)
 
@@ -143,9 +158,9 @@ def stage4_pseudo_label_syntax(
     output_dir = results_dir / "pseudo_labels" / "stenosis_on_syntax"
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    # Combined model has 11 classes (0-9 syntax, 10 stenosis)
-    # We only want the stenosis predictions (class 10)
-    # The model outputs class 10 for stenosis, no offset needed
+    # Combined model has N+1 classes (0..N-1 syntax, N stenosis)
+    # We only want the stenosis predictions (class N)
+    # The model outputs class N for stenosis, no offset needed
     stats = generate_pseudo_labels(
         model_path=model_path,
         image_dir=image_dir,
@@ -157,8 +172,11 @@ def stage4_pseudo_label_syntax(
     print_stats(stats)
     save_stats(stats, str(output_dir / "stats.json"))
 
-    # Filter to only keep stenosis predictions (class 10)
-    _filter_pseudo_to_class(output_dir, target_class=10)
+    # Filter to only keep stenosis predictions (class N)
+    # Read the actual stenosis class ID from the class mapping
+    class_mapping_path = data_dir / "syntax_filtered" / "class_mapping.json"
+    stenosis_cls = get_stenosis_class_id(str(class_mapping_path))
+    _filter_pseudo_to_class(output_dir, target_class=stenosis_cls)
 
     return output_dir
 
@@ -223,12 +241,15 @@ def run_pipeline(
     skip_data_prep: bool = False,
     skip_stage1: bool = False,
     stage1_weights: str = None,
+    min_count: int = 300,
+    splits_dir: str = None,
 ) -> None:
     """Run the full iterative cross-training pipeline."""
     cfg = load_run_config(config_path)
     config_dir = Path(config_path).resolve().parent
 
     arcade_root = Path(arcade_root).resolve()
+    splits_dir_path = Path(splits_dir).resolve() if splits_dir else None
     # Resolve config paths relative to the config file's directory
     data_dir = (config_dir / cfg.get("data_dir", "../data")).resolve()
     results_dir = (config_dir / cfg.get("results_dir", "../results")).resolve()
@@ -252,6 +273,8 @@ def run_pipeline(
         "iterations": iterations,
         "initial_conf": initial_conf,
         "conf_decay": conf_decay,
+        "min_count": min_count,
+        "splits_dir": str(splits_dir_path) if splits_dir_path else None,
         "run_config": cfg,
     }
     with open(results_dir / "pipeline_config.json", "w") as f:
@@ -259,7 +282,8 @@ def run_pipeline(
 
     # ── Step 0: Data Preparation ──
     if not skip_data_prep:
-        data_prep(arcade_root, data_dir)
+        data_prep(arcade_root, data_dir, min_count=min_count,
+                  splits_dir=splits_dir_path)
     else:
         print("\n[SKIP] Data preparation (--skip-data-prep)")
 
@@ -364,7 +388,9 @@ def run_pipeline(
             use_one_to_many=use_o2m,
         )
         save_stats(stats, str(pseudo_stenosis_dir_new / "stats.json"))
-        _filter_pseudo_to_class(pseudo_stenosis_dir_new, target_class=10)
+        class_mapping_path = data_dir / "syntax_filtered" / "class_mapping.json"
+        stenosis_cls = get_stenosis_class_id(str(class_mapping_path))
+        _filter_pseudo_to_class(pseudo_stenosis_dir_new, target_class=stenosis_cls)
         pseudo_stenosis_dir = pseudo_stenosis_dir_new
 
     # ── Final evaluation on test set ──
@@ -441,6 +467,14 @@ def main():
         "--stage1-weights", type=str, default=None,
         help="Pre-trained Stage 1 weights (used with --skip-stage1)"
     )
+    parser.add_argument(
+        "--min-count", type=int, default=300,
+        help="Min training instances to keep a SYNTAX class (default: 300)"
+    )
+    parser.add_argument(
+        "--splits-dir", type=str, default=None,
+        help="Use stratified splits from this directory instead of ARCADE originals"
+    )
     args = parser.parse_args()
 
     run_pipeline(
@@ -452,6 +486,8 @@ def main():
         skip_data_prep=args.skip_data_prep,
         skip_stage1=args.skip_stage1,
         stage1_weights=args.stage1_weights,
+        min_count=args.min_count,
+        splits_dir=args.splits_dir,
     )
 
 

@@ -1,8 +1,12 @@
 """Merge ground truth labels with pseudo-labels into a unified dataset.
 
 Unified class scheme:
-  - IDs 0-9: 10 filtered SYNTAX vessel segment classes
-  - ID 10: stenosis
+  - IDs 0..(N-1): N filtered SYNTAX vessel segment classes
+  - ID N: stenosis
+
+The number of syntax classes and stenosis class ID are read dynamically
+from the class_mapping.json file, so this works with any min_count filter
+(10 classes with min_count=300, or 25 classes with min_count=0, etc.).
 
 Merging rules:
   - GT labels take priority over pseudo-labels for the same class
@@ -20,8 +24,6 @@ from collections import Counter
 
 
 SPLITS = ["train", "val", "test"]
-NUM_SYNTAX_CLASSES = 10
-STENOSIS_CLASS_ID = 10  # In unified scheme
 
 
 def read_label_lines(label_path: Path) -> list:
@@ -79,11 +81,12 @@ def merge_syntax_images(
     output_dir: Path,
     split: str,
     add_pseudo: bool = True,
+    stenosis_class_id: int = 10,
 ) -> dict:
     """Merge syntax GT labels with pseudo stenosis labels.
 
-    Syntax GT: classes 0-9 (already in unified scheme)
-    Pseudo stenosis: class 10 (from combined model inference)
+    Syntax GT: classes 0..(N-1) (already in unified scheme)
+    Pseudo stenosis: class N (from combined model inference)
 
     Args:
         syntax_data_dir: Path to syntax_filtered data.
@@ -148,11 +151,12 @@ def merge_stenosis_images(
     output_dir: Path,
     split: str,
     add_pseudo: bool = True,
+    stenosis_class_id: int = 10,
 ) -> dict:
     """Merge stenosis GT labels with pseudo syntax labels.
 
-    Stenosis GT: class 0 in isolation -> remap to class 10 in unified scheme
-    Pseudo syntax: classes 0-9 (from syntax model inference)
+    Stenosis GT: class 0 in isolation -> remap to class N in unified scheme
+    Pseudo syntax: classes 0..(N-1) (from syntax model inference)
 
     Args:
         stenosis_data_dir: Path to stenosis data.
@@ -188,9 +192,9 @@ def merge_stenosis_images(
         if not dst_img.exists():
             os.symlink(img_path.resolve(), dst_img)
 
-        # GT stenosis labels: remap from class 0 -> class 10
+        # GT stenosis labels: remap from class 0 -> class N
         gt_lines_raw = read_label_lines(labels_src / f"{stem}.txt")
-        gt_lines = remap_label_lines(gt_lines_raw, STENOSIS_CLASS_ID)
+        gt_lines = remap_label_lines(gt_lines_raw, stenosis_class_id)
         stats["gt_labels"] += len(gt_lines)
 
         # Pseudo syntax labels (classes 0-9) — stored under original stem
@@ -212,16 +216,24 @@ def merge_stenosis_images(
     return dict(stats)
 
 
+def get_stenosis_class_id(class_names_json: str) -> int:
+    """Read class mapping and return the stenosis class ID (= num_syntax_classes)."""
+    with open(class_names_json, "r") as f:
+        mapping = json.load(f)
+    return mapping["num_classes"]
+
+
 def generate_merged_yaml(output_dir: Path, class_names_json: str,
                          yaml_path: Path) -> None:
     """Generate YOLO dataset YAML for merged dataset."""
     with open(class_names_json, "r") as f:
         mapping = json.load(f)
 
-    # Build unified class names: syntax (0-9) + stenosis (10)
+    # Build unified class names: syntax (0..N-1) + stenosis (N)
     syntax_names = {int(k): v for k, v in mapping["class_names"].items()}
+    stenosis_id = mapping["num_classes"]  # Dynamic: 10 for 10-class, 25 for 25-class
     names = dict(syntax_names)
-    names[STENOSIS_CLASS_ID] = "stenosis"
+    names[stenosis_id] = "stenosis"
 
     data_yaml = {
         "path": str(output_dir.resolve()),
@@ -262,6 +274,11 @@ def merge_datasets(
     Returns:
         Combined stats dict.
     """
+    # Determine stenosis class ID from class mapping
+    stenosis_id = get_stenosis_class_id(class_names_json)
+    print(f"\n  Stenosis class ID: {stenosis_id} "
+          f"(num_syntax_classes={stenosis_id})")
+
     all_stats = {}
 
     for split in SPLITS:
@@ -274,6 +291,7 @@ def merge_datasets(
         syntax_stats = merge_syntax_images(
             syntax_data_dir, pseudo_stenosis_dir,
             output_dir, split, add_pseudo=add_pseudo,
+            stenosis_class_id=stenosis_id,
         )
         print(f"    Syntax:   {syntax_stats.get('images', 0)} images, "
               f"{syntax_stats.get('gt_labels', 0)} GT + "
@@ -284,6 +302,7 @@ def merge_datasets(
         stenosis_stats = merge_stenosis_images(
             stenosis_data_dir, pseudo_syntax_dir,
             output_dir, split, add_pseudo=add_pseudo,
+            stenosis_class_id=stenosis_id,
         )
         print(f"    Stenosis: {stenosis_stats.get('images', 0)} images, "
               f"{stenosis_stats.get('gt_labels', 0)} GT + "
