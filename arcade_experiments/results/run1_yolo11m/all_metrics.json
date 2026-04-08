@@ -1,0 +1,385 @@
+{
+  "stage1_syntax": {
+    "split": "val",
+    "model": "/home/c504-5090-2/Desktop/Miras/arcade/arcade_experiments/results/run1_yolo11m/stage1_syntax_best.pt",
+    "mAP50": 0.7718,
+    "mAP50_95": 0.3006,
+    "precision": 0.7701,
+    "recall": 0.7395,
+    "per_class": {
+      "1": {
+        "ap50": 0.9562,
+        "precision": 0.8989,
+        "recall": 0.9431,
+        "f1": 0.9205
+      },
+      "2": {
+        "ap50": 0.8229,
+        "precision": 0.8053,
+        "recall": 0.8485,
+        "f1": 0.8263
+      },
+      "3": {
+        "ap50": 0.8859,
+        "precision": 0.7521,
+        "recall": 0.8485,
+        "f1": 0.7974
+      },
+      "4": {
+        "ap50": 0.5693,
+        "precision": 0.6444,
+        "recall": 0.5826,
+        "f1": 0.6119
+      },
+      "5": {
+        "ap50": 0.8687,
+        "precision": 0.8126,
+        "recall": 0.7671,
+        "f1": 0.7892
+      },
+      "6": {
+        "ap50": 0.8001,
+        "precision": 0.7961,
+        "recall": 0.7497,
+        "f1": 0.7722
+      },
+      "7": {
+        "ap50": 0.7189,
+        "precision": 0.6723,
+        "recall": 0.6623,
+        "f1": 0.6673
+      },
+      "8": {
+        "ap50": 0.8636,
+        "precision": 0.7908,
+        "recall": 0.8514,
+        "f1": 0.82
+      },
+      "11": {
+        "ap50": 0.7687,
+        "precision": 0.8136,
+        "recall": 0.7481,
+        "f1": 0.7795
+      },
+      "13": {
+        "ap50": 0.464,
+        "precision": 0.7149,
+        "recall": 0.3941,
+        "f1": 0.5081
+      }
+    },
+    "syntax_mAP50": 0.7718
+  },
+  "stage3_combined_iter1": {
+    "split": "val",
+    "model": "/home/c504-5090-2/Desktop/Miras/arcade/arcade_experiments/results/run1_yolo11m/stage3_combined_iter1_best.pt",
+    "mAP50": 0.6873,
+    "mAP50_95": 0.2658,
+    "precision": 0.7029,
+    "recall": 0.6536,
+    "per_class": {
+      "1": {
+        "ap50": 0.8832,
+        "precision": 0.8654,
+        "recall": 0.803,
+        "f1": 0.833
+      },
+      "2": {
+        "ap50": 0.6668,
+        "precision": 0.7107,
+        "recall": 0.6515,
+        "f1": 0.6798
+      },
+      "3": {
+        "ap50": 0.7478,
+        "precision": 0.6684,
+        "recall": 0.7727,
+        "f1": 0.7168
+      },
+      "4": {
+        "ap50": 0.5959,
+        "precision": 0.4832,
+        "recall": 0.75,
+        "f1": 0.5877
+      },
+      "5": {
+        "ap50": 0.8641,
+        "precision": 0.8456,
+        "recall": 0.7846,
+        "f1": 0.814
+      },
+      "6": {
+        "ap50": 0.7775,
+        "precision": 0.7093,
+        "recall": 0.792,
+        "f1": 0.7484
+      },
+      "7": {
+        "ap50": 0.6824,
+        "precision": 0.7195,
+        "recall": 0.6994,
+        "f1": 0.7093
+      },
+      "8": {
+        "ap50": 0.7378,
+        "precision": 0.6922,
+        "recall": 0.6685,
+        "f1": 0.6801
+      },
+      "11": {
+        "ap50": 0.7728,
+        "precision": 0.8647,
+        "recall": 0.7571,
+        "f1": 0.8073
+      },
+      "13": {
+        "ap50": 0.4914,
+        "precision": 0.6012,
+        "recall": 0.3429,
+        "f1": 0.4367
+      },
+      "stenosis": {
+        "ap50": 0.3407,
+        "precision": 0.5715,
+        "recall": 0.1675,
+        "f1": 0.2591
+      }
+    },
+    "syntax_mAP50": 0.722,
+    "stenosis_AP50": 0.3407
+  },
+  "iter2_merged": {
+    "split": "val",
+    "model": "/home/c504-5090-2/Desktop/Miras/arcade/arcade_experiments/results/run1_yolo11m/iter2_merged_best.pt",
+    "mAP50": 0.6873,
+    "mAP50_95": 0.2658,
+    "precision": 0.7029,
+    "recall": 0.6536,
+    "per_class": {
+      "1": {
+        "ap50": 0.8832,
+        "precision": 0.8654,
+        "recall": 0.803,
+        "f1": 0.833
+      },
+      "2": {
+        "ap50": 0.6668,
+        "precision": 0.7107,
+        "recall": 0.6515,
+        "f1": 0.6798
+      },
+      "3": {
+        "ap50": 0.7478,
+        "precision": 0.6684,
+        "recall": 0.7727,
+        "f1": 0.7168
+      },
+      "4": {
+        "ap50": 0.5959,
+        "precision": 0.4832,
+        "recall": 0.75,
+        "f1": 0.5877
+      },
+      "5": {
+        "ap50": 0.8641,
+        "precision": 0.8456,
+        "recall": 0.7846,
+        "f1": 0.814
+      },
+      "6": {
+        "ap50": 0.7775,
+        "precision": 0.7093,
+        "recall": 0.792,
+        "f1": 0.7484
+      },
+      "7": {
+        "ap50": 0.6824,
+        "precision": 0.7195,
+        "recall": 0.6994,
+        "f1": 0.7093
+      },
+      "8": {
+        "ap50": 0.7378,
+        "precision": 0.6922,
+        "recall": 0.6685,
+        "f1": 0.6801
+      },
+      "11": {
+        "ap50": 0.7728,
+        "precision": 0.8647,
+        "recall": 0.7571,
+        "f1": 0.8073
+      },
+      "13": {
+        "ap50": 0.4914,
+        "precision": 0.6012,
+        "recall": 0.3429,
+        "f1": 0.4367
+      },
+      "stenosis": {
+        "ap50": 0.3407,
+        "precision": 0.5715,
+        "recall": 0.1675,
+        "f1": 0.2591
+      }
+    },
+    "syntax_mAP50": 0.722,
+    "stenosis_AP50": 0.3407
+  },
+  "iter3_merged": {
+    "split": "val",
+    "model": "/home/c504-5090-2/Desktop/Miras/arcade/arcade_experiments/results/run1_yolo11m/iter3_merged_best.pt",
+    "mAP50": 0.7064,
+    "mAP50_95": 0.288,
+    "precision": 0.6628,
+    "recall": 0.6864,
+    "per_class": {
+      "1": {
+        "ap50": 0.9585,
+        "precision": 0.7694,
+        "recall": 0.9545,
+        "f1": 0.852
+      },
+      "2": {
+        "ap50": 0.755,
+        "precision": 0.623,
+        "recall": 0.8333,
+        "f1": 0.713
+      },
+      "3": {
+        "ap50": 0.8364,
+        "precision": 0.7277,
+        "recall": 0.8485,
+        "f1": 0.7835
+      },
+      "4": {
+        "ap50": 0.5351,
+        "precision": 0.4179,
+        "recall": 0.75,
+        "f1": 0.5367
+      },
+      "5": {
+        "ap50": 0.8722,
+        "precision": 0.8164,
+        "recall": 0.7526,
+        "f1": 0.7832
+      },
+      "6": {
+        "ap50": 0.7793,
+        "precision": 0.7403,
+        "recall": 0.76,
+        "f1": 0.75
+      },
+      "7": {
+        "ap50": 0.6837,
+        "precision": 0.6907,
+        "recall": 0.638,
+        "f1": 0.6633
+      },
+      "8": {
+        "ap50": 0.8052,
+        "precision": 0.7662,
+        "recall": 0.7087,
+        "f1": 0.7363
+      },
+      "11": {
+        "ap50": 0.777,
+        "precision": 0.6133,
+        "recall": 0.8429,
+        "f1": 0.71
+      },
+      "13": {
+        "ap50": 0.3821,
+        "precision": 0.5153,
+        "recall": 0.2429,
+        "f1": 0.3302
+      },
+      "stenosis": {
+        "ap50": 0.386,
+        "precision": 0.6107,
+        "recall": 0.2192,
+        "f1": 0.3226
+      }
+    },
+    "syntax_mAP50": 0.7385,
+    "stenosis_AP50": 0.386
+  },
+  "final_test": {
+    "split": "test",
+    "model": "/home/c504-5090-2/Desktop/Miras/arcade/arcade_experiments/results/run1_yolo11m/iter3_merged_best.pt",
+    "mAP50": 0.3467,
+    "mAP50_95": 0.1353,
+    "precision": 0.4438,
+    "recall": 0.5153,
+    "per_class": {
+      "1": {
+        "ap50": 0.4522,
+        "precision": 0.4253,
+        "recall": 0.72,
+        "f1": 0.5347
+      },
+      "2": {
+        "ap50": 0.4501,
+        "precision": 0.4369,
+        "recall": 0.64,
+        "f1": 0.5193
+      },
+      "3": {
+        "ap50": 0.4669,
+        "precision": 0.4158,
+        "recall": 0.66,
+        "f1": 0.5102
+      },
+      "4": {
+        "ap50": 0.3844,
+        "precision": 0.3524,
+        "recall": 0.7065,
+        "f1": 0.4702
+      },
+      "5": {
+        "ap50": 0.4485,
+        "precision": 0.4428,
+        "recall": 0.6872,
+        "f1": 0.5386
+      },
+      "6": {
+        "ap50": 0.3679,
+        "precision": 0.4081,
+        "recall": 0.5266,
+        "f1": 0.4598
+      },
+      "7": {
+        "ap50": 0.2924,
+        "precision": 0.3457,
+        "recall": 0.4096,
+        "f1": 0.3749
+      },
+      "8": {
+        "ap50": 0.2851,
+        "precision": 0.3563,
+        "recall": 0.45,
+        "f1": 0.3977
+      },
+      "11": {
+        "ap50": 0.4194,
+        "precision": 0.3636,
+        "recall": 0.7311,
+        "f1": 0.4857
+      },
+      "13": {
+        "ap50": 0.1989,
+        "precision": 0.3352,
+        "recall": 0.1375,
+        "f1": 0.195
+      },
+      "stenosis": {
+        "ap50": 0.0481,
+        "precision": 1.0,
+        "recall": 0.0,
+        "f1": 0.0
+      }
+    },
+    "syntax_mAP50": 0.3766,
+    "stenosis_AP50": 0.0481
+  }
+}
