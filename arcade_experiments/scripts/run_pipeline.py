@@ -114,6 +114,7 @@ def stage2_pseudo_label_stenosis(
 def stage3_merge_and_train_combined(
     cfg: dict, data_dir: Path, results_dir: Path,
     pseudo_syntax_dir: Path, iteration: int,
+    stenosis_oversample: int = 1,
 ) -> str:
     """Stage 3: Merge stenosis GT + pseudo SYNTAX, train combined model."""
     print("\n" + "#" * 60)
@@ -134,6 +135,7 @@ def stage3_merge_and_train_combined(
         output_dir=merged_dir,
         class_names_json=class_mapping,
         yaml_output=merged_yaml,
+        stenosis_oversample=stenosis_oversample,
     )
 
     # Train from COCO pretrained weights (NOT from previous model)
@@ -199,6 +201,7 @@ def full_merge_and_train(
     cfg: dict, data_dir: Path, results_dir: Path,
     pseudo_syntax_dir: Path, pseudo_stenosis_dir: Path,
     iteration: int,
+    stenosis_oversample: int = 1,
 ) -> str:
     """Full merge: ALL images with GT + pseudo, then retrain."""
     print("\n" + "#" * 60)
@@ -221,6 +224,7 @@ def full_merge_and_train(
         output_dir=merged_dir,
         class_names_json=class_mapping,
         yaml_output=merged_yaml,
+        stenosis_oversample=stenosis_oversample,
     )
 
     # Always retrain from COCO pretrained weights
@@ -244,6 +248,8 @@ def run_pipeline(
     stage1_weights: str = None,
     min_count: int = 300,
     splits_dir: str = None,
+    stenosis_oversample: int = 1,
+    eval_augment: bool = False,
 ) -> None:
     """Run the full iterative cross-training pipeline."""
     cfg = load_run_config(config_path)
@@ -267,6 +273,8 @@ def run_pipeline(
 
     start_time = time.time()
 
+    eval_imgsz = cfg.get("imgsz", 512)
+
     # Save pipeline config for reproducibility
     pipeline_state = {
         "config_path": config_path,
@@ -276,6 +284,8 @@ def run_pipeline(
         "conf_decay": conf_decay,
         "min_count": min_count,
         "splits_dir": str(splits_dir_path) if splits_dir_path else None,
+        "stenosis_oversample": stenosis_oversample,
+        "eval_augment": eval_augment,
         "run_config": cfg,
     }
     with open(results_dir / "pipeline_config.json", "w") as f:
@@ -298,7 +308,8 @@ def run_pipeline(
     # Evaluate Stage 1
     syntax_yaml = str(data_dir / "dataset_configs" / "syntax_only.yaml")
     print("\n  Evaluating Stage 1 model on syntax val...")
-    stage1_metrics = evaluate_model(syntax_weights, syntax_yaml, split="val")
+    stage1_metrics = evaluate_model(syntax_weights, syntax_yaml, split="val",
+                                    augment=eval_augment, imgsz=eval_imgsz)
     _save_metrics(results_dir, "stage1_syntax", stage1_metrics)
 
     # ── Stage 2: Pseudo-label stenosis images ──
@@ -309,13 +320,15 @@ def run_pipeline(
 
     # ── Stage 3: Merge stenosis + train combined ──
     combined_weights = stage3_merge_and_train_combined(
-        cfg, data_dir, results_dir, pseudo_syntax_dir, iteration=1
+        cfg, data_dir, results_dir, pseudo_syntax_dir, iteration=1,
+        stenosis_oversample=stenosis_oversample,
     )
 
     # Evaluate Stage 3
     merged_yaml_3 = str(data_dir / "dataset_configs" / "merged_iter1_stage3.yaml")
     print("\n  Evaluating Stage 3 model...")
-    stage3_metrics = evaluate_model(combined_weights, merged_yaml_3, split="val")
+    stage3_metrics = evaluate_model(combined_weights, merged_yaml_3, split="val",
+                                    augment=eval_augment, imgsz=eval_imgsz)
     _save_metrics(results_dir, "stage3_combined_iter1", stage3_metrics)
 
     # ── Stage 4: Pseudo-label syntax images ──
@@ -381,11 +394,13 @@ def run_pipeline(
             cfg, data_dir, results_dir,
             pseudo_syntax_dir, pseudo_stenosis_dir,
             iteration=iteration,
+            stenosis_oversample=stenosis_oversample,
         )
 
         # Evaluate
         merged_yaml = str(data_dir / "dataset_configs" / f"merged_iter{iteration}.yaml")
-        iter_metrics = evaluate_model(iter_weights, merged_yaml, split="val")
+        iter_metrics = evaluate_model(iter_weights, merged_yaml, split="val",
+                                      augment=eval_augment, imgsz=eval_imgsz)
         _save_metrics(results_dir, f"iter{iteration}_merged", iter_metrics)
         all_metrics[f"iter{iteration}_merged"] = iter_metrics
 
@@ -416,7 +431,8 @@ def run_pipeline(
         else "merged_iter1_stage3.yaml"
     ))
 
-    test_metrics = evaluate_model(final_weights, final_yaml, split="test")
+    test_metrics = evaluate_model(final_weights, final_yaml, split="test",
+                                  augment=eval_augment, imgsz=eval_imgsz)
     _save_metrics(results_dir, "final_test", test_metrics)
     all_metrics["final_test"] = test_metrics
 
@@ -485,6 +501,14 @@ def main():
         "--splits-dir", type=str, default=None,
         help="Use stratified splits from this directory instead of ARCADE originals"
     )
+    parser.add_argument(
+        "--stenosis-oversample", type=int, default=1,
+        help="Number of copies of stenosis images in train (1=no oversampling)"
+    )
+    parser.add_argument(
+        "--eval-augment", action="store_true",
+        help="Enable test-time augmentation (TTA) during evaluation"
+    )
     args = parser.parse_args()
 
     run_pipeline(
@@ -498,6 +522,8 @@ def main():
         stage1_weights=args.stage1_weights,
         min_count=args.min_count,
         splits_dir=args.splits_dir,
+        stenosis_oversample=args.stenosis_oversample,
+        eval_augment=args.eval_augment,
     )
 
 

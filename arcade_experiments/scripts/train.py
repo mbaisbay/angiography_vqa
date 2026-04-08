@@ -62,6 +62,10 @@ def build_train_args(cfg: dict, data_yaml: str, stage: str,
         "erasing": cfg.get("erasing", 0.0),
         "shear": cfg.get("shear", 0.0),
         "perspective": cfg.get("perspective", 0.0),
+        # Loss weights (defaults match ultralytics defaults)
+        "box": cfg.get("box", 7.5),
+        "cls": cfg.get("cls", 0.5),
+        "dfl": cfg.get("dfl", 1.5),
     }
 
     if stage == "frozen":

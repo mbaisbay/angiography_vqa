@@ -152,6 +152,7 @@ def merge_stenosis_images(
     split: str,
     add_pseudo: bool = True,
     stenosis_class_id: int = 10,
+    oversample: int = 1,
 ) -> dict:
     """Merge stenosis GT labels with pseudo syntax labels.
 
@@ -164,6 +165,8 @@ def merge_stenosis_images(
         output_dir: Output merged dataset directory.
         split: train/val/test.
         add_pseudo: If False, only use GT (for val/test).
+        oversample: Number of copies of each stenosis image (1=no oversampling).
+                    Only applied to train split.
 
     Returns:
         Stats dict.
@@ -179,39 +182,49 @@ def merge_stenosis_images(
     stats = Counter()
     image_files = sorted(images_src.glob("*.png")) + sorted(images_src.glob("*.PNG"))
 
+    # Only oversample in train split
+    n_copies = oversample if split == "train" else 1
+
     for img_path in image_files:
         stem = img_path.stem
-        stats["images"] += 1
 
-        # Prefix output filenames to avoid collision with syntax
-        out_name = f"stenosis_{img_path.name}"
-        out_stem = f"stenosis_{stem}"
+        for copy_idx in range(n_copies):
+            stats["images"] += 1
 
-        # Symlink image
-        dst_img = images_dst / out_name
-        if not dst_img.exists():
-            os.symlink(img_path.resolve(), dst_img)
+            # Prefix output filenames to avoid collision with syntax
+            # For oversampled copies, add suffix to avoid self-collision
+            if copy_idx == 0:
+                out_name = f"stenosis_{img_path.name}"
+                out_stem = f"stenosis_{stem}"
+            else:
+                out_name = f"stenosis_ov{copy_idx}_{img_path.name}"
+                out_stem = f"stenosis_ov{copy_idx}_{stem}"
 
-        # GT stenosis labels: remap from class 0 -> class N
-        gt_lines_raw = read_label_lines(labels_src / f"{stem}.txt")
-        gt_lines = remap_label_lines(gt_lines_raw, stenosis_class_id)
-        stats["gt_labels"] += len(gt_lines)
+            # Symlink image
+            dst_img = images_dst / out_name
+            if not dst_img.exists():
+                os.symlink(img_path.resolve(), dst_img)
 
-        # Pseudo syntax labels (classes 0-9) — stored under original stem
-        pseudo_lines = []
-        if add_pseudo and pseudo_syntax_dir:
-            pseudo_path = pseudo_syntax_dir / f"{stem}.txt"
-            pseudo_lines = read_label_lines(pseudo_path)
-            stats["pseudo_labels"] += len(pseudo_lines)
+            # GT stenosis labels: remap from class 0 -> class N
+            gt_lines_raw = read_label_lines(labels_src / f"{stem}.txt")
+            gt_lines = remap_label_lines(gt_lines_raw, stenosis_class_id)
+            stats["gt_labels"] += len(gt_lines)
 
-        # Merge
-        merged = merge_label_files(gt_lines, pseudo_lines)
-        stats["merged_labels"] += len(merged)
+            # Pseudo syntax labels (classes 0-9) — stored under original stem
+            pseudo_lines = []
+            if add_pseudo and pseudo_syntax_dir:
+                pseudo_path = pseudo_syntax_dir / f"{stem}.txt"
+                pseudo_lines = read_label_lines(pseudo_path)
+                stats["pseudo_labels"] += len(pseudo_lines)
 
-        # Write with prefixed name
-        label_path = labels_dst / f"{out_stem}.txt"
-        with open(label_path, "w") as f:
-            f.write("\n".join(merged) + "\n" if merged else "")
+            # Merge
+            merged = merge_label_files(gt_lines, pseudo_lines)
+            stats["merged_labels"] += len(merged)
+
+            # Write with prefixed name
+            label_path = labels_dst / f"{out_stem}.txt"
+            with open(label_path, "w") as f:
+                f.write("\n".join(merged) + "\n" if merged else "")
 
     return dict(stats)
 
@@ -259,6 +272,7 @@ def merge_datasets(
     output_dir: Path,
     class_names_json: str,
     yaml_output: Path,
+    stenosis_oversample: int = 1,
 ) -> dict:
     """Full dataset merge: syntax + stenosis with pseudo-labels.
 
@@ -270,6 +284,7 @@ def merge_datasets(
         output_dir: Output merged dataset directory.
         class_names_json: Path to syntax class_mapping.json.
         yaml_output: Path to write YOLO dataset YAML.
+        stenosis_oversample: Number of copies of stenosis images in train (1=no oversampling).
 
     Returns:
         Combined stats dict.
@@ -278,6 +293,8 @@ def merge_datasets(
     stenosis_id = get_stenosis_class_id(class_names_json)
     print(f"\n  Stenosis class ID: {stenosis_id} "
           f"(num_syntax_classes={stenosis_id})")
+    if stenosis_oversample > 1:
+        print(f"  Stenosis oversampling: {stenosis_oversample}x (train only)")
 
     all_stats = {}
 
@@ -303,6 +320,7 @@ def merge_datasets(
             stenosis_data_dir, pseudo_syntax_dir,
             output_dir, split, add_pseudo=add_pseudo,
             stenosis_class_id=stenosis_id,
+            oversample=stenosis_oversample,
         )
         print(f"    Stenosis: {stenosis_stats.get('images', 0)} images, "
               f"{stenosis_stats.get('gt_labels', 0)} GT + "
