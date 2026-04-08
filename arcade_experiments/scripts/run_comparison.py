@@ -1,7 +1,7 @@
 """Run model comparison across two dataset variants.
 
 Dataset A: Stratified splits + ALL 25 SYNTAX classes (min_count=0)
-Dataset B: Stratified splits + 10 SYNTAX classes (min_count=300)
+Dataset B: Stratified splits + filtered SYNTAX classes (min_count=300, pooled counting)
 
 For each dataset, trains each model through the full iterative pipeline,
 then outputs a comparison table with F1 scores.

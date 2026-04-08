@@ -1,7 +1,7 @@
 """Master data preparation script for ARCADE experiments.
 
 Orchestrates the full data pipeline:
-  1. Filter SYNTAX classes to those with >=300 training instances (10 classes)
+  1. Filter SYNTAX classes to those with >=300 pooled instances (across all splits)
   2. Convert filtered COCO JSONs to YOLO segmentation label format
   3. Convert stenosis COCO JSONs to YOLO format (stenosis class only)
   4. Convert grayscale images to 3-channel for COCO pretrained weight compatibility
@@ -40,22 +40,38 @@ def prepare_syntax(arcade_root: Path, data_dir: Path,
     print("Step 1: Filter SYNTAX classes")
     print("=" * 60)
 
-    # Load train annotations for counting
-    train_json = syntax_dir / "train" / "annotations" / "train.json"
-    train_data = load_coco_json(train_json)
-    train_counts = count_train_instances(train_data)
+    # Count instances across ALL splits (pooled) for robust filtering.
+    # Using only the train split is fragile: borderline classes can fall
+    # below threshold depending on the particular train/val/test partition.
+    from collections import Counter
+    pooled_counts = Counter()
+    categories = None
+    for split in SPLITS:
+        split_json = syntax_dir / split / "annotations" / f"{split}.json"
+        if not split_json.exists():
+            continue
+        split_data = load_coco_json(split_json)
+        if categories is None:
+            categories = split_data["categories"]
+        pooled_counts += count_train_instances(split_data)
 
-    # Build filter
+    print(f"  Pooled instance counts across {len(SPLITS)} splits:")
+    cat_names = {c["id"]: c["name"] for c in categories}
+    for cid in sorted(pooled_counts.keys()):
+        name = cat_names.get(cid, str(cid))
+        marker = " <-- KEEP" if pooled_counts[cid] >= min_count else ""
+        print(f"    Cat {cid:>3d} ({name:>5s}): {pooled_counts[cid]:>5d}{marker}")
+
+    # Build filter using pooled counts
     old_to_new, kept_categories = build_class_filter(
-        train_counts, train_data["categories"], min_count
+        pooled_counts, categories, min_count
     )
 
-    cat_names = {c["id"]: c["name"] for c in train_data["categories"]}
-    print(f"\nKept {len(kept_categories)} classes:")
+    print(f"\nKept {len(kept_categories)} classes (>={min_count} pooled instances):")
     for cat in kept_categories:
         old_id = [k for k, v in old_to_new.items() if v == cat["id"]][0]
         print(f"  COCO {old_id:>3d} -> {cat['id']:>2d}  "
-              f"{cat['name']:>5s}  ({train_counts[old_id]} train instances)")
+              f"{cat['name']:>5s}  ({pooled_counts[old_id]} pooled instances)")
 
     # Filter and convert each split
     print("\n" + "=" * 60)

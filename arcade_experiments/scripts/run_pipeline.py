@@ -2,15 +2,16 @@
 
 Pipeline flow:
   0. Data prep: filter SYNTAX -> convert COCO->YOLO -> grayscale->3ch -> dataset YAMLs
-  1. Train on SYNTAX only (10 classes, IDs 0-9) -> model_syntax_v1
+  1. Train on SYNTAX only (N classes, IDs 0..N-1) -> model_syntax_v1
   2. model_syntax_v1 inference on STENOSIS train images -> pseudo SYNTAX labels
-  3. Merge: stenosis GT (class 10) + pseudo SYNTAX (0-9) -> train model_combined_v1
-  4. model_combined_v1 on SYNTAX train images -> pseudo stenosis (class 10)
-  5+ Iterate: merge ALL + retrain from COCO pretrained + lower confidence
+  3. Merge: stenosis GT (class N) + pseudo SYNTAX (0..N-1) -> train model_combined_v1
+  4. model_combined_v1 on SYNTAX train images -> pseudo stenosis (class N)
+  5+ Iterate: regenerate pseudo-labels at lower conf, merge ALL + retrain
 
 Key rules:
   - Always retrain from COCO pretrained weights (not previous iteration)
   - Confidence schedule: initial_conf, initial_conf - decay, ...
+  - Pseudo-labels regenerated BEFORE each iteration's training (not after)
   - val/test NEVER get pseudo labels
   - If mAP degrades vs previous iteration, log warning
 """
@@ -329,6 +330,9 @@ def run_pipeline(
         "stage3_combined_iter1": stage3_metrics,
     }
 
+    # Track the previous model for pseudo-label generation
+    prev_model_weights = combined_weights
+
     for iteration in range(2, iterations + 1):
         conf = max(initial_conf - conf_decay * (iteration - 1),
                    pl_cfg.get("min_conf", 0.65))
@@ -337,7 +341,42 @@ def run_pipeline(
         print(f"# ITERATION {iteration} (conf >= {conf})")
         print(f"{'#' * 60}")
 
-        # Full merge and retrain
+        # FIRST: Regenerate pseudo-labels with the previous model at the
+        # current (lower) confidence. This fixes the stale-labels bug where
+        # iter2 previously reused Stage 2/4 labels at the initial conf,
+        # producing a dataset identical to Stage 3.
+        print(f"\n  Regenerating pseudo-labels with conf={conf} ...")
+
+        pseudo_syntax_dir_new = results_dir / "pseudo_labels" / f"syntax_on_stenosis_iter{iteration}"
+        pseudo_syntax_dir_new.mkdir(parents=True, exist_ok=True)
+        stats = generate_pseudo_labels(
+            model_path=prev_model_weights,
+            image_dir=str(data_dir / "stenosis" / "images" / "train"),
+            output_label_dir=str(pseudo_syntax_dir_new),
+            conf_threshold=conf,
+            class_offset=0,
+            use_one_to_many=use_o2m,
+        )
+        save_stats(stats, str(pseudo_syntax_dir_new / "stats.json"))
+        pseudo_syntax_dir = pseudo_syntax_dir_new
+
+        pseudo_stenosis_dir_new = results_dir / "pseudo_labels" / f"stenosis_on_syntax_iter{iteration}"
+        pseudo_stenosis_dir_new.mkdir(parents=True, exist_ok=True)
+        stats = generate_pseudo_labels(
+            model_path=prev_model_weights,
+            image_dir=str(data_dir / "syntax_filtered" / "images" / "train"),
+            output_label_dir=str(pseudo_stenosis_dir_new),
+            conf_threshold=conf,
+            class_offset=0,
+            use_one_to_many=use_o2m,
+        )
+        save_stats(stats, str(pseudo_stenosis_dir_new / "stats.json"))
+        class_mapping_path = data_dir / "syntax_filtered" / "class_mapping.json"
+        stenosis_cls = get_stenosis_class_id(str(class_mapping_path))
+        _filter_pseudo_to_class(pseudo_stenosis_dir_new, target_class=stenosis_cls)
+        pseudo_stenosis_dir = pseudo_stenosis_dir_new
+
+        # THEN: Full merge and retrain with fresh pseudo-labels
         iter_weights = full_merge_and_train(
             cfg, data_dir, results_dir,
             pseudo_syntax_dir, pseudo_stenosis_dir,
@@ -362,36 +401,7 @@ def run_pipeline(
                       f"({'improved' if curr_map > prev_map else 'stable'})")
 
         prev_metrics = iter_metrics
-
-        # Update pseudo labels for next iteration
-        pseudo_syntax_dir_new = results_dir / "pseudo_labels" / f"syntax_on_stenosis_iter{iteration}"
-        pseudo_syntax_dir_new.mkdir(parents=True, exist_ok=True)
-        stats = generate_pseudo_labels(
-            model_path=iter_weights,
-            image_dir=str(data_dir / "stenosis" / "images" / "train"),
-            output_label_dir=str(pseudo_syntax_dir_new),
-            conf_threshold=conf,
-            class_offset=0,
-            use_one_to_many=use_o2m,
-        )
-        save_stats(stats, str(pseudo_syntax_dir_new / "stats.json"))
-        pseudo_syntax_dir = pseudo_syntax_dir_new
-
-        pseudo_stenosis_dir_new = results_dir / "pseudo_labels" / f"stenosis_on_syntax_iter{iteration}"
-        pseudo_stenosis_dir_new.mkdir(parents=True, exist_ok=True)
-        stats = generate_pseudo_labels(
-            model_path=iter_weights,
-            image_dir=str(data_dir / "syntax_filtered" / "images" / "train"),
-            output_label_dir=str(pseudo_stenosis_dir_new),
-            conf_threshold=conf,
-            class_offset=0,
-            use_one_to_many=use_o2m,
-        )
-        save_stats(stats, str(pseudo_stenosis_dir_new / "stats.json"))
-        class_mapping_path = data_dir / "syntax_filtered" / "class_mapping.json"
-        stenosis_cls = get_stenosis_class_id(str(class_mapping_path))
-        _filter_pseudo_to_class(pseudo_stenosis_dir_new, target_class=stenosis_cls)
-        pseudo_stenosis_dir = pseudo_stenosis_dir_new
+        prev_model_weights = iter_weights
 
     # ── Final evaluation on test set ──
     print("\n" + "#" * 60)
