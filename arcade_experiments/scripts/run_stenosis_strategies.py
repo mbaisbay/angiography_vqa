@@ -24,8 +24,8 @@ Usage:
 
 import argparse
 import json
-import multiprocessing
 import os
+import subprocess
 import sys
 import time
 import traceback
@@ -343,14 +343,30 @@ def run_separate_stenosis(exp: dict, arcade_root: Path, splits_dir: Path,
     return all_metrics
 
 
-def worker(args_tuple):
-    """Worker function for multiprocessing — runs one experiment."""
-    exp, arcade_root, splits_dir, output_dir, iterations = args_tuple
+def _run_single_worker_script():
+    """Entry point when this script is invoked as a subprocess worker.
+
+    Usage: python run_stenosis_strategies.py --worker <json_path>
+    Reads experiment config from JSON, runs the experiment, writes results JSON.
+    """
+    import argparse as ap
+    p = ap.ArgumentParser()
+    p.add_argument("--worker", type=str, required=True)
+    a = p.parse_args()
+
+    with open(a.worker) as f:
+        job = json.load(f)
+
+    exp = job["exp"]
+    arcade_root = Path(job["arcade_root"])
+    splits_dir = Path(job["splits_dir"])
+    output_dir = Path(job["output_dir"])
+    iterations = job["iterations"]
+    result_path = Path(job["result_path"])
+
     name = exp["name"]
     gpu = exp["gpu"]
 
-    # Set CUDA_VISIBLE_DEVICES so this process only sees its GPU.
-    # After this, torch sees it as device "0" regardless of physical GPU ID.
     os.environ["CUDA_VISIBLE_DEVICES"] = str(gpu)
     exp["config"]["device"] = "0"
 
@@ -370,7 +386,7 @@ def worker(args_tuple):
         elapsed = time.time() - start
         print(f"\n[GPU {gpu}] {name} COMPLETE ({elapsed / 3600:.1f}h)")
 
-        return {
+        result = {
             "name": name,
             "gpu": gpu,
             "description": exp["description"],
@@ -385,7 +401,7 @@ def worker(args_tuple):
         print(f"\n[GPU {gpu}] {name} FAILED ({elapsed / 3600:.1f}h): {e}")
         print(error_msg)
 
-        return {
+        result = {
             "name": name,
             "gpu": gpu,
             "description": exp["description"],
@@ -394,6 +410,73 @@ def worker(args_tuple):
             "error": str(e),
             "traceback": error_msg,
         }
+
+    with open(result_path, "w") as f:
+        json.dump(result, f, indent=2, default=str)
+
+
+def launch_experiments_parallel(experiments, arcade_root, splits_dir,
+                                output_dir, iterations):
+    """Launch each experiment as a separate subprocess to avoid daemon issues."""
+    script_path = Path(__file__).resolve()
+    tmp_dir = output_dir / "_worker_jobs"
+    tmp_dir.mkdir(parents=True, exist_ok=True)
+
+    processes = []
+    result_paths = []
+
+    for exp in experiments:
+        name = exp["name"]
+        job_path = tmp_dir / f"{name}_job.json"
+        result_path = tmp_dir / f"{name}_result.json"
+        log_path = output_dir / name / "worker.log"
+        (output_dir / name).mkdir(parents=True, exist_ok=True)
+
+        job = {
+            "exp": exp,
+            "arcade_root": str(arcade_root),
+            "splits_dir": str(splits_dir),
+            "output_dir": str(output_dir),
+            "iterations": iterations,
+            "result_path": str(result_path),
+        }
+        with open(job_path, "w") as f:
+            json.dump(job, f, indent=2, default=str)
+
+        log_file = open(log_path, "w")
+        proc = subprocess.Popen(
+            [sys.executable, str(script_path), "--worker", str(job_path)],
+            stdout=log_file,
+            stderr=subprocess.STDOUT,
+            cwd=str(script_path.parent),
+        )
+        processes.append((name, exp["gpu"], proc, log_file))
+        result_paths.append((name, result_path))
+        print(f"  Launched {name} on GPU {exp['gpu']} (PID {proc.pid}, log: {log_path})")
+
+    # Wait for all to finish
+    print(f"\nWaiting for {len(processes)} experiments to complete...")
+    for name, gpu, proc, log_file in processes:
+        proc.wait()
+        log_file.close()
+        status = "OK" if proc.returncode == 0 else f"EXIT {proc.returncode}"
+        print(f"  [GPU {gpu}] {name}: {status}")
+
+    # Collect results
+    results = []
+    for name, result_path in result_paths:
+        if result_path.exists():
+            with open(result_path) as f:
+                results.append(json.load(f))
+        else:
+            results.append({
+                "name": name,
+                "status": "failed",
+                "error": "No result file produced",
+                "elapsed_hours": 0,
+            })
+
+    return results
 
 
 # ── Results Reporting ───────────────────────────────────────────────────────
@@ -540,18 +623,12 @@ def main():
     for exp in experiments:
         print(f"  GPU {exp['gpu']}: {exp['name']} — {exp['description']}")
 
-    # ── Step 3: Launch all experiments in parallel ──
+    # ── Step 3: Launch all experiments as separate subprocesses ──
     total_start = time.time()
 
-    worker_args = [
-        (exp, arcade_root, splits_dir, output_dir, args.iterations)
-        for exp in experiments
-    ]
-
-    # Use spawn context to avoid CUDA fork issues
-    ctx = multiprocessing.get_context("spawn")
-    with ctx.Pool(processes=len(experiments)) as pool:
-        results = pool.map(worker, worker_args)
+    results = launch_experiments_parallel(
+        experiments, arcade_root, splits_dir, output_dir, args.iterations
+    )
 
     total_elapsed = time.time() - total_start
 
@@ -579,4 +656,8 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    # If invoked as a worker subprocess, run the single experiment
+    if "--worker" in sys.argv:
+        _run_single_worker_script()
+    else:
+        main()
