@@ -126,3 +126,15 @@ combined_dataset:
 
 stenosis_categories:
   26: "stenosis"
+
+# === CROP PIPELINE (two-stage vessel→stenosis) ===
+crop_pipeline:
+  padding_frac: 0.15              # Padding around vessel bbox (fraction of bbox dim)
+  crop_size: 512                   # Resize crops to this size
+  min_vessel_bbox_px: 16           # Skip vessels smaller than this (avoids resize artifacts)
+  vessel_conf_threshold: 0.15      # Lower threshold to catch more vessels at inference
+  stenosis_conf_threshold: 0.25    # Stenosis model confidence threshold
+  nms_iou_threshold: 0.5           # NMS for overlapping crop predictions
+  crop_dataset_dir: "./arcade/submission/stenosis_crops"
+  stenosis_crop_data_yaml: "./data_stenosis_crop.yaml"
+  stenosis_crop_weights: "./runs/stenosis_crop/weights/best.pt"

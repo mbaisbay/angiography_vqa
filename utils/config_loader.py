@@ -44,6 +44,11 @@ def load_config(config_path: str) -> dict:
         "syntax_data_yaml", "stenosis_data_yaml", "combined_data_yaml",
         "final_data_yaml",
     ]
+    # Also resolve crop pipeline top-level yaml path
+    if "crop_pipeline" in config and "stenosis_crop_data_yaml" in config["crop_pipeline"]:
+        config["crop_pipeline"]["stenosis_crop_data_yaml"] = str(
+            (base_dir / config["crop_pipeline"]["stenosis_crop_data_yaml"]).resolve()
+        )
     for key in path_keys:
         if key in config:
             config[key] = str((base_dir / config[key]).resolve())
@@ -58,6 +63,8 @@ def load_config(config_path: str) -> dict:
         ("intersection", "overlay_output_dir"),
         ("intersection", "results_output_dir"),
         ("combined_dataset", "output_dir"),
+        ("crop_pipeline", "crop_dataset_dir"),
+        ("crop_pipeline", "stenosis_crop_weights"),
     ]
     for section, key in nested_paths:
         if section in config and key in config[section]:
@@ -91,6 +98,8 @@ def get_training_args(config: dict, task: str) -> dict:
         data_yaml = config["combined_data_yaml"]
     elif task == "final":
         data_yaml = config["final_data_yaml"]
+    elif task == "stenosis_crop":
+        data_yaml = config["crop_pipeline"]["stenosis_crop_data_yaml"]
     else:
         raise ValueError(f"Unknown task: {task}")
 
@@ -163,8 +172,10 @@ def get_data_yaml_path(config: dict, task: str) -> str:
         return config["combined_data_yaml"]
     elif task == "final":
         return config["final_data_yaml"]
+    elif task == "stenosis_crop":
+        return config["crop_pipeline"]["stenosis_crop_data_yaml"]
     else:
-        raise ValueError(f"Unknown task: {task}. Must be 'syntax', 'stenosis', 'combined', or 'final'.")
+        raise ValueError(f"Unknown task: {task}. Must be 'syntax', 'stenosis', 'combined', 'final', or 'stenosis_crop'.")
 
 
 def get_task_root(config: dict, task: str) -> str:

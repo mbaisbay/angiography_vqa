@@ -18,8 +18,8 @@ def main():
         help="Path to pipeline config YAML (default: config.yaml)"
     )
     parser.add_argument(
-        "--task", type=str, required=True, choices=["syntax", "stenosis", "combined"],
-        help="Which task to train: 'syntax' (vessel segments), 'stenosis' (plaque detection), or 'combined' (both)"
+        "--task", type=str, required=True, choices=["syntax", "stenosis", "combined", "stenosis_crop"],
+        help="Which task to train: 'syntax' (vessel segments), 'stenosis' (plaque detection), 'combined' (both), or 'stenosis_crop' (crop-based stenosis)"
     )
     parser.add_argument(
         "--resume", type=str, default=None,
