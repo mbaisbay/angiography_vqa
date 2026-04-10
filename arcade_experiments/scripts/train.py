@@ -78,7 +78,7 @@ def build_train_args(cfg: dict, data_yaml: str, stage: str,
         remaining = cfg["epochs"] - cfg.get("freeze_epochs", 15)
         args["epochs"] = max(remaining, 10)
         args["freeze"] = 0
-        args["lr0"] = cfg["lr0"] * 0.1  # 10x lower for fine-tuning
+        args["lr0"] = cfg["lr0"] * 0.2  # 5x lower for fine-tuning
         args["lrf"] = cfg.get("lrf", 0.01)
         args["patience"] = cfg.get("patience", 25)
         args["resume"] = False
@@ -128,7 +128,7 @@ def train_two_stage(cfg: dict, data_yaml: str, project: str,
     print("\n" + "=" * 60)
     print(f"Stage B: Unfrozen fine-tuning ({remaining_epochs} epochs)")
     print(f"  Starting from: {stage_a_best}")
-    print(f"  LR: {cfg['lr0'] * 0.1}")
+    print(f"  LR: {cfg['lr0'] * 0.2}")
     print("=" * 60)
 
     model = YOLO(str(stage_a_best))

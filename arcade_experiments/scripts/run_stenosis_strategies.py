@@ -63,12 +63,12 @@ def get_experiments():
         "copy_paste": 0.0,
         "fliplr": 0.5,
         "flipud": 0.0,
-        "degrees": 20.0,
-        "scale": 0.4,
+        "degrees": 10.0,
+        "scale": 0.2,
         "translate": 0.1,
         "hsv_h": 0.0,
         "hsv_s": 0.0,
-        "hsv_v": 0.3,
+        "hsv_v": 0.15,
         "erasing": 0.0,
         "shear": 0.0,
         "perspective": 0.0,
@@ -163,13 +163,13 @@ def get_experiments():
             "custom_runner": "vessel_guided",
             # S6-specific knobs (consumed by run_vessel_guided_stenosis)
             "vessel_guided": {
-                "dilate_px": 20,
-                "crop_pad_px": 10,
+                "dilate_px": 30,
+                "crop_pad_px": 15,
                 "vessel_conf": 0.25,
                 "vessel_imgsz": 768,
                 # Which variant to train the stenosis detector on.
                 # One of: "crop", "blackout", "both" (train both, report both).
-                "variant": "crop",
+                "variant": "both",
             },
         },
     ]
@@ -290,9 +290,6 @@ def run_separate_stenosis(exp: dict, arcade_root: Path, splits_dir: Path,
     cfg_sten["device"] = "0"  # CUDA_VISIBLE_DEVICES already set by worker
     cfg_sten["box"] = 10.0
     cfg_sten["cls"] = 1.0
-    # More aggressive augmentation for the tiny dataset
-    cfg_sten["copy_paste"] = 0.3
-    cfg_sten["scale"] = 0.5
     cfg_sten["results_dir"] = str(results_dir / "stenosis_model")
 
     stenosis_yaml = str(data_dir / "dataset_configs" / "stenosis_only.yaml")
@@ -489,8 +486,6 @@ def run_vessel_guided_stenosis(exp: dict, arcade_root: Path, splits_dir: Path,
         cfg_sten["device"] = "0"
         cfg_sten["box"] = 10.0
         cfg_sten["cls"] = 1.0
-        cfg_sten["copy_paste"] = 0.3
-        cfg_sten["scale"] = 0.5
         cfg_sten["results_dir"] = str(results_dir / f"stenosis_model_{v}")
 
         stenosis_yaml = str(masked_root / v / "data.yaml")

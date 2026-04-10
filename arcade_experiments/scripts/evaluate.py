@@ -112,11 +112,12 @@ def evaluate_model(model_path: str, data_yaml: str,
 
 
 def evaluate_yolo26_both_heads(model_path: str, data_yaml: str,
-                                split: str = "val") -> dict:
+                                split: str = "val",
+                                imgsz: int = 512) -> dict:
     """Evaluate YOLO26 with both end2end (one-to-one) and one-to-many heads."""
     # One-to-one (default, deployment)
     print("  Evaluating YOLO26 one-to-one head (deployment)...")
-    metrics_o2o = evaluate_model(model_path, data_yaml, split)
+    metrics_o2o = evaluate_model(model_path, data_yaml, split, imgsz=imgsz)
     metrics_o2o["head"] = "one-to-one"
 
     # One-to-many
@@ -128,7 +129,7 @@ def evaluate_yolo26_both_heads(model_path: str, data_yaml: str,
         print("  WARNING: Could not set end2end=False, skipping o2m eval")
         return {"one_to_one": metrics_o2o}
 
-    results = model.val(data=data_yaml, split=split, imgsz=512, verbose=False)
+    results = model.val(data=data_yaml, split=split, imgsz=imgsz, verbose=False)
     metrics_o2m = {
         "head": "one-to-many",
         "split": split,

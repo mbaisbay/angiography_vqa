@@ -190,6 +190,100 @@ def apply_blackout(
     return out
 
 
+# ── Polygon helpers ──────────────────────────────────────────────────────────
+
+def polygon_area(poly: np.ndarray) -> float:
+    """Compute area of a polygon using the shoelace formula.
+
+    Args:
+        poly: (N, 2) array of xy coordinates (absolute or normalized).
+
+    Returns:
+        Absolute area (always >= 0).
+    """
+    if len(poly) < 3:
+        return 0.0
+    x = poly[:, 0]
+    y = poly[:, 1]
+    return 0.5 * abs(float(np.sum(x[:-1] * y[1:] - x[1:] * y[:-1])
+                            + x[-1] * y[0] - x[0] * y[-1]))
+
+
+def clip_polygon_to_rect(
+    poly: np.ndarray,
+    x1: float, y1: float, x2: float, y2: float,
+) -> np.ndarray:
+    """Clip a polygon to a rectangle using the Sutherland-Hodgman algorithm.
+
+    This properly creates new vertices at edge intersections instead of
+    collapsing existing vertices to the boundary (which np.clip does and
+    which distorts polygon shapes).
+
+    Args:
+        poly: (N, 2) array of xy coordinates.
+        x1, y1, x2, y2: Rectangle bounds.
+
+    Returns:
+        Clipped polygon as (M, 2) array. May have fewer or more vertices
+        than the input. Empty array if the polygon is fully outside.
+    """
+    def _clip_edge(vertices, edge_start, edge_end):
+        """Clip polygon vertices against one edge of the rectangle."""
+        if len(vertices) == 0:
+            return []
+
+        # Edge normal (pointing inward)
+        ex, ey = edge_end[0] - edge_start[0], edge_end[1] - edge_start[1]
+
+        def inside(p):
+            # Point is inside if it's on the left side of the directed edge
+            return ex * (p[1] - edge_start[1]) - ey * (p[0] - edge_start[0]) >= 0
+
+        def intersect(p1, p2):
+            # Line-line intersection between edge and segment p1->p2
+            dx, dy = p2[0] - p1[0], p2[1] - p1[1]
+            denom = ex * dy - ey * dx
+            if abs(denom) < 1e-12:
+                return p1  # parallel, return start point
+            t = (ey * (p1[0] - edge_start[0]) - ex * (p1[1] - edge_start[1])) / denom
+            return [p1[0] + t * dx, p1[1] + t * dy]
+
+        output = []
+        for i in range(len(vertices)):
+            current = vertices[i]
+            prev = vertices[i - 1]
+            curr_inside = inside(current)
+            prev_inside = inside(prev)
+
+            if curr_inside:
+                if not prev_inside:
+                    output.append(intersect(prev, current))
+                output.append(current)
+            elif prev_inside:
+                output.append(intersect(prev, current))
+
+        return output
+
+    # Convert to list of [x, y] for the algorithm
+    verts = [[float(p[0]), float(p[1])] for p in poly]
+
+    # Clip against each of the four rectangle edges (clockwise winding).
+    # With CW winding, the "left side" test correctly identifies the
+    # interior of the rectangle.
+    edges = [
+        ([x1, y1], [x2, y1]),  # bottom edge: left to right
+        ([x2, y1], [x2, y2]),  # right edge: top to bottom
+        ([x2, y2], [x1, y2]),  # top edge: right to left
+        ([x1, y2], [x1, y1]),  # left edge: bottom to top
+    ]
+    for edge_start, edge_end in edges:
+        verts = _clip_edge(verts, edge_start, edge_end)
+        if len(verts) == 0:
+            return np.empty((0, 2), dtype=np.float32)
+
+    return np.array(verts, dtype=np.float32)
+
+
 # ── Variant 2: Crop ──────────────────────────────────────────────────────────
 
 def apply_crop_and_remap_labels(
@@ -197,8 +291,13 @@ def apply_crop_and_remap_labels(
     labels: list[tuple[int, np.ndarray]],
     crop_bbox: tuple[int, int, int, int],
     pad_to_square: bool = True,
-) -> tuple[np.ndarray, list[tuple[int, np.ndarray]]]:
+    min_area_ratio: float = 0.1,
+) -> tuple[np.ndarray, list[tuple[int, np.ndarray]], dict]:
     """Crop an image to crop_bbox, pad to square, and remap normalized polygons.
+
+    Uses Sutherland-Hodgman polygon clipping to properly handle polygons
+    that cross the crop boundary, instead of the naive np.clip approach
+    which distorts polygon shapes.
 
     Args:
         image: HxW or HxWx3 uint8 image.
@@ -206,12 +305,13 @@ def apply_crop_and_remap_labels(
                 NORMALIZED coordinates of the ORIGINAL image.
         crop_bbox: (x1, y1, x2, y2) in original-image pixel coordinates.
         pad_to_square: If True, pad shorter side with zeros so crop is square.
-                       This avoids aspect-ratio distortion when ultralytics
-                       later resizes to its square training size.
+        min_area_ratio: Drop labels that lose more than (1 - min_area_ratio)
+                        of their area to clipping. Default 0.1 means keep
+                        labels that retain at least 10% of original area.
 
     Returns:
-        (cropped_image, remapped_labels) — labels are in NORMALIZED coordinates
-        of the cropped image.
+        (cropped_image, remapped_labels, clip_stats) — labels in NORMALIZED
+        coordinates of the cropped image. clip_stats tracks distortion.
     """
     H, W = image.shape[:2]
     x1, y1, x2, y2 = crop_bbox
@@ -238,34 +338,53 @@ def apply_crop_and_remap_labels(
             )
     out_h, out_w = cropped.shape[:2]
 
-    # Remap polygons: original-normalized -> absolute -> crop-absolute
-    #                 -> padded-crop-absolute -> padded-crop-normalized
+    clip_stats = {"labels_in": 0, "labels_kept": 0, "labels_clipped": 0,
+                  "labels_dropped_outside": 0, "labels_dropped_area": 0,
+                  "area_loss_pct_sum": 0.0}
+
     remapped = []
     for cls_id, poly_norm in labels:
+        clip_stats["labels_in"] += 1
         poly_abs = poly_norm.copy()
         poly_abs[:, 0] *= W
         poly_abs[:, 1] *= H
 
-        # Clip to the crop rectangle (not the padded area!)
-        poly_abs[:, 0] = np.clip(poly_abs[:, 0], x1, x2)
-        poly_abs[:, 1] = np.clip(poly_abs[:, 1], y1, y2)
+        # Compute original area before clipping
+        orig_area = polygon_area(poly_abs)
+
+        # Proper polygon clipping against the crop rectangle
+        clipped_poly = clip_polygon_to_rect(poly_abs, x1, y1, x2, y2)
+
+        if len(clipped_poly) < 3:
+            clip_stats["labels_dropped_outside"] += 1
+            continue
+
+        # Check area loss from clipping
+        clipped_area = polygon_area(clipped_poly)
+        if orig_area > 0:
+            area_ratio = clipped_area / orig_area
+            area_loss_pct = (1.0 - area_ratio) * 100
+            clip_stats["area_loss_pct_sum"] += area_loss_pct
+            if area_ratio < min_area_ratio:
+                clip_stats["labels_dropped_area"] += 1
+                continue
+            if area_loss_pct > 1.0:
+                clip_stats["labels_clipped"] += 1
 
         # Shift into crop-local coordinates and account for padding
-        poly_local = poly_abs.copy()
+        poly_local = clipped_poly.copy()
         poly_local[:, 0] = poly_local[:, 0] - x1 + pad_left
         poly_local[:, 1] = poly_local[:, 1] - y1 + pad_top
 
-        # Drop fully-degenerate polygons (e.g., GT fully outside crop)
-        if (poly_local[:, 0].max() - poly_local[:, 0].min() < 1
-                or poly_local[:, 1].max() - poly_local[:, 1].min() < 1):
-            continue
-
+        # Normalize to cropped image dimensions
         poly_out = poly_local.copy()
         poly_out[:, 0] /= out_w
         poly_out[:, 1] /= out_h
+
+        clip_stats["labels_kept"] += 1
         remapped.append((cls_id, poly_out))
 
-    return cropped, remapped
+    return cropped, remapped, clip_stats
 
 
 # ── Main build loop ──────────────────────────────────────────────────────────
@@ -372,21 +491,27 @@ def build_vessel_masked_dataset(
             # 2. Dilate
             dilated = dilate_mask(mask, dilate_px)
 
-            # Sanity check: does any stenosis GT pixel fall inside the dilated
-            # mask? If not, this image would lose its stenosis under blackout.
+            # Sanity check: compute what fraction of each stenosis polygon
+            # overlaps the dilated vessel mask. Uses rasterized polygon area.
             for _, poly_norm in labels:
                 poly_abs = poly_norm.copy()
                 poly_abs[:, 0] *= W
                 poly_abs[:, 1] *= H
-                # Sample a few polygon points
-                hit = False
-                for pt in poly_abs.astype(int):
-                    x, y = int(pt[0]), int(pt[1])
-                    if 0 <= x < W and 0 <= y < H and dilated[y, x] > 0:
-                        hit = True
-                        break
-                if not hit:
+                pts = poly_abs.astype(np.int32).reshape(-1, 1, 2)
+                # Rasterize the polygon to compute overlap with vessel mask
+                poly_mask = np.zeros((H, W), dtype=np.uint8)
+                cv2.fillPoly(poly_mask, [pts], 255)
+                poly_pixels = int(np.sum(poly_mask > 0))
+                if poly_pixels == 0:
                     split_stats["stenoses_outside_mask"] += 1
+                    continue
+                overlap_pixels = int(np.sum((poly_mask > 0) & (dilated > 0)))
+                overlap_ratio = overlap_pixels / poly_pixels
+                if overlap_ratio < 0.5:
+                    split_stats["stenoses_outside_mask"] += 1
+                    split_stats["stenoses_low_overlap"] += 1
+                split_stats["stenosis_mask_overlap_sum_x1000"] += int(
+                    overlap_ratio * 1000)
 
             if save_debug_masks:
                 cv2.imwrite(str(masks_dir / split / f"{stem}.png"), dilated)
@@ -402,12 +527,16 @@ def build_vessel_masked_dataset(
                 # Fallback: full image crop
                 crop_bbox = (0, 0, W, H)
                 split_stats["fallback_empty_crop"] += 1
-            cropped_img, cropped_labels = apply_crop_and_remap_labels(
+            cropped_img, cropped_labels, cstats = apply_crop_and_remap_labels(
                 image, labels, crop_bbox, pad_to_square=True,
             )
             cv2.imwrite(str(cr_img_dir / f"{stem}.png"), cropped_img)
             write_yolo_seg_label(cr_lbl_dir / f"{stem}.txt", cropped_labels)
             split_stats["crop_labels_kept"] += len(cropped_labels)
+            split_stats["crop_labels_clipped"] += cstats["labels_clipped"]
+            split_stats["crop_labels_dropped_outside"] += cstats["labels_dropped_outside"]
+            split_stats["crop_labels_dropped_area"] += cstats["labels_dropped_area"]
+            split_stats["crop_area_loss_pct_sum"] += cstats["area_loss_pct_sum"]
 
             # Area-ratio telemetry: how much does the crop shrink the frame?
             orig_area = H * W
@@ -421,13 +550,29 @@ def build_vessel_masked_dataset(
         print(f"    Images     : {split_stats['images']}")
         print(f"    GT stenoses: {split_stats['gt_stenoses']}")
         print(f"    Kept after crop: {split_stats['crop_labels_kept']}")
+        print(f"    Clipped labels (>1% area loss): "
+              f"{split_stats['crop_labels_clipped']}")
+        print(f"    Dropped (fully outside crop): "
+              f"{split_stats['crop_labels_dropped_outside']}")
+        print(f"    Dropped (<10% area retained): "
+              f"{split_stats['crop_labels_dropped_area']}")
         print(f"    No-vessel fallbacks: {split_stats['fallback_no_vessels']}")
-        print(f"    Stenoses outside dilated mask: "
+        print(f"    Stenoses <50% mask overlap: "
               f"{split_stats['stenoses_outside_mask']}")
+        n_gt = split_stats["gt_stenoses"]
+        if n_gt > 0:
+            avg_overlap = (split_stats["stenosis_mask_overlap_sum_x1000"] /
+                           n_gt) / 1000.0
+            print(f"    Mean stenosis-mask overlap: {avg_overlap:.3f}")
         if split_stats["images"] > 0:
             avg_ratio = (split_stats["crop_area_ratio_sum_x1000"] /
                          split_stats["images"]) / 1000.0
             print(f"    Mean crop / orig area ratio: {avg_ratio:.3f}")
+        n_clipped = split_stats["crop_labels_clipped"]
+        if n_clipped > 0:
+            avg_loss = split_stats["crop_area_loss_pct_sum"] / max(
+                split_stats["crop_labels_kept"] + split_stats["crop_labels_dropped_area"], 1)
+            print(f"    Mean polygon area loss: {avg_loss:.1f}%")
 
     # 4. Write dataset YAMLs (both variants are single-class stenosis)
     for variant_name, variant_dir in [("blackout", blackout_dir),
@@ -499,7 +644,7 @@ def preprocess_image_for_inference(
         crop_bbox = mask_to_crop_bbox(dilated, pad_px=crop_pad_px)
         if crop_bbox is None:
             crop_bbox = (0, 0, W, H)
-        cropped, _ = apply_crop_and_remap_labels(image, [], crop_bbox,
+        cropped, _, _ = apply_crop_and_remap_labels(image, [], crop_bbox,
                                                  pad_to_square=True)
         x1, y1, x2, y2 = crop_bbox
         ch, cw = y2 - y1, x2 - x1
