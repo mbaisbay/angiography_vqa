@@ -150,6 +150,28 @@ def get_experiments():
             "pipeline_args": {},
             "custom_pipeline": True,
         },
+        {
+            "name": "S6_vessel_guided_stenosis",
+            "gpu": 6,
+            "description": "Vessel-guided stenosis: syntax model masks the "
+                           "image, dedicated stenosis model trains on the "
+                           "vessel-restricted view (blackout + crop variants)",
+            # Custom pipeline — see run_vessel_guided_stenosis below.
+            "overrides": {},
+            "pipeline_args": {},
+            "custom_pipeline": True,
+            "custom_runner": "vessel_guided",
+            # S6-specific knobs (consumed by run_vessel_guided_stenosis)
+            "vessel_guided": {
+                "dilate_px": 20,
+                "crop_pad_px": 10,
+                "vessel_conf": 0.25,
+                "vessel_imgsz": 768,
+                # Which variant to train the stenosis detector on.
+                # One of: "crop", "blackout", "both" (train both, report both).
+                "variant": "crop",
+            },
+        },
     ]
 
     # Merge base config into each experiment
@@ -343,6 +365,212 @@ def run_separate_stenosis(exp: dict, arcade_root: Path, splits_dir: Path,
     return all_metrics
 
 
+def run_vessel_guided_stenosis(exp: dict, arcade_root: Path, splits_dir: Path,
+                               output_dir: Path, iterations: int) -> dict:
+    """S6 — Vessel-guided stenosis detection pipeline.
+
+    Motivation
+    ----------
+    Stenoses are tiny objects (often <1% of image area) and the stenosis
+    detector wastes most of its input-resolution budget on ribs, spine,
+    catheters, and contrast artifacts that cannot contain a stenosis. This
+    pipeline uses the trained vessel (syntax) segmentation model as a
+    learned attention prior, restricting the stenosis detector to pixels
+    where vessels actually exist. Conceptually it is a content-aware
+    analogue of SAHI slicing: instead of a uniform grid, we crop/mask
+    using anatomy.
+
+    Pipeline stages
+    ---------------
+      A. Train syntax-only model at 768px (same as S5 Part A).
+      B. Run that syntax model on every stenosis image (train/val/test)
+         to predict per-image vessel union masks. Dilate them by k pixels
+         so stenoses sitting at vessel boundaries aren't clipped away.
+         Build two preprocessed stenosis dataset variants:
+            - "blackout": original H x W, non-vessel pixels zeroed
+            - "crop":     bbox-crop to dilated mask, pad to square,
+                          remap stenosis GT polygons into crop coords
+      C. Train a dedicated stenosis model on the chosen variant at 768px
+         with the same hyperparameters as S5 Part B so the difference
+         vs S5 is exactly the input preprocessing.
+      D. Evaluate both models together on the test split: vessel model
+         reports per-syntax-class metrics, stenosis model reports
+         stenosis AP50 on its (preprocessed) test split.
+
+    CRITICAL design choice: predicted (not GT) vessel masks are used on
+    ALL splits including train. This keeps the train/test distributions
+    matched — the stenosis model must learn to cope with exactly the
+    mask noise it will see at inference.
+    """
+    from run_pipeline import data_prep, _save_metrics
+    from train import load_run_config, train_two_stage
+    from evaluate import evaluate_model
+    from build_vessel_masked_dataset import build_vessel_masked_dataset
+
+    name = exp["name"]
+    results_dir = output_dir / name
+    results_dir.mkdir(parents=True, exist_ok=True)
+
+    vg_cfg = exp.get("vessel_guided", {})
+    dilate_px = vg_cfg.get("dilate_px", 20)
+    crop_pad_px = vg_cfg.get("crop_pad_px", 10)
+    vessel_conf = vg_cfg.get("vessel_conf", 0.25)
+    vessel_imgsz = vg_cfg.get("vessel_imgsz", 768)
+    variant = vg_cfg.get("variant", "crop")
+    if variant not in ("crop", "blackout", "both"):
+        raise ValueError(f"Unknown vessel_guided.variant: {variant}")
+
+    # ── Part A: Syntax-only model at 768px ──
+    print(f"\n{'#' * 64}")
+    print(f"# {name} — Part A: Syntax-only model (768px)")
+    print(f"{'#' * 64}")
+
+    cfg_syntax = dict(exp["config"])
+    cfg_syntax["imgsz"] = 768
+    cfg_syntax["batch"] = 8
+    cfg_syntax["device"] = "0"  # CUDA_VISIBLE_DEVICES set by worker
+    cfg_syntax["results_dir"] = str(results_dir / "syntax_model")
+    cfg_syntax["data_dir"] = str(output_dir / "data" / name)
+
+    config_path_syntax = results_dir / "config_syntax.yaml"
+    with open(config_path_syntax, "w") as f:
+        yaml.dump(cfg_syntax, f, default_flow_style=False)
+
+    cfg_s = load_run_config(str(config_path_syntax))
+    data_dir = Path(cfg_s["data_dir"]).resolve()
+
+    # Shared data prep (syntax_filtered + stenosis)
+    data_prep(arcade_root, data_dir, min_count=300, splits_dir=splits_dir)
+
+    syntax_yaml = str(data_dir / "dataset_configs" / "syntax_only.yaml")
+    syntax_weights = train_two_stage(
+        cfg_s, syntax_yaml,
+        project=str(results_dir / "syntax_model"),
+        run_name="syntax_768",
+    )
+    syntax_metrics = evaluate_model(
+        syntax_weights, syntax_yaml, split="test",
+        augment=True, imgsz=768,
+    )
+    _save_metrics(results_dir, "syntax_model_test", syntax_metrics)
+
+    # ── Part B: Build vessel-masked stenosis dataset ──
+    print(f"\n{'#' * 64}")
+    print(f"# {name} — Part B: Build vessel-masked stenosis dataset")
+    print(f"#   dilate_px={dilate_px}, crop_pad_px={crop_pad_px}, "
+          f"variant={variant}")
+    print(f"{'#' * 64}")
+
+    masked_root = results_dir / "masked_stenosis_data"
+    build_vessel_masked_dataset(
+        syntax_weights=syntax_weights,
+        stenosis_data_dir=data_dir / "stenosis",
+        output_dir=masked_root,
+        dilate_px=dilate_px,
+        crop_pad_px=crop_pad_px,
+        vessel_conf=vessel_conf,
+        vessel_imgsz=vessel_imgsz,
+        save_debug_masks=False,  # per-image masks are large, disable by default
+    )
+
+    # ── Part C: Train stenosis model(s) on masked data ──
+    variants_to_train = ["blackout", "crop"] if variant == "both" else [variant]
+    stenosis_weights_by_variant = {}
+    stenosis_metrics_by_variant = {}
+
+    for v in variants_to_train:
+        print(f"\n{'#' * 64}")
+        print(f"# {name} — Part C: Train stenosis model [{v}]")
+        print(f"{'#' * 64}")
+
+        cfg_sten = dict(exp["config"])
+        cfg_sten["imgsz"] = 768
+        cfg_sten["batch"] = 8
+        cfg_sten["device"] = "0"
+        cfg_sten["box"] = 10.0
+        cfg_sten["cls"] = 1.0
+        cfg_sten["copy_paste"] = 0.3
+        cfg_sten["scale"] = 0.5
+        cfg_sten["results_dir"] = str(results_dir / f"stenosis_model_{v}")
+
+        stenosis_yaml = str(masked_root / v / "data.yaml")
+        st_weights = train_two_stage(
+            cfg_sten, stenosis_yaml,
+            project=str(results_dir / f"stenosis_model_{v}"),
+            run_name=f"stenosis_{v}_768",
+        )
+        stenosis_weights_by_variant[v] = st_weights
+
+        st_metrics = evaluate_model(
+            st_weights, stenosis_yaml, split="test",
+            augment=True, imgsz=768,
+        )
+        _save_metrics(results_dir, f"stenosis_model_{v}_test", st_metrics)
+        stenosis_metrics_by_variant[v] = st_metrics
+
+    # Pick the best variant by stenosis AP50 for the combined final report
+    best_variant = max(
+        stenosis_metrics_by_variant.keys(),
+        key=lambda v: stenosis_metrics_by_variant[v].get("stenosis_AP50", 0.0),
+    )
+    stenosis_metrics = stenosis_metrics_by_variant[best_variant]
+    stenosis_weights = stenosis_weights_by_variant[best_variant]
+
+    # ── Part D: Combined metrics ──
+    print(f"\n{'#' * 64}")
+    print(f"# {name} — Combined results (best variant: {best_variant})")
+    print(f"{'#' * 64}")
+
+    combined_per_class = {}
+    for cls_name, cls_m in syntax_metrics.get("per_class", {}).items():
+        combined_per_class[cls_name] = cls_m
+    for cls_name, cls_m in stenosis_metrics.get("per_class", {}).items():
+        combined_per_class["stenosis"] = cls_m
+
+    all_ap50s = [m.get("ap50", 0) for m in combined_per_class.values()]
+    combined_mAP50 = sum(all_ap50s) / len(all_ap50s) if all_ap50s else 0
+
+    syntax_aps = [m.get("ap50", 0) for k, m in combined_per_class.items()
+                  if k != "stenosis"]
+    stenosis_aps = [m.get("ap50", 0) for k, m in combined_per_class.items()
+                    if k == "stenosis"]
+
+    combined = {
+        "split": "test",
+        "mAP50": round(combined_mAP50, 4),
+        "per_class": combined_per_class,
+        "syntax_mAP50": round(sum(syntax_aps) / len(syntax_aps), 4) if syntax_aps else 0,
+        "stenosis_AP50": round(sum(stenosis_aps) / len(stenosis_aps), 4) if stenosis_aps else 0,
+        "syntax_model": syntax_weights,
+        "stenosis_model": stenosis_weights,
+        "best_variant": best_variant,
+        "vessel_guided_config": {
+            "dilate_px": dilate_px,
+            "crop_pad_px": crop_pad_px,
+            "vessel_conf": vessel_conf,
+            "vessel_imgsz": vessel_imgsz,
+        },
+    }
+    all_p = [m.get("precision", 0) for m in combined_per_class.values()]
+    all_r = [m.get("recall", 0) for m in combined_per_class.values()]
+    combined["precision"] = round(sum(all_p) / len(all_p), 4) if all_p else 0
+    combined["recall"] = round(sum(all_r) / len(all_r), 4) if all_r else 0
+    combined["mAP50_95"] = 0  # Not directly combinable across two models
+
+    _save_metrics(results_dir, "final_test", combined)
+
+    all_metrics = {
+        "syntax_model_test": syntax_metrics,
+        "stenosis_variants": stenosis_metrics_by_variant,
+        "stenosis_model_test": stenosis_metrics,  # best variant (for compare_runs)
+        "final_test": combined,
+    }
+    with open(results_dir / "all_metrics.json", "w") as f:
+        json.dump(all_metrics, f, indent=2)
+
+    return all_metrics
+
+
 def _run_single_worker_script():
     """Entry point when this script is invoked as a subprocess worker.
 
@@ -375,9 +603,14 @@ def _run_single_worker_script():
 
     try:
         if exp.get("custom_pipeline"):
-            metrics = run_separate_stenosis(
-                exp, arcade_root, splits_dir, output_dir, iterations
-            )
+            if exp.get("custom_runner") == "vessel_guided":
+                metrics = run_vessel_guided_stenosis(
+                    exp, arcade_root, splits_dir, output_dir, iterations
+                )
+            else:
+                metrics = run_separate_stenosis(
+                    exp, arcade_root, splits_dir, output_dir, iterations
+                )
         else:
             metrics = run_standard_experiment(
                 exp, arcade_root, splits_dir, output_dir, iterations
