@@ -1,13 +1,14 @@
 """Filter ARCADE SYNTAX COCO annotations to keep only well-represented classes.
 
-Reads COCO JSON annotations, counts instances per category in the TRAIN split,
-keeps only categories with >=min_count instances, remaps IDs to contiguous 0-N,
-and saves filtered COCO JSONs for all splits.
+Reads COCO JSON annotations, counts instances per category, remaps IDs to
+contiguous 0-N, and saves filtered COCO JSONs for all splits.
 
-With --min-count 300 (default), the kept classes are 10 SYNTAX classes:
-  COCO IDs: 1, 2, 3, 4, 5, 6, 7, 8, 13, 16
-  Names:    1, 2, 3, 4, 5, 6, 7, 8, 11, 13
-  New IDs:  0, 1, 2, 3, 4, 5, 6, 7, 8,  9
+NOTE: The caller (prepare_data.py) now counts instances across ALL pooled
+splits rather than just train, so the set of kept classes is stable
+regardless of how the train/val/test split is done.
+
+With --min-count 300 and pooled counting, the kept classes include 12 SYNTAX
+classes: 1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 13, 16 (depending on dataset).
 """
 
 import argparse

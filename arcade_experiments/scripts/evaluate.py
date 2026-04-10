@@ -17,13 +17,16 @@ from ultralytics import YOLO
 
 
 def evaluate_model(model_path: str, data_yaml: str,
-                   split: str = "val") -> dict:
+                   split: str = "val", augment: bool = False,
+                   imgsz: int = 512) -> dict:
     """Run standard ultralytics validation and extract metrics.
 
     Args:
         model_path: Path to trained model weights.
         data_yaml: Path to YOLO dataset YAML.
         split: Which split to evaluate on (val/test).
+        augment: Enable test-time augmentation (multi-scale + flip).
+        imgsz: Image size for evaluation.
 
     Returns:
         Dict with mAP, per-class metrics, etc.
@@ -32,9 +35,10 @@ def evaluate_model(model_path: str, data_yaml: str,
     results = model.val(
         data=data_yaml,
         split=split,
-        imgsz=512,
+        imgsz=imgsz,
         save_json=True,
         verbose=False,
+        augment=augment,
     )
 
     # Overall segmentation metrics
