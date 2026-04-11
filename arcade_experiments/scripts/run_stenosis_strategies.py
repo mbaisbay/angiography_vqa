@@ -1377,14 +1377,34 @@ def main():
     # ── Step 4: Report results ──
     print_results_table(results)
 
-    # Save full results
+    # Save full results — append to existing file if present so that
+    # results from earlier runs are preserved across sessions.
     results_path = output_dir / "strategy_results.json"
+    existing = []
+    if results_path.exists():
+        try:
+            with open(results_path) as f:
+                existing = json.load(f)
+            if not isinstance(existing, list):
+                existing = [existing]
+        except (json.JSONDecodeError, ValueError):
+            existing = []
+
+    # Merge: update entries with same name, append new ones
+    existing_by_name = {r["name"]: r for r in existing}
+    for r in results:
+        existing_by_name[r["name"]] = r  # overwrite stale entry for same experiment
+    merged = list(existing_by_name.values())
+
     with open(results_path, "w") as f:
-        json.dump(results, f, indent=2, default=str)
+        json.dump(merged, f, indent=2, default=str)
 
     print(f"\n{'=' * 100}")
     print(f"ALL EXPERIMENTS COMPLETE ({total_elapsed / 3600:.1f}h wall time)")
     print(f"Results saved: {results_path}")
+    if existing:
+        print(f"  (merged with {len(existing)} existing entries, "
+              f"total {len(merged)} entries)")
 
     # Summary
     successes = [r for r in results if r["status"] == "success"]
