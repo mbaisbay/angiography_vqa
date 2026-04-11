@@ -1,7 +1,7 @@
 """Two-stage YOLO segmentation training with backbone freeze/unfreeze.
 
 Stage A: Train with frozen backbone (layers 0-9) for freeze_epochs.
-Stage B: Unfreeze all layers, reduce LR by 10x, train for remaining epochs.
+Stage B: Unfreeze all layers, reduce LR (configurable factor), train for remaining epochs.
 
 Always starts from COCO pretrained weights (or specified checkpoint).
 """
@@ -49,6 +49,7 @@ def build_train_args(cfg: dict, data_yaml: str, stage: str,
         "exist_ok": True,
         # Augmentation
         "mosaic": cfg.get("mosaic", 0.0),
+        "close_mosaic": cfg.get("close_mosaic", 0),
         "mixup": cfg.get("mixup", 0.0),
         "copy_paste": cfg.get("copy_paste", 0.0),
         "fliplr": cfg.get("fliplr", 0.5),
@@ -78,7 +79,8 @@ def build_train_args(cfg: dict, data_yaml: str, stage: str,
         remaining = cfg["epochs"] - cfg.get("freeze_epochs", 15)
         args["epochs"] = max(remaining, 10)
         args["freeze"] = 0
-        args["lr0"] = cfg["lr0"] * 0.2  # 5x lower for fine-tuning
+        lr_factor = cfg.get("lr_factor_unfrozen", 0.1)
+        args["lr0"] = cfg["lr0"] * lr_factor
         args["lrf"] = cfg.get("lrf", 0.01)
         args["patience"] = cfg.get("patience", 25)
         args["resume"] = False
@@ -128,7 +130,8 @@ def train_two_stage(cfg: dict, data_yaml: str, project: str,
     print("\n" + "=" * 60)
     print(f"Stage B: Unfrozen fine-tuning ({remaining_epochs} epochs)")
     print(f"  Starting from: {stage_a_best}")
-    print(f"  LR: {cfg['lr0'] * 0.2}")
+    lr_factor = cfg.get("lr_factor_unfrozen", 0.1)
+    print(f"  LR: {cfg['lr0'] * lr_factor} (factor={lr_factor})")
     print("=" * 60)
 
     model = YOLO(str(stage_a_best))

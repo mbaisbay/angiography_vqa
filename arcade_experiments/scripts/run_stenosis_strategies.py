@@ -172,6 +172,126 @@ def get_experiments():
                 "variant": "both",
             },
         },
+        # ── Round 2 experiments (S7-S10) ──────────────────────────────
+        # These restore the proven "old S5" augmentation + LR settings
+        # and test new ideas on top of that baseline.
+        {
+            "name": "S7_reproduce_old_s5",
+            "gpu": 0,
+            "description": "Reproduce Old S5: original aug (degrees=20, "
+                           "scale=0.4, hsv_v=0.3) + copy_paste=0.3 on "
+                           "stenosis + 10x LR reduction (default in train.py)",
+            "overrides": {
+                "degrees": 20.0,
+                "scale": 0.4,
+                "hsv_v": 0.3,
+            },
+            "pipeline_args": {},
+            "custom_pipeline": True,
+            "custom_runner": "separate_v2",
+            "stenosis_overrides": {
+                "copy_paste": 0.3,
+                "scale": 0.5,
+            },
+        },
+        {
+            "name": "S8_mosaic_stenosis",
+            "gpu": 1,
+            "description": "Old S5 config + mosaic=0.8 on stenosis model "
+                           "only (syntax stays mosaic=0.0)",
+            "overrides": {
+                "degrees": 20.0,
+                "scale": 0.4,
+                "hsv_v": 0.3,
+            },
+            "pipeline_args": {},
+            "custom_pipeline": True,
+            "custom_runner": "separate_v2",
+            "stenosis_overrides": {
+                "copy_paste": 0.3,
+                "scale": 0.5,
+                "mosaic": 0.8,
+                "close_mosaic": 15,
+            },
+        },
+        {
+            "name": "S9_vessel_guided_all25",
+            "gpu": 2,
+            "description": "Vessel-guided stenosis with ALL 25 syntax "
+                           "classes (min_count=0) + old S5 params",
+            "overrides": {
+                "degrees": 20.0,
+                "scale": 0.4,
+                "hsv_v": 0.3,
+            },
+            "pipeline_args": {},
+            "custom_pipeline": True,
+            "custom_runner": "vessel_guided",
+            "stenosis_overrides": {
+                "copy_paste": 0.3,
+                "scale": 0.5,
+            },
+            "vessel_guided": {
+                "dilate_px": 30,
+                "crop_pad_px": 15,
+                "vessel_conf": 0.15,
+                "vessel_imgsz": 768,
+                "variant": "both",
+                "min_count": 0,
+            },
+        },
+        {
+            "name": "S10a_vessel_filtered_stratified",
+            "gpu": 3,
+            "description": "Filter stenosis to vessel-interior only "
+                           "(stratified splits, all 25 syntax classes)",
+            "overrides": {
+                "degrees": 20.0,
+                "scale": 0.4,
+                "hsv_v": 0.3,
+            },
+            "pipeline_args": {},
+            "custom_pipeline": True,
+            "custom_runner": "vessel_filtered",
+            "stenosis_overrides": {
+                "copy_paste": 0.3,
+                "scale": 0.5,
+            },
+            "vessel_filter": {
+                "overlap_threshold": 0.5,
+                "dilate_px": 30,
+                "vessel_conf": 0.15,
+                "vessel_imgsz": 768,
+                "min_count": 0,
+                "use_original_splits": False,
+            },
+        },
+        {
+            "name": "S10b_vessel_filtered_original",
+            "gpu": 4,
+            "description": "Filter stenosis to vessel-interior only "
+                           "(original ARCADE splits, all 25 syntax classes)",
+            "overrides": {
+                "degrees": 20.0,
+                "scale": 0.4,
+                "hsv_v": 0.3,
+            },
+            "pipeline_args": {},
+            "custom_pipeline": True,
+            "custom_runner": "vessel_filtered",
+            "stenosis_overrides": {
+                "copy_paste": 0.3,
+                "scale": 0.5,
+            },
+            "vessel_filter": {
+                "overlap_threshold": 0.5,
+                "dilate_px": 30,
+                "vessel_conf": 0.15,
+                "vessel_imgsz": 768,
+                "min_count": 0,
+                "use_original_splits": True,
+            },
+        },
     ]
 
     # Merge base config into each experiment
@@ -362,6 +482,140 @@ def run_separate_stenosis(exp: dict, arcade_root: Path, splits_dir: Path,
     return all_metrics
 
 
+def run_separate_stenosis_v2(exp: dict, arcade_root: Path, splits_dir: Path,
+                             output_dir: Path, iterations: int) -> dict:
+    """Run separate stenosis model with per-experiment stenosis overrides.
+
+    Like run_separate_stenosis() but applies explicit overrides from
+    exp["stenosis_overrides"] to the stenosis model config. This allows
+    experiments to test different augmentation settings (e.g., copy_paste,
+    mosaic, scale) on the stenosis model independently of the syntax model.
+    """
+    from run_pipeline import data_prep, _save_metrics
+    from train import load_run_config, train_two_stage
+    from evaluate import evaluate_model
+
+    name = exp["name"]
+    results_dir = output_dir / name
+    results_dir.mkdir(parents=True, exist_ok=True)
+
+    stenosis_overrides = exp.get("stenosis_overrides", {})
+
+    # ── Part A: Syntax-only model at 768px ──
+    print(f"\n{'#' * 60}")
+    print(f"# {name} — Part A: Syntax-only model")
+    print(f"{'#' * 60}")
+
+    cfg_syntax = dict(exp["config"])
+    cfg_syntax["imgsz"] = 768
+    cfg_syntax["batch"] = 8
+    cfg_syntax["device"] = "0"
+    cfg_syntax["results_dir"] = str(results_dir / "syntax_model")
+    cfg_syntax["data_dir"] = str(output_dir / "data" / name)
+
+    config_path_syntax = results_dir / "config_syntax.yaml"
+    with open(config_path_syntax, "w") as f:
+        yaml.dump(cfg_syntax, f, default_flow_style=False)
+
+    cfg_s = load_run_config(str(config_path_syntax))
+    data_dir = Path(cfg_s["data_dir"]).resolve()
+
+    data_prep(arcade_root, data_dir, min_count=300, splits_dir=splits_dir)
+
+    syntax_yaml = str(data_dir / "dataset_configs" / "syntax_only.yaml")
+    syntax_weights = train_two_stage(
+        cfg_s, syntax_yaml,
+        project=str(results_dir / "syntax_model"),
+        run_name="syntax_768",
+    )
+
+    syntax_metrics = evaluate_model(
+        syntax_weights, syntax_yaml, split="test",
+        augment=True, imgsz=768,
+    )
+    _save_metrics(results_dir, "syntax_model_test", syntax_metrics)
+
+    # ── Part B: Dedicated stenosis model at 768px ──
+    print(f"\n{'#' * 60}")
+    print(f"# {name} — Part B: Dedicated stenosis model")
+    if stenosis_overrides:
+        print(f"#   Stenosis overrides: {stenosis_overrides}")
+    print(f"{'#' * 60}")
+
+    cfg_sten = dict(exp["config"])
+    cfg_sten["imgsz"] = 768
+    cfg_sten["batch"] = 8
+    cfg_sten["device"] = "0"
+    cfg_sten["box"] = 10.0
+    cfg_sten["cls"] = 1.0
+    cfg_sten["results_dir"] = str(results_dir / "stenosis_model")
+
+    # Apply per-experiment stenosis overrides (copy_paste, scale, mosaic, etc.)
+    for key, val in stenosis_overrides.items():
+        cfg_sten[key] = val
+
+    stenosis_yaml = str(data_dir / "dataset_configs" / "stenosis_only.yaml")
+    stenosis_weights = train_two_stage(
+        cfg_sten, stenosis_yaml,
+        project=str(results_dir / "stenosis_model"),
+        run_name="stenosis_768",
+    )
+
+    stenosis_metrics = evaluate_model(
+        stenosis_weights, stenosis_yaml, split="test",
+        augment=True, imgsz=768,
+    )
+    _save_metrics(results_dir, "stenosis_model_test", stenosis_metrics)
+
+    # ── Combine metrics ──
+    print(f"\n{'#' * 60}")
+    print(f"# {name} — Combined results")
+    print(f"{'#' * 60}")
+
+    combined_per_class = {}
+    for cls_name, cls_m in syntax_metrics.get("per_class", {}).items():
+        combined_per_class[cls_name] = cls_m
+    for cls_name, cls_m in stenosis_metrics.get("per_class", {}).items():
+        combined_per_class["stenosis"] = cls_m
+
+    all_ap50s = [m.get("ap50", 0) for m in combined_per_class.values()]
+    combined_mAP50 = sum(all_ap50s) / len(all_ap50s) if all_ap50s else 0
+
+    syntax_aps = [m.get("ap50", 0) for k, m in combined_per_class.items()
+                  if k != "stenosis"]
+    stenosis_aps = [m.get("ap50", 0) for k, m in combined_per_class.items()
+                    if k == "stenosis"]
+
+    combined = {
+        "split": "test",
+        "mAP50": round(combined_mAP50, 4),
+        "per_class": combined_per_class,
+        "syntax_mAP50": round(sum(syntax_aps) / len(syntax_aps), 4) if syntax_aps else 0,
+        "stenosis_AP50": round(sum(stenosis_aps) / len(stenosis_aps), 4) if stenosis_aps else 0,
+        "syntax_model": syntax_weights,
+        "stenosis_model": stenosis_weights,
+    }
+
+    all_p = [m.get("precision", 0) for m in combined_per_class.values()]
+    all_r = [m.get("recall", 0) for m in combined_per_class.values()]
+    combined["precision"] = round(sum(all_p) / len(all_p), 4) if all_p else 0
+    combined["recall"] = round(sum(all_r) / len(all_r), 4) if all_r else 0
+    combined["mAP50_95"] = 0
+
+    _save_metrics(results_dir, "final_test", combined)
+
+    all_metrics = {
+        "syntax_model_test": syntax_metrics,
+        "stenosis_model_test": stenosis_metrics,
+        "final_test": combined,
+        "stenosis_overrides": stenosis_overrides,
+    }
+    with open(results_dir / "all_metrics.json", "w") as f:
+        json.dump(all_metrics, f, indent=2)
+
+    return all_metrics
+
+
 def run_vessel_guided_stenosis(exp: dict, arcade_root: Path, splits_dir: Path,
                                output_dir: Path, iterations: int) -> dict:
     """S6 — Vessel-guided stenosis detection pipeline.
@@ -414,6 +668,8 @@ def run_vessel_guided_stenosis(exp: dict, arcade_root: Path, splits_dir: Path,
     vessel_conf = vg_cfg.get("vessel_conf", 0.25)
     vessel_imgsz = vg_cfg.get("vessel_imgsz", 768)
     variant = vg_cfg.get("variant", "crop")
+    min_count = vg_cfg.get("min_count", 300)
+    stenosis_overrides = exp.get("stenosis_overrides", {})
     if variant not in ("crop", "blackout", "both"):
         raise ValueError(f"Unknown vessel_guided.variant: {variant}")
 
@@ -437,7 +693,8 @@ def run_vessel_guided_stenosis(exp: dict, arcade_root: Path, splits_dir: Path,
     data_dir = Path(cfg_s["data_dir"]).resolve()
 
     # Shared data prep (syntax_filtered + stenosis)
-    data_prep(arcade_root, data_dir, min_count=300, splits_dir=splits_dir)
+    print(f"#   min_count={min_count} (syntax classes)")
+    data_prep(arcade_root, data_dir, min_count=min_count, splits_dir=splits_dir)
 
     syntax_yaml = str(data_dir / "dataset_configs" / "syntax_only.yaml")
     syntax_weights = train_two_stage(
@@ -487,6 +744,10 @@ def run_vessel_guided_stenosis(exp: dict, arcade_root: Path, splits_dir: Path,
         cfg_sten["box"] = 10.0
         cfg_sten["cls"] = 1.0
         cfg_sten["results_dir"] = str(results_dir / f"stenosis_model_{v}")
+
+        # Apply per-experiment stenosis overrides
+        for key, val in stenosis_overrides.items():
+            cfg_sten[key] = val
 
         stenosis_yaml = str(masked_root / v / "data.yaml")
         st_weights = train_two_stage(
@@ -566,6 +827,239 @@ def run_vessel_guided_stenosis(exp: dict, arcade_root: Path, splits_dir: Path,
     return all_metrics
 
 
+def run_vessel_filtered_stenosis(exp: dict, arcade_root: Path, splits_dir: Path,
+                                 output_dir: Path, iterations: int) -> dict:
+    """S10 — Vessel-filtered stenosis detection pipeline.
+
+    Instead of masking images (S6/S9), this filters stenosis ANNOTATIONS:
+    only stenoses that overlap predicted vessel regions are kept for training.
+    This creates a cleaner training signal by removing "impossible positives".
+
+    Pipeline stages
+    ---------------
+      A. Train syntax-only model (all 25 classes, min_count=0) at 768px.
+      B. Run syntax model on stenosis images, filter annotations to only
+         those inside predicted vessel masks.
+      C. Train dedicated stenosis model on filtered data at 768px.
+      D. Evaluate with TWO metrics:
+         - Standard: full test set (comparable to other experiments)
+         - Vessel-interior: filtered test set (clinically meaningful)
+    """
+    from run_pipeline import data_prep, _save_metrics
+    from train import load_run_config, train_two_stage
+    from evaluate import evaluate_model
+    from build_filtered_stenosis_dataset import filter_stenosis_dataset
+
+    name = exp["name"]
+    results_dir = output_dir / name
+    results_dir.mkdir(parents=True, exist_ok=True)
+
+    vf_cfg = exp.get("vessel_filter", {})
+    overlap_threshold = vf_cfg.get("overlap_threshold", 0.5)
+    dilate_px = vf_cfg.get("dilate_px", 30)
+    vessel_conf = vf_cfg.get("vessel_conf", 0.15)
+    vessel_imgsz = vf_cfg.get("vessel_imgsz", 768)
+    min_count = vf_cfg.get("min_count", 0)
+    use_original_splits = vf_cfg.get("use_original_splits", False)
+    stenosis_overrides = exp.get("stenosis_overrides", {})
+
+    # Determine splits directory
+    effective_splits_dir = None if use_original_splits else splits_dir
+    splits_label = "original ARCADE" if use_original_splits else "stratified"
+
+    # ── Part A: Syntax-only model at 768px (all 25 classes) ──
+    print(f"\n{'#' * 64}")
+    print(f"# {name} — Part A: Syntax-only model (768px, all classes)")
+    print(f"#   min_count={min_count}, splits={splits_label}")
+    print(f"{'#' * 64}")
+
+    cfg_syntax = dict(exp["config"])
+    cfg_syntax["imgsz"] = 768
+    cfg_syntax["batch"] = 8
+    cfg_syntax["device"] = "0"
+    cfg_syntax["results_dir"] = str(results_dir / "syntax_model")
+    cfg_syntax["data_dir"] = str(output_dir / "data" / name)
+
+    config_path_syntax = results_dir / "config_syntax.yaml"
+    with open(config_path_syntax, "w") as f:
+        yaml.dump(cfg_syntax, f, default_flow_style=False)
+
+    cfg_s = load_run_config(str(config_path_syntax))
+    data_dir = Path(cfg_s["data_dir"]).resolve()
+
+    data_prep(arcade_root, data_dir, min_count=min_count,
+              splits_dir=effective_splits_dir)
+
+    syntax_yaml = str(data_dir / "dataset_configs" / "syntax_only.yaml")
+    syntax_weights = train_two_stage(
+        cfg_s, syntax_yaml,
+        project=str(results_dir / "syntax_model"),
+        run_name="syntax_768",
+    )
+    syntax_metrics = evaluate_model(
+        syntax_weights, syntax_yaml, split="test",
+        augment=True, imgsz=768,
+    )
+    _save_metrics(results_dir, "syntax_model_test", syntax_metrics)
+
+    # ── Part B: Filter stenosis annotations ──
+    print(f"\n{'#' * 64}")
+    print(f"# {name} — Part B: Filter stenosis to vessel-interior")
+    print(f"#   overlap_threshold={overlap_threshold}, dilate_px={dilate_px}")
+    print(f"{'#' * 64}")
+
+    filtered_root = results_dir / "filtered_stenosis_data"
+    filter_stats = filter_stenosis_dataset(
+        syntax_weights=syntax_weights,
+        stenosis_data_dir=data_dir / "stenosis",
+        output_dir=filtered_root,
+        overlap_threshold=overlap_threshold,
+        dilate_px=dilate_px,
+        vessel_conf=vessel_conf,
+        vessel_imgsz=vessel_imgsz,
+    )
+
+    # ── Part C: Train stenosis model on filtered data ──
+    print(f"\n{'#' * 64}")
+    print(f"# {name} — Part C: Train stenosis model on filtered data")
+    if stenosis_overrides:
+        print(f"#   Stenosis overrides: {stenosis_overrides}")
+    print(f"{'#' * 64}")
+
+    cfg_sten = dict(exp["config"])
+    cfg_sten["imgsz"] = 768
+    cfg_sten["batch"] = 8
+    cfg_sten["device"] = "0"
+    cfg_sten["box"] = 10.0
+    cfg_sten["cls"] = 1.0
+    cfg_sten["results_dir"] = str(results_dir / "stenosis_model")
+
+    for key, val in stenosis_overrides.items():
+        cfg_sten[key] = val
+
+    filtered_yaml = str(filtered_root / "data.yaml")
+    stenosis_weights = train_two_stage(
+        cfg_sten, filtered_yaml,
+        project=str(results_dir / "stenosis_model"),
+        run_name="stenosis_filtered_768",
+    )
+
+    # ── Part D: Evaluate with dual metrics ──
+    print(f"\n{'#' * 64}")
+    print(f"# {name} — Part D: Dual evaluation")
+    print(f"{'#' * 64}")
+
+    # D1: Evaluate on FILTERED test set (vessel-interior metrics)
+    stenosis_filtered_metrics = evaluate_model(
+        stenosis_weights, filtered_yaml, split="test",
+        augment=True, imgsz=768,
+    )
+    _save_metrics(results_dir, "stenosis_filtered_test", stenosis_filtered_metrics)
+
+    # D2: Evaluate on FULL (unfiltered) test set (standard metrics)
+    full_stenosis_yaml = str(data_dir / "dataset_configs" / "stenosis_only.yaml")
+    stenosis_full_metrics = evaluate_model(
+        stenosis_weights, full_stenosis_yaml, split="test",
+        augment=True, imgsz=768,
+    )
+    _save_metrics(results_dir, "stenosis_full_test", stenosis_full_metrics)
+
+    # ── Combine metrics (using FULL test set for fair comparison) ──
+    print(f"\n{'#' * 64}")
+    print(f"# {name} — Combined results")
+    print(f"{'#' * 64}")
+
+    combined_per_class = {}
+    for cls_name, cls_m in syntax_metrics.get("per_class", {}).items():
+        combined_per_class[cls_name] = cls_m
+    for cls_name, cls_m in stenosis_full_metrics.get("per_class", {}).items():
+        combined_per_class["stenosis"] = cls_m
+
+    all_ap50s = [m.get("ap50", 0) for m in combined_per_class.values()]
+    combined_mAP50 = sum(all_ap50s) / len(all_ap50s) if all_ap50s else 0
+
+    syntax_aps = [m.get("ap50", 0) for k, m in combined_per_class.items()
+                  if k != "stenosis"]
+    stenosis_aps = [m.get("ap50", 0) for k, m in combined_per_class.items()
+                    if k == "stenosis"]
+
+    combined = {
+        "split": "test",
+        "mAP50": round(combined_mAP50, 4),
+        "per_class": combined_per_class,
+        "syntax_mAP50": round(sum(syntax_aps) / len(syntax_aps), 4) if syntax_aps else 0,
+        "stenosis_AP50": round(sum(stenosis_aps) / len(stenosis_aps), 4) if stenosis_aps else 0,
+        "syntax_model": syntax_weights,
+        "stenosis_model": stenosis_weights,
+    }
+
+    all_p = [m.get("precision", 0) for m in combined_per_class.values()]
+    all_r = [m.get("recall", 0) for m in combined_per_class.values()]
+    combined["precision"] = round(sum(all_p) / len(all_p), 4) if all_p else 0
+    combined["recall"] = round(sum(all_r) / len(all_r), 4) if all_r else 0
+    combined["mAP50_95"] = 0
+
+    _save_metrics(results_dir, "final_test", combined)
+
+    # Vessel-interior combined metrics
+    vi_per_class = dict(combined_per_class)
+    for cls_name, cls_m in stenosis_filtered_metrics.get("per_class", {}).items():
+        vi_per_class["stenosis"] = cls_m
+    vi_ap50s = [m.get("ap50", 0) for m in vi_per_class.values()]
+    vi_mAP50 = sum(vi_ap50s) / len(vi_ap50s) if vi_ap50s else 0
+
+    vi_sten_m = vi_per_class.get("stenosis", {})
+    vessel_interior_combined = {
+        "split": "test (vessel-interior)",
+        "mAP50": round(vi_mAP50, 4),
+        "stenosis_AP50": round(vi_sten_m.get("ap50", 0), 4),
+        "stenosis_precision": round(vi_sten_m.get("precision", 0), 4),
+        "stenosis_recall": round(vi_sten_m.get("recall", 0), 4),
+        "stenosis_f1": round(vi_sten_m.get("f1", 0), 4),
+    }
+    _save_metrics(results_dir, "vessel_interior_test", vessel_interior_combined)
+
+    all_metrics = {
+        "syntax_model_test": syntax_metrics,
+        "stenosis_filtered_test": stenosis_filtered_metrics,
+        "stenosis_full_test": stenosis_full_metrics,
+        "final_test": combined,
+        "vessel_interior_test": vessel_interior_combined,
+        "filter_stats": filter_stats,
+        "vessel_filter_config": {
+            "overlap_threshold": overlap_threshold,
+            "dilate_px": dilate_px,
+            "vessel_conf": vessel_conf,
+            "min_count": min_count,
+            "use_original_splits": use_original_splits,
+        },
+    }
+    with open(results_dir / "all_metrics.json", "w") as f:
+        json.dump(all_metrics, f, indent=2)
+
+    # Print summary
+    print(f"\n  === S10 DUAL METRICS SUMMARY ===")
+    sten_full = stenosis_full_metrics.get("per_class", {}).get("stenosis", {})
+    sten_filt = stenosis_filtered_metrics.get("per_class", {}).get("stenosis", {})
+    print(f"  Standard (full test):   AP50={sten_full.get('ap50', 0):.4f}  "
+          f"F1={sten_full.get('f1', 0):.4f}  "
+          f"P={sten_full.get('precision', 0):.4f}  "
+          f"R={sten_full.get('recall', 0):.4f}")
+    print(f"  Vessel-interior test:   AP50={sten_filt.get('ap50', 0):.4f}  "
+          f"F1={sten_filt.get('f1', 0):.4f}  "
+          f"P={sten_filt.get('precision', 0):.4f}  "
+          f"R={sten_filt.get('recall', 0):.4f}")
+
+    # Print filtering stats summary
+    for split, ss in filter_stats.get("splits", {}).items():
+        total = ss.get("gt_stenoses", 0)
+        kept = ss.get("kept", 0)
+        pct = kept / total * 100 if total > 0 else 0
+        print(f"  [{split}] Kept {kept}/{total} stenoses ({pct:.1f}%)")
+
+    return all_metrics
+
+
 def _run_single_worker_script():
     """Entry point when this script is invoked as a subprocess worker.
 
@@ -598,8 +1092,17 @@ def _run_single_worker_script():
 
     try:
         if exp.get("custom_pipeline"):
-            if exp.get("custom_runner") == "vessel_guided":
+            runner = exp.get("custom_runner", "separate")
+            if runner == "vessel_guided":
                 metrics = run_vessel_guided_stenosis(
+                    exp, arcade_root, splits_dir, output_dir, iterations
+                )
+            elif runner == "separate_v2":
+                metrics = run_separate_stenosis_v2(
+                    exp, arcade_root, splits_dir, output_dir, iterations
+                )
+            elif runner == "vessel_filtered":
+                metrics = run_vessel_filtered_stenosis(
                     exp, arcade_root, splits_dir, output_dir, iterations
                 )
             else:
@@ -638,6 +1141,17 @@ def _run_single_worker_script():
             "error": str(e),
             "traceback": error_msg,
         }
+
+    # Clean up CUDA memory to prevent VRAM leaks for sequential runs
+    try:
+        import gc
+        import torch
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+        gc.collect()
+        print(f"  [GPU {gpu}] CUDA cache cleared")
+    except Exception:
+        pass
 
     with open(result_path, "w") as f:
         json.dump(result, f, indent=2, default=str)
