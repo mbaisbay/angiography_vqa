@@ -1383,25 +1383,101 @@ def _run_single_worker_script():
         json.dump(result, f, indent=2, default=str)
 
 
+def _gpu_free_mb(gpu_id: int) -> int:
+    """Return free VRAM in MB on ``gpu_id`` via nvidia-smi.
+
+    Returns -1 if nvidia-smi is unavailable or parsing fails so that
+    callers can treat an unknown result as "don't block".
+    """
+    try:
+        out = subprocess.check_output(
+            [
+                "nvidia-smi",
+                "--query-gpu=memory.free",
+                "--format=csv,noheader,nounits",
+                "-i", str(gpu_id),
+            ],
+            text=True,
+            stderr=subprocess.DEVNULL,
+        )
+        return int(out.strip().split("\n")[0])
+    except Exception:
+        return -1
+
+
+def _wait_for_gpu_memory(gpu_id: int, min_free_mb: int,
+                         max_wait_s: int = 600,
+                         poll_interval_s: int = 10) -> bool:
+    """Block until ``gpu_id`` has at least ``min_free_mb`` MB free.
+
+    Returns True if the condition was met (or GPU query is unavailable
+    and we're forced to proceed), False on timeout.
+    """
+    if min_free_mb <= 0:
+        return True
+    waited = 0
+    while waited <= max_wait_s:
+        free = _gpu_free_mb(gpu_id)
+        if free < 0:
+            return True  # unknown: don't block
+        if free >= min_free_mb:
+            return True
+        print(f"    [GPU {gpu_id}] waiting for {min_free_mb} MB free "
+              f"(currently {free} MB, waited {waited}s)")
+        time.sleep(poll_interval_s)
+        waited += poll_interval_s
+    return False
+
+
 def launch_experiments_parallel(experiments, arcade_root, splits_dir,
-                                output_dir, iterations, max_concurrent=3):
-    """Launch experiments as subprocesses with a concurrency cap.
+                                output_dir, iterations,
+                                max_concurrent=None,
+                                stagger_seconds=15,
+                                min_free_mb=2000,
+                                gpu_pool=None):
+    """Launch experiments as subprocesses with hardened concurrency.
 
-    Two critical fixes vs the naive "launch all at once" approach:
+    Four defences against the "first 3 succeed, rest OOM" failure mode:
 
-    1. CUDA_VISIBLE_DEVICES is set in the subprocess's INITIAL environment
-       via Popen(env=...), not inside the worker after Python has started.
-       Otherwise every worker briefly defaults to GPU 0 during torch import
-       and they contend, causing OOMs on heavy jobs.
+    1. **Env set at spawn time.** CUDA_VISIBLE_DEVICES is placed in the
+       subprocess's initial environment via ``Popen(env=...)`` — BEFORE
+       any Python or torch imports run. Setting it inside the worker
+       would be too late: torch's CUDA init would have already touched
+       GPU 0 with whatever the default visibility was.
 
-    2. Slot scheduler caps concurrent subprocesses at ``max_concurrent``
-       (default 3 on 4090s). When a job finishes, the next queued one
-       launches. This avoids starving system RAM / shared memory /dev/shm
-       when dispatching many heavy ultralytics runs at once.
+    2. **Dynamic GPU pool scheduler.** ``gpu_pool`` is a list of free
+       GPU IDs. Each spawn pops a free GPU; each completion returns
+       one. Experiments are NOT locked to their advisory ``exp["gpu"]``
+       value — whatever is free wins. This correctly handles the case
+       where #experiments > #GPUs, so experiments queue on the pool
+       without ever double-booking a GPU.
+
+    3. **Staggered launch.** ``stagger_seconds`` sleep is inserted
+       between consecutive spawns so their CUDA context creations
+       don't collide. This is the actual root cause of the original
+       "exactly 3 succeed" symptom: 6 simultaneous torch.cuda inits
+       race on driver resources and 3 of them time out.
+
+    4. **Pre-flight memory check.** Before each spawn we poll
+       nvidia-smi on the target GPU and wait until it has at least
+       ``min_free_mb`` MB free (default 2000). Catches the case where
+       a prior subprocess hasn't fully released its context yet.
     """
     script_path = Path(__file__).resolve()
     tmp_dir = output_dir / "_worker_jobs"
     tmp_dir.mkdir(parents=True, exist_ok=True)
+
+    # Determine the free-GPU pool
+    if gpu_pool is None:
+        gpu_pool = sorted({int(e["gpu"]) for e in experiments})
+    else:
+        gpu_pool = list(gpu_pool)
+
+    if max_concurrent is None or max_concurrent <= 0:
+        max_concurrent = len(gpu_pool)
+    max_concurrent = min(max_concurrent, len(gpu_pool))
+
+    free_gpus = list(gpu_pool)  # pool of GPUs currently free
 
     def _prepare_job(exp):
         name = exp["name"]
@@ -1422,13 +1498,33 @@ def launch_experiments_parallel(experiments, arcade_root, splits_dir,
             json.dump(job, f, indent=2, default=str)
         return name, job_path, result_path, log_path
 
-    def _spawn(exp):
+    def _spawn(exp, gpu_id):
+        # Update the exp's GPU assignment to reflect the actually-assigned
+        # GPU (differs from the advisory pre-assignment when pool-scheduled).
+        exp = dict(exp)  # shallow copy so we don't mutate the caller's list
+        exp["gpu"] = gpu_id
+        cfg = dict(exp.get("config", {}))
+        cfg["device"] = str(gpu_id)
+        exp["config"] = cfg
+
         name, job_path, result_path, log_path = _prepare_job(exp)
+
+        # ── Pre-flight GPU memory check ──
+        if not _wait_for_gpu_memory(gpu_id, min_free_mb):
+            print(f"  [GPU {gpu_id}] WARNING: memory never freed, "
+                  f"launching anyway (could OOM)")
+
         # CRITICAL: set CUDA_VISIBLE_DEVICES in the subprocess's initial env,
         # before any Python imports. Setting it inside the worker after torch
-        # imports would be too late — torch already ran its CUDA init on GPU 0.
+        # imports would be too late — torch already ran its CUDA init on the
+        # default GPU.
         env = os.environ.copy()
-        env["CUDA_VISIBLE_DEVICES"] = str(exp["gpu"])
+        env["CUDA_VISIBLE_DEVICES"] = str(gpu_id)
+        # Also discourage over-threaded CPU work that competes for system RAM
+        # when multiple workers run concurrently.
+        env.setdefault("OMP_NUM_THREADS", "4")
+        env.setdefault("MKL_NUM_THREADS", "4")
+
         log_file = open(log_path, "w")
         proc = subprocess.Popen(
             [sys.executable, str(script_path), "--worker", str(job_path)],
@@ -1437,11 +1533,12 @@ def launch_experiments_parallel(experiments, arcade_root, splits_dir,
             cwd=str(script_path.parent),
             env=env,
         )
-        print(f"  Launched {name} on GPU {exp['gpu']} "
-              f"(PID {proc.pid}, log: {log_path})")
+        print(f"  Launched {name} on GPU {gpu_id} "
+              f"(PID {proc.pid}, free={_gpu_free_mb(gpu_id)}MB, "
+              f"log: {log_path})")
         return {
             "name": name,
-            "gpu": exp["gpu"],
+            "gpu": gpu_id,
             "proc": proc,
             "log_file": log_file,
             "result_path": result_path,
@@ -1453,19 +1550,31 @@ def launch_experiments_parallel(experiments, arcade_root, splits_dir,
     total = len(pending)
     done_count = 0
 
-    print(f"\nScheduling {total} experiments with max_concurrent={max_concurrent}")
+    print(f"\nScheduling {total} experiments")
+    print(f"  GPU pool       : {gpu_pool}")
+    print(f"  max_concurrent : {max_concurrent}")
+    print(f"  stagger_seconds: {stagger_seconds}")
+    print(f"  min_free_mb    : {min_free_mb}")
 
     while pending or running:
-        # Fill open slots
-        while pending and len(running) < max_concurrent:
+        # ── Fill open slots from the free-GPU pool ──
+        spawned_this_round = 0
+        while (pending and len(running) < max_concurrent and free_gpus):
             exp = pending.pop(0)
-            running.append(_spawn(exp))
+            gpu_id = free_gpus.pop(0)
+            # Stagger: don't launch two subprocesses back-to-back; give
+            # each one time to finish CUDA init + model load before the
+            # next one starts torching the driver.
+            if spawned_this_round > 0 and stagger_seconds > 0:
+                print(f"  (staggering {stagger_seconds}s before next launch)")
+                time.sleep(stagger_seconds)
+            running.append(_spawn(exp, gpu_id))
+            spawned_this_round += 1
 
         if not running:
             break
 
-        # Poll for any finished subprocess (blocking wait on the first one
-        # is cheaper than a busy loop, so wait then check all).
+        # ── Poll for any finished subprocess ──
         finished_idx = None
         while finished_idx is None:
             for i, job in enumerate(running):
@@ -1482,6 +1591,9 @@ def launch_experiments_parallel(experiments, arcade_root, splits_dir,
         done_count += 1
         print(f"  [{done_count}/{total}] [GPU {job['gpu']}] "
               f"{job['name']}: {status}")
+
+        # Return the GPU to the free pool for the next queued experiment
+        free_gpus.append(job["gpu"])
 
         if job["result_path"].exists():
             with open(job["result_path"]) as f:
@@ -1709,10 +1821,22 @@ def main():
         help="Comma-separated GPU IDs to use (default: 0,1,2,3,4,5)"
     )
     parser.add_argument(
-        "--max-concurrent", type=int, default=3,
-        help="Maximum concurrent subprocess runs (default: 3). "
-             "4090s reliably handle 3 heavy yolo-seg jobs; bump only if "
-             "you verify your system has headroom."
+        "--max-concurrent", type=int, default=0,
+        help="Maximum concurrent subprocess runs. Default 0 = "
+             "len(--gpus), i.e. one per GPU. Set to a smaller number "
+             "if you want to artificially cap parallelism."
+    )
+    parser.add_argument(
+        "--stagger-seconds", type=int, default=15,
+        help="Seconds to wait between consecutive subprocess spawns "
+             "(default: 15). Prevents CUDA init races when many heavy "
+             "workers launch simultaneously. Set to 0 to disable."
+    )
+    parser.add_argument(
+        "--min-free-mb", type=int, default=2000,
+        help="Minimum free VRAM (MB) required on a GPU before spawning "
+             "a worker there (default: 2000). Set to 0 to disable the "
+             "pre-flight memory check."
     )
     args = parser.parse_args()
 
@@ -1758,7 +1882,24 @@ def main():
     print(f"#   Output: {output_dir}")
     print(f"{'#' * 60}")
     for exp in experiments:
-        print(f"  GPU {exp['gpu']}: {exp['name']} — {exp['description']}")
+        print(f"  advisory GPU {exp['gpu']}: {exp['name']} — {exp['description']}")
+
+    # ── Pre-flight GPU sanity check ──
+    print(f"\n  Initial GPU memory (nvidia-smi):")
+    unhealthy = []
+    for g in available_gpus:
+        free = _gpu_free_mb(g)
+        if free < 0:
+            print(f"    GPU {g}: nvidia-smi unavailable (proceeding blind)")
+        else:
+            tag = " OK" if free >= args.min_free_mb else " LOW"
+            print(f"    GPU {g}:{tag} free={free} MB")
+            if free < args.min_free_mb and args.min_free_mb > 0:
+                unhealthy.append(g)
+    if unhealthy:
+        print(f"  WARNING: GPUs {unhealthy} are below --min-free-mb "
+              f"({args.min_free_mb}). The scheduler will wait for them "
+              f"to free up (per-GPU timeout 10 min).")
 
     # ── Step 3: Launch all experiments as separate subprocesses ──
     total_start = time.time()
@@ -1766,6 +1907,9 @@ def main():
     results = launch_experiments_parallel(
         experiments, arcade_root, splits_dir, output_dir, args.iterations,
         max_concurrent=args.max_concurrent,
+        stagger_seconds=args.stagger_seconds,
+        min_free_mb=args.min_free_mb,
+        gpu_pool=available_gpus,
     )
 
     total_elapsed = time.time() - total_start
