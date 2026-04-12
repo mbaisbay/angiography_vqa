@@ -1368,16 +1368,25 @@ def _run_single_worker_script():
             "traceback": error_msg,
         }
 
-    # Clean up CUDA memory to prevent VRAM leaks for sequential runs
+    # ── Aggressive CUDA cleanup before exit ──
+    # The OS will tear down the CUDA context anyway when this process
+    # exits, but we explicitly flush + release to minimise the window
+    # where nvidia-smi still reports allocation against this PID and
+    # to avoid leaked shared-memory segments from dataloaders.
     try:
         import gc
         import torch
         if torch.cuda.is_available():
-            torch.cuda.empty_cache()
+            torch.cuda.synchronize()   # flush pending work
+            torch.cuda.empty_cache()    # return cached blocks to driver
+            try:
+                torch.cuda.ipc_collect()  # release IPC handles
+            except Exception:
+                pass
         gc.collect()
-        print(f"  [GPU {gpu}] CUDA cache cleared")
-    except Exception:
-        pass
+        print(f"  [GPU {gpu}] CUDA flushed, cache cleared, gc collected")
+    except Exception as _e:
+        print(f"  [GPU {gpu}] CUDA cleanup skipped: {_e}")
 
     with open(result_path, "w") as f:
         json.dump(result, f, indent=2, default=str)
@@ -1405,28 +1414,123 @@ def _gpu_free_mb(gpu_id: int) -> int:
         return -1
 
 
-def _wait_for_gpu_memory(gpu_id: int, min_free_mb: int,
-                         max_wait_s: int = 600,
-                         poll_interval_s: int = 10) -> bool:
-    """Block until ``gpu_id`` has at least ``min_free_mb`` MB free.
+def _gpu_total_mb(gpu_id: int) -> int:
+    """Return total VRAM in MB on ``gpu_id`` via nvidia-smi (-1 if unknown)."""
+    try:
+        out = subprocess.check_output(
+            [
+                "nvidia-smi",
+                "--query-gpu=memory.total",
+                "--format=csv,noheader,nounits",
+                "-i", str(gpu_id),
+            ],
+            text=True,
+            stderr=subprocess.DEVNULL,
+        )
+        return int(out.strip().split("\n")[0])
+    except Exception:
+        return -1
 
-    Returns True if the condition was met (or GPU query is unavailable
-    and we're forced to proceed), False on timeout.
+
+def _gpu_compute_pids(gpu_id: int, exclude_pids: set[int] | None = None) -> list[int]:
+    """Return the list of compute-mode PIDs currently running on ``gpu_id``.
+
+    Used to detect lingering workers that haven't fully released their
+    CUDA context. Returns an empty list if nvidia-smi isn't available
+    (so callers don't block on systems without it).
     """
-    if min_free_mb <= 0:
-        return True
+    try:
+        out = subprocess.check_output(
+            [
+                "nvidia-smi",
+                "--query-compute-apps=pid",
+                "--format=csv,noheader,nounits",
+                "-i", str(gpu_id),
+            ],
+            text=True,
+            stderr=subprocess.DEVNULL,
+        )
+        pids = []
+        for line in out.strip().split("\n"):
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                pid = int(line)
+                if exclude_pids is None or pid not in exclude_pids:
+                    pids.append(pid)
+            except ValueError:
+                continue
+        return pids
+    except Exception:
+        return []
+
+
+def _wait_for_gpu_free(
+    gpu_id: int,
+    min_free_mb: int,
+    baseline_free_mb: int = -1,
+    tolerance_mb: int = 500,
+    max_wait_s: int = 600,
+    poll_interval_s: int = 5,
+    exclude_pids: set[int] | None = None,
+) -> tuple[bool, str]:
+    """Block until ``gpu_id`` is proven idle.
+
+    The GPU is considered idle when ALL of the following hold:
+
+    1. No compute processes report against the GPU in nvidia-smi
+       (other than any pids in ``exclude_pids``).
+    2. Free VRAM is at least ``min_free_mb`` MB.
+    3. If ``baseline_free_mb`` > 0, free VRAM is also at least
+       ``baseline_free_mb - tolerance_mb`` (i.e., back near the
+       no-workers-running baseline captured at scheduler startup).
+
+    On systems where nvidia-smi is unavailable, the first check is
+    skipped and we rely on the memory check (or proceed blindly if
+    the memory query also fails).
+
+    Returns
+    -------
+    (ok, reason)
+        ok: True if the GPU is idle, False on timeout.
+        reason: Human-readable reason string for the outcome.
+    """
+    if min_free_mb <= 0 and baseline_free_mb <= 0:
+        return True, "checks disabled"
+
     waited = 0
+    last_reason = ""
     while waited <= max_wait_s:
         free = _gpu_free_mb(gpu_id)
-        if free < 0:
-            return True  # unknown: don't block
-        if free >= min_free_mb:
-            return True
-        print(f"    [GPU {gpu_id}] waiting for {min_free_mb} MB free "
-              f"(currently {free} MB, waited {waited}s)")
+        pids = _gpu_compute_pids(gpu_id, exclude_pids=exclude_pids)
+
+        # Unknown state (nvidia-smi missing) → don't block.
+        if free < 0 and not pids:
+            return True, "nvidia-smi unavailable — proceeding blind"
+
+        reasons = []
+        if pids:
+            reasons.append(f"{len(pids)} lingering compute PID(s): {pids[:4]}")
+        if free >= 0 and min_free_mb > 0 and free < min_free_mb:
+            reasons.append(f"free={free}MB < min_free_mb={min_free_mb}")
+        if (free >= 0 and baseline_free_mb > 0
+                and free < baseline_free_mb - tolerance_mb):
+            reasons.append(
+                f"free={free}MB < baseline({baseline_free_mb})-"
+                f"tol({tolerance_mb})={baseline_free_mb - tolerance_mb}"
+            )
+
+        if not reasons:
+            return True, f"idle (free={free}MB)"
+
+        last_reason = "; ".join(reasons)
+        print(f"    [GPU {gpu_id}] waiting for idle — {last_reason} "
+              f"(waited {waited}s / {max_wait_s}s)")
         time.sleep(poll_interval_s)
         waited += poll_interval_s
-    return False
+
+    return False, f"timeout after {max_wait_s}s — {last_reason}"
 
 
 def launch_experiments_parallel(experiments, arcade_root, splits_dir,
@@ -1479,6 +1583,15 @@ def launch_experiments_parallel(experiments, arcade_root, splits_dir,
 
     free_gpus = list(gpu_pool)  # pool of GPUs currently free
 
+    # ── Capture per-GPU idle baseline before any worker starts ──
+    # These baselines let the scheduler prove "GPU is back to idle" by
+    # waiting until free memory returns to near the captured level,
+    # rather than accepting any arbitrary ``min_free_mb``.
+    gpu_baseline_free_mb = {}
+    for g in gpu_pool:
+        gpu_baseline_free_mb[g] = _gpu_free_mb(g)
+    parent_pid = os.getpid()
+
     def _prepare_job(exp):
         name = exp["name"]
         job_path = tmp_dir / f"{name}_job.json"
@@ -1499,6 +1612,12 @@ def launch_experiments_parallel(experiments, arcade_root, splits_dir,
         return name, job_path, result_path, log_path
 
     def _spawn(exp, gpu_id):
+        """Spawn a worker on ``gpu_id``.
+
+        Returns either a running-job dict, or a synthetic failure result
+        dict if the pre-flight idle check times out (so the experiment
+        is cleanly skipped instead of blocking the scheduler forever).
+        """
         # Update the exp's GPU assignment to reflect the actually-assigned
         # GPU (differs from the advisory pre-assignment when pool-scheduled).
         exp = dict(exp)  # shallow copy so we don't mutate the caller's list
@@ -1509,10 +1628,34 @@ def launch_experiments_parallel(experiments, arcade_root, splits_dir,
 
         name, job_path, result_path, log_path = _prepare_job(exp)
 
-        # ── Pre-flight GPU memory check ──
-        if not _wait_for_gpu_memory(gpu_id, min_free_mb):
-            print(f"  [GPU {gpu_id}] WARNING: memory never freed, "
-                  f"launching anyway (could OOM)")
+        # ── Pre-flight idle check ──
+        # Wait until the GPU is proven idle: no compute PIDs running and
+        # free memory at least ``min_free_mb`` AND within tolerance of
+        # the startup baseline. On timeout, SKIP this experiment (don't
+        # spawn) so the rest of the queue can proceed.
+        ok, reason = _wait_for_gpu_free(
+            gpu_id,
+            min_free_mb=min_free_mb,
+            baseline_free_mb=gpu_baseline_free_mb.get(gpu_id, -1),
+            tolerance_mb=500,
+            max_wait_s=600,
+            poll_interval_s=5,
+            exclude_pids={parent_pid},
+        )
+        if not ok:
+            print(f"  [GPU {gpu_id}] SKIPPING {name}: {reason}")
+            return {
+                "skipped": True,
+                "name": name,
+                "gpu": gpu_id,
+                "result": {
+                    "name": name,
+                    "gpu": gpu_id,
+                    "status": "failed",
+                    "error": f"Pre-flight GPU idle check failed: {reason}",
+                    "elapsed_hours": 0,
+                },
+            }
 
         # CRITICAL: set CUDA_VISIBLE_DEVICES in the subprocess's initial env,
         # before any Python imports. Setting it inside the worker after torch
@@ -1535,8 +1678,10 @@ def launch_experiments_parallel(experiments, arcade_root, splits_dir,
         )
         print(f"  Launched {name} on GPU {gpu_id} "
               f"(PID {proc.pid}, free={_gpu_free_mb(gpu_id)}MB, "
+              f"baseline={gpu_baseline_free_mb.get(gpu_id, -1)}MB, "
               f"log: {log_path})")
         return {
+            "skipped": False,
             "name": name,
             "gpu": gpu_id,
             "proc": proc,
@@ -1551,10 +1696,14 @@ def launch_experiments_parallel(experiments, arcade_root, splits_dir,
     done_count = 0
 
     print(f"\nScheduling {total} experiments")
-    print(f"  GPU pool       : {gpu_pool}")
-    print(f"  max_concurrent : {max_concurrent}")
-    print(f"  stagger_seconds: {stagger_seconds}")
-    print(f"  min_free_mb    : {min_free_mb}")
+    print(f"  GPU pool            : {gpu_pool}")
+    print(f"  per-GPU baseline    : "
+          f"{ {g: f'{gpu_baseline_free_mb[g]}MB' for g in gpu_pool} }")
+    print(f"  max_concurrent      : {max_concurrent}")
+    print(f"  stagger_seconds     : {stagger_seconds}")
+    print(f"  min_free_mb         : {min_free_mb}")
+    print(f"  idle tolerance (MB) : 500")
+    print(f"  idle timeout (s)    : 600")
 
     while pending or running:
         # ── Fill open slots from the free-GPU pool ──
@@ -1568,11 +1717,26 @@ def launch_experiments_parallel(experiments, arcade_root, splits_dir,
             if spawned_this_round > 0 and stagger_seconds > 0:
                 print(f"  (staggering {stagger_seconds}s before next launch)")
                 time.sleep(stagger_seconds)
-            running.append(_spawn(exp, gpu_id))
+            job = _spawn(exp, gpu_id)
+            if job.get("skipped"):
+                # Pre-flight failed: record the failure, return GPU to
+                # pool (it's still free by definition — we never spawned),
+                # and continue with the queue.
+                done_count += 1
+                results.append(job["result"])
+                free_gpus.append(gpu_id)
+                print(f"  [{done_count}/{total}] [GPU {gpu_id}] "
+                      f"{job['name']}: SKIPPED (pre-flight)")
+                continue
+            running.append(job)
             spawned_this_round += 1
 
         if not running:
-            break
+            # Nothing running and nothing spawned this round — either
+            # we're done or all remaining experiments got skipped.
+            if not pending:
+                break
+            continue
 
         # ── Poll for any finished subprocess ──
         finished_idx = None
@@ -1585,6 +1749,11 @@ def launch_experiments_parallel(experiments, arcade_root, splits_dir,
                 time.sleep(5)
 
         job = running.pop(finished_idx)
+        # Reap zombie and ensure log is flushed/closed
+        try:
+            job["proc"].wait(timeout=30)
+        except Exception:
+            pass
         job["log_file"].close()
         rc = job["proc"].returncode
         status = "OK" if rc == 0 else f"EXIT {rc}"
@@ -1592,8 +1761,30 @@ def launch_experiments_parallel(experiments, arcade_root, splits_dir,
         print(f"  [{done_count}/{total}] [GPU {job['gpu']}] "
               f"{job['name']}: {status}")
 
+        # ── Wait for the GPU to actually release memory ──
+        # Subprocess exit triggers CUDA context teardown, but nvidia-smi
+        # can lag by ~1-3s. Poll until the GPU is back to baseline so
+        # the next worker on this slot starts from a clean state.
+        gpu_id = job["gpu"]
+        child_pid = job["proc"].pid
+        time.sleep(2)  # initial driver-catchup grace period
+        ok, reason = _wait_for_gpu_free(
+            gpu_id,
+            min_free_mb=min_free_mb,
+            baseline_free_mb=gpu_baseline_free_mb.get(gpu_id, -1),
+            tolerance_mb=500,
+            max_wait_s=120,
+            poll_interval_s=3,
+            exclude_pids={parent_pid, child_pid},
+        )
+        if ok:
+            print(f"    [GPU {gpu_id}] released: {reason}")
+        else:
+            print(f"    [GPU {gpu_id}] WARNING: not idle after "
+                  f"completion — {reason}")
+
         # Return the GPU to the free pool for the next queued experiment
-        free_gpus.append(job["gpu"])
+        free_gpus.append(gpu_id)
 
         if job["result_path"].exists():
             with open(job["result_path"]) as f:
