@@ -292,6 +292,191 @@ def get_experiments():
                 "use_original_splits": True,
             },
         },
+        # ── Round 3 experiments (S11-S17) ─────────────────────────────
+        # Goal: push stenosis F1 > 0.43 (beat S8's 0.4152 and Old S5's
+        # 0.3951). All stack on S8's proven recipe (old S5 aug + mosaic
+        # on the stenosis model) and target the stenosis bottleneck.
+        {
+            "name": "S11_stenosis_1024",
+            "gpu": 0,
+            "description": "S8 recipe + stenosis model at 1024px "
+                           "(bigger objects → highest-priority gain)",
+            "overrides": {
+                "degrees": 20.0,
+                "scale": 0.4,
+                "hsv_v": 0.3,
+            },
+            "pipeline_args": {},
+            "custom_pipeline": True,
+            "custom_runner": "separate_v2",
+            "stenosis_overrides": {
+                "copy_paste": 0.3,
+                "scale": 0.5,
+                "mosaic": 0.8,
+                "close_mosaic": 15,
+                "stenosis_imgsz": 1024,
+                "stenosis_batch": 4,
+            },
+        },
+        {
+            "name": "S12_stenosis_yolo11l",
+            "gpu": 1,
+            "description": "S8 recipe + yolo11l-seg (larger model) "
+                           "for stenosis; syntax stays yolo11m",
+            "overrides": {
+                "degrees": 20.0,
+                "scale": 0.4,
+                "hsv_v": 0.3,
+            },
+            "pipeline_args": {},
+            "custom_pipeline": True,
+            "custom_runner": "separate_v2",
+            "stenosis_overrides": {
+                "copy_paste": 0.3,
+                "scale": 0.5,
+                "mosaic": 0.8,
+                "close_mosaic": 15,
+                "stenosis_model_weights": "yolo11l-seg.pt",
+                "stenosis_batch": 4,
+            },
+        },
+        {
+            "name": "S13_mixup_mosaic_stack",
+            "gpu": 2,
+            "description": "S8 recipe + mixup=0.15 on stenosis "
+                           "(mixup + mosaic complementary regularisation)",
+            "overrides": {
+                "degrees": 20.0,
+                "scale": 0.4,
+                "hsv_v": 0.3,
+            },
+            "pipeline_args": {},
+            "custom_pipeline": True,
+            "custom_runner": "separate_v2",
+            "stenosis_overrides": {
+                "copy_paste": 0.3,
+                "scale": 0.5,
+                "mosaic": 0.8,
+                "close_mosaic": 15,
+                "mixup": 0.15,
+            },
+        },
+        # S15 — multi-seed S8 rerun for variance estimation (3 seeds).
+        # Aggregator at the end of main() reads all three and appends a
+        # computed S15_multiseed_summary entry with mean/std.
+        {
+            "name": "S15_s8_seed42",
+            "gpu": 3,
+            "description": "S8 recipe with seed=42 (variance study)",
+            "overrides": {
+                "degrees": 20.0,
+                "scale": 0.4,
+                "hsv_v": 0.3,
+                "seed": 42,
+            },
+            "pipeline_args": {},
+            "custom_pipeline": True,
+            "custom_runner": "separate_v2",
+            "stenosis_overrides": {
+                "copy_paste": 0.3,
+                "scale": 0.5,
+                "mosaic": 0.8,
+                "close_mosaic": 15,
+            },
+        },
+        {
+            "name": "S15_s8_seed7",
+            "gpu": 4,
+            "description": "S8 recipe with seed=7 (variance study)",
+            "overrides": {
+                "degrees": 20.0,
+                "scale": 0.4,
+                "hsv_v": 0.3,
+                "seed": 7,
+            },
+            "pipeline_args": {},
+            "custom_pipeline": True,
+            "custom_runner": "separate_v2",
+            "stenosis_overrides": {
+                "copy_paste": 0.3,
+                "scale": 0.5,
+                "mosaic": 0.8,
+                "close_mosaic": 15,
+            },
+        },
+        {
+            "name": "S15_s8_seed2024",
+            "gpu": 5,
+            "description": "S8 recipe with seed=2024 (variance study)",
+            "overrides": {
+                "degrees": 20.0,
+                "scale": 0.4,
+                "hsv_v": 0.3,
+                "seed": 2024,
+            },
+            "pipeline_args": {},
+            "custom_pipeline": True,
+            "custom_runner": "separate_v2",
+            "stenosis_overrides": {
+                "copy_paste": 0.3,
+                "scale": 0.5,
+                "mosaic": 0.8,
+                "close_mosaic": 15,
+            },
+        },
+        {
+            "name": "S16_mosaic_both",
+            "gpu": 5,
+            "description": "S8 + mosaic=0.5 on syntax too (stretch: "
+                           "test whether mosaic helps syntax too)",
+            "overrides": {
+                "degrees": 20.0,
+                "scale": 0.4,
+                "hsv_v": 0.3,
+                "mosaic": 0.5,
+                "close_mosaic": 15,
+            },
+            "pipeline_args": {},
+            "custom_pipeline": True,
+            "custom_runner": "separate_v2",
+            "stenosis_overrides": {
+                "copy_paste": 0.3,
+                "scale": 0.5,
+                "mosaic": 0.8,
+                "close_mosaic": 15,
+            },
+        },
+        {
+            "name": "S17_mosaic_crop_1024",
+            "gpu": 1,
+            "description": "S8 mosaic + vessel-guided CROP + stenosis "
+                           "at 1024px (combines the two orthogonal "
+                           "Round 2 wins; highest-ceiling experiment)",
+            "overrides": {
+                "degrees": 20.0,
+                "scale": 0.4,
+                "hsv_v": 0.3,
+            },
+            "pipeline_args": {},
+            "custom_pipeline": True,
+            "custom_runner": "vessel_guided",
+            "stenosis_overrides": {
+                "copy_paste": 0.3,
+                "scale": 0.5,
+                "mosaic": 0.8,
+                "close_mosaic": 15,
+                "stenosis_imgsz": 1024,
+                "stenosis_batch": 4,
+            },
+            "vessel_guided": {
+                "dilate_px": 30,
+                "crop_pad_px": 15,
+                "vessel_conf": 0.15,
+                "vessel_imgsz": 768,
+                "variant": "crop",
+                "min_count": 0,
+            },
+        },
     ]
 
     # Merge base config into each experiment
@@ -550,20 +735,37 @@ def run_separate_stenosis_v2(exp: dict, arcade_root: Path, splits_dir: Path,
     cfg_sten["cls"] = 1.0
     cfg_sten["results_dir"] = str(results_dir / "stenosis_model")
 
-    # Apply per-experiment stenosis overrides (copy_paste, scale, mosaic, etc.)
-    for key, val in stenosis_overrides.items():
+    # Special keys in stenosis_overrides redirect to dedicated cfg slots
+    # (so experiments can raise resolution, shrink batch, or swap the
+    # backbone for the stenosis model without affecting the syntax model).
+    special = {
+        "stenosis_imgsz": "imgsz",
+        "stenosis_batch": "batch",
+        "stenosis_model_weights": "model",
+    }
+    filtered_overrides = dict(stenosis_overrides)
+    for src_key, dst_key in special.items():
+        if src_key in filtered_overrides:
+            cfg_sten[dst_key] = filtered_overrides.pop(src_key)
+
+    # Apply remaining per-experiment stenosis overrides
+    # (copy_paste, scale, mosaic, mixup, close_mosaic, etc.)
+    for key, val in filtered_overrides.items():
         cfg_sten[key] = val
+
+    sten_imgsz = cfg_sten["imgsz"]
+    run_name = f"stenosis_{sten_imgsz}"
 
     stenosis_yaml = str(data_dir / "dataset_configs" / "stenosis_only.yaml")
     stenosis_weights = train_two_stage(
         cfg_sten, stenosis_yaml,
         project=str(results_dir / "stenosis_model"),
-        run_name="stenosis_768",
+        run_name=run_name,
     )
 
     stenosis_metrics = evaluate_model(
         stenosis_weights, stenosis_yaml, split="test",
-        augment=True, imgsz=768,
+        augment=True, imgsz=sten_imgsz,
     )
     _save_metrics(results_dir, "stenosis_model_test", stenosis_metrics)
 
@@ -745,29 +947,51 @@ def run_vessel_guided_stenosis(exp: dict, arcade_root: Path, splits_dir: Path,
         cfg_sten["cls"] = 1.0
         cfg_sten["results_dir"] = str(results_dir / f"stenosis_model_{v}")
 
-        # Apply per-experiment stenosis overrides
-        for key, val in stenosis_overrides.items():
+        # Special keys in stenosis_overrides redirect to dedicated cfg slots
+        # (mirrors the handling in run_separate_stenosis_v2).
+        special = {
+            "stenosis_imgsz": "imgsz",
+            "stenosis_batch": "batch",
+            "stenosis_model_weights": "model",
+        }
+        filtered_overrides = dict(stenosis_overrides)
+        for src_key, dst_key in special.items():
+            if src_key in filtered_overrides:
+                cfg_sten[dst_key] = filtered_overrides.pop(src_key)
+
+        # Apply remaining per-experiment stenosis overrides
+        for key, val in filtered_overrides.items():
             cfg_sten[key] = val
 
+        sten_imgsz = cfg_sten["imgsz"]
         stenosis_yaml = str(masked_root / v / "data.yaml")
         st_weights = train_two_stage(
             cfg_sten, stenosis_yaml,
             project=str(results_dir / f"stenosis_model_{v}"),
-            run_name=f"stenosis_{v}_768",
+            run_name=f"stenosis_{v}_{sten_imgsz}",
         )
         stenosis_weights_by_variant[v] = st_weights
 
         st_metrics = evaluate_model(
             st_weights, stenosis_yaml, split="test",
-            augment=True, imgsz=768,
+            augment=True, imgsz=sten_imgsz,
         )
         _save_metrics(results_dir, f"stenosis_model_{v}_test", st_metrics)
         stenosis_metrics_by_variant[v] = st_metrics
 
-    # Pick the best variant by stenosis AP50 for the combined final report
+    # Pick the best variant by stenosis F1 (not AP50) for the combined
+    # final report. F1 better reflects the deployed detection quality —
+    # the S9 post-mortem showed crop beat blackout on F1 (0.4098 vs
+    # 0.3906) even though blackout had marginally higher AP50.
+    def _stenosis_f1(m):
+        cls = m.get("per_class", {}).get("stenosis", {})
+        p = cls.get("precision", 0.0)
+        r = cls.get("recall", 0.0)
+        return (2 * p * r / (p + r)) if (p + r) > 0 else 0.0
+
     best_variant = max(
         stenosis_metrics_by_variant.keys(),
-        key=lambda v: stenosis_metrics_by_variant[v].get("stenosis_AP50", 0.0),
+        key=lambda v: _stenosis_f1(stenosis_metrics_by_variant[v]),
     )
     stenosis_metrics = stenosis_metrics_by_variant[best_variant]
     stenosis_weights = stenosis_weights_by_variant[best_variant]
@@ -1084,6 +1308,8 @@ def _run_single_worker_script():
     name = exp["name"]
     gpu = exp["gpu"]
 
+    # CUDA_VISIBLE_DEVICES should already be set by the parent via Popen(env=...)
+    # — this assignment is a belt-and-suspenders no-op in normal operation.
     os.environ["CUDA_VISIBLE_DEVICES"] = str(gpu)
     exp["config"]["device"] = "0"
 
@@ -1158,16 +1384,26 @@ def _run_single_worker_script():
 
 
 def launch_experiments_parallel(experiments, arcade_root, splits_dir,
-                                output_dir, iterations):
-    """Launch each experiment as a separate subprocess to avoid daemon issues."""
+                                output_dir, iterations, max_concurrent=3):
+    """Launch experiments as subprocesses with a concurrency cap.
+
+    Two critical fixes vs the naive "launch all at once" approach:
+
+    1. CUDA_VISIBLE_DEVICES is set in the subprocess's INITIAL environment
+       via Popen(env=...), not inside the worker after Python has started.
+       Otherwise every worker briefly defaults to GPU 0 during torch import
+       and they contend, causing OOMs on heavy jobs.
+
+    2. Slot scheduler caps concurrent subprocesses at ``max_concurrent``
+       (default 3 on 4090s). When a job finishes, the next queued one
+       launches. This avoids starving system RAM / shared memory /dev/shm
+       when dispatching many heavy ultralytics runs at once.
+    """
     script_path = Path(__file__).resolve()
     tmp_dir = output_dir / "_worker_jobs"
     tmp_dir.mkdir(parents=True, exist_ok=True)
 
-    processes = []
-    result_paths = []
-
-    for exp in experiments:
+    def _prepare_job(exp):
         name = exp["name"]
         job_path = tmp_dir / f"{name}_job.json"
         result_path = tmp_dir / f"{name}_result.json"
@@ -1184,37 +1420,77 @@ def launch_experiments_parallel(experiments, arcade_root, splits_dir,
         }
         with open(job_path, "w") as f:
             json.dump(job, f, indent=2, default=str)
+        return name, job_path, result_path, log_path
 
+    def _spawn(exp):
+        name, job_path, result_path, log_path = _prepare_job(exp)
+        # CRITICAL: set CUDA_VISIBLE_DEVICES in the subprocess's initial env,
+        # before any Python imports. Setting it inside the worker after torch
+        # imports would be too late — torch already ran its CUDA init on GPU 0.
+        env = os.environ.copy()
+        env["CUDA_VISIBLE_DEVICES"] = str(exp["gpu"])
         log_file = open(log_path, "w")
         proc = subprocess.Popen(
             [sys.executable, str(script_path), "--worker", str(job_path)],
             stdout=log_file,
             stderr=subprocess.STDOUT,
             cwd=str(script_path.parent),
+            env=env,
         )
-        processes.append((name, exp["gpu"], proc, log_file))
-        result_paths.append((name, result_path))
-        print(f"  Launched {name} on GPU {exp['gpu']} (PID {proc.pid}, log: {log_path})")
+        print(f"  Launched {name} on GPU {exp['gpu']} "
+              f"(PID {proc.pid}, log: {log_path})")
+        return {
+            "name": name,
+            "gpu": exp["gpu"],
+            "proc": proc,
+            "log_file": log_file,
+            "result_path": result_path,
+        }
 
-    # Wait for all to finish
-    print(f"\nWaiting for {len(processes)} experiments to complete...")
-    for name, gpu, proc, log_file in processes:
-        proc.wait()
-        log_file.close()
-        status = "OK" if proc.returncode == 0 else f"EXIT {proc.returncode}"
-        print(f"  [GPU {gpu}] {name}: {status}")
-
-    # Collect results
+    pending = list(experiments)
+    running = []
     results = []
-    for name, result_path in result_paths:
-        if result_path.exists():
-            with open(result_path) as f:
+    total = len(pending)
+    done_count = 0
+
+    print(f"\nScheduling {total} experiments with max_concurrent={max_concurrent}")
+
+    while pending or running:
+        # Fill open slots
+        while pending and len(running) < max_concurrent:
+            exp = pending.pop(0)
+            running.append(_spawn(exp))
+
+        if not running:
+            break
+
+        # Poll for any finished subprocess (blocking wait on the first one
+        # is cheaper than a busy loop, so wait then check all).
+        finished_idx = None
+        while finished_idx is None:
+            for i, job in enumerate(running):
+                if job["proc"].poll() is not None:
+                    finished_idx = i
+                    break
+            if finished_idx is None:
+                time.sleep(5)
+
+        job = running.pop(finished_idx)
+        job["log_file"].close()
+        rc = job["proc"].returncode
+        status = "OK" if rc == 0 else f"EXIT {rc}"
+        done_count += 1
+        print(f"  [{done_count}/{total}] [GPU {job['gpu']}] "
+              f"{job['name']}: {status}")
+
+        if job["result_path"].exists():
+            with open(job["result_path"]) as f:
                 results.append(json.load(f))
         else:
             results.append({
-                "name": name,
+                "name": job["name"],
                 "status": "failed",
-                "error": "No result file produced",
+                "error": f"No result file produced (exit {rc})",
                 "elapsed_hours": 0,
             })
 
@@ -1285,6 +1561,119 @@ def print_results_table(results: list) -> None:
             print(line)
 
 
+def _aggregate_s15_multiseed(merged: list, results_path: Path) -> None:
+    """Compute mean/std across the 3 S15 seed runs and append a summary.
+
+    S7's 16pp syntax mAP50 swing vs S8 (on identical configs) proved
+    single-seed runs are unreliable. S15 reruns the S8 recipe with
+    seeds {42, 7, 2024}. This helper reads whichever seed entries are
+    present in the merged results and, if all 3 exist, computes mean
+    and std of the headline metrics and writes a synthetic
+    ``S15_multiseed_summary`` entry so downstream tooling can treat
+    it like any other experiment.
+    """
+    seed_names = ["S15_s8_seed42", "S15_s8_seed7", "S15_s8_seed2024"]
+    by_name = {r["name"]: r for r in merged if isinstance(r, dict)}
+    seed_runs = [by_name[n] for n in seed_names if n in by_name]
+    if len(seed_runs) < 3:
+        return  # wait until all 3 seeds are in
+
+    def _final(r):
+        return (r.get("metrics", {}) or {}).get("final_test", {}) or {}
+
+    def _f1(p, r):
+        return (2 * p * r / (p + r)) if (p + r) > 0 else 0.0
+
+    def _stenosis_f1(r):
+        sten = _final(r).get("per_class", {}).get("stenosis", {}) or {}
+        p = sten.get("precision", 0.0)
+        rv = sten.get("recall", 0.0)
+        return _f1(p, rv)
+
+    def _overall_f1(r):
+        f = _final(r)
+        return _f1(f.get("precision", 0.0), f.get("recall", 0.0))
+
+    def _mean_std(xs):
+        if not xs:
+            return 0.0, 0.0
+        n = len(xs)
+        m = sum(xs) / n
+        if n < 2:
+            return m, 0.0
+        var = sum((x - m) ** 2 for x in xs) / (n - 1)  # sample std
+        return m, var ** 0.5
+
+    syntax_mAPs = [_final(r).get("syntax_mAP50", 0.0) for r in seed_runs]
+    stenosis_APs = [_final(r).get("stenosis_AP50", 0.0) for r in seed_runs]
+    stenosis_F1s = [_stenosis_f1(r) for r in seed_runs]
+    overall_F1s = [_overall_f1(r) for r in seed_runs]
+    mAP50s = [_final(r).get("mAP50", 0.0) for r in seed_runs]
+
+    syntax_mean, syntax_std = _mean_std(syntax_mAPs)
+    sten_ap_mean, sten_ap_std = _mean_std(stenosis_APs)
+    sten_f1_mean, sten_f1_std = _mean_std(stenosis_F1s)
+    overall_f1_mean, overall_f1_std = _mean_std(overall_F1s)
+    map_mean, map_std = _mean_std(mAP50s)
+
+    summary = {
+        "name": "S15_multiseed_summary",
+        "gpu": -1,
+        "description": "Mean ± std of S8 recipe over 3 seeds "
+                       "(42, 7, 2024) — variance baseline",
+        "elapsed_hours": round(sum(r.get("elapsed_hours", 0) for r in seed_runs), 2),
+        "status": "success",
+        "metrics": {
+            "final_test": {
+                "split": "test",
+                "mAP50": round(map_mean, 4),
+                "mAP50_std": round(map_std, 4),
+                "syntax_mAP50": round(syntax_mean, 4),
+                "syntax_mAP50_std": round(syntax_std, 4),
+                "stenosis_AP50": round(sten_ap_mean, 4),
+                "stenosis_AP50_std": round(sten_ap_std, 4),
+                "stenosis_f1_mean": round(sten_f1_mean, 4),
+                "stenosis_f1_std": round(sten_f1_std, 4),
+                "overall_f1_mean": round(overall_f1_mean, 4),
+                "overall_f1_std": round(overall_f1_std, 4),
+                "n_seeds": len(seed_runs),
+                "per_class": {
+                    "stenosis": {
+                        "f1": round(sten_f1_mean, 4),
+                        "precision": 0.0,
+                        "recall": 0.0,
+                        "ap50": round(sten_ap_mean, 4),
+                    },
+                },
+                "seed_runs": seed_names,
+                "per_seed": {
+                    seed_names[i]: {
+                        "syntax_mAP50": round(syntax_mAPs[i], 4),
+                        "stenosis_AP50": round(stenosis_APs[i], 4),
+                        "stenosis_f1": round(stenosis_F1s[i], 4),
+                        "overall_f1": round(overall_F1s[i], 4),
+                    }
+                    for i in range(len(seed_runs))
+                },
+            },
+        },
+    }
+
+    # Replace existing summary (if any) and rewrite the merged file
+    merged_by_name = {r["name"]: r for r in merged if isinstance(r, dict)}
+    merged_by_name["S15_multiseed_summary"] = summary
+    new_merged = list(merged_by_name.values())
+    with open(results_path, "w") as f:
+        json.dump(new_merged, f, indent=2, default=str)
+
+    print(f"\n  S15 multi-seed summary written "
+          f"(n={len(seed_runs)}):")
+    print(f"    syntax mAP50  : {syntax_mean:.4f} ± {syntax_std:.4f}")
+    print(f"    stenosis AP50 : {sten_ap_mean:.4f} ± {sten_ap_std:.4f}")
+    print(f"    stenosis F1   : {sten_f1_mean:.4f} ± {sten_f1_std:.4f}")
+    print(f"    overall F1    : {overall_f1_mean:.4f} ± {overall_f1_std:.4f}")
+
+
 # ── Main ────────────────────────────────────────────────────────────────────
 
 def main():
@@ -1318,6 +1707,12 @@ def main():
     parser.add_argument(
         "--gpus", type=str, default="0,1,2,3,4,5",
         help="Comma-separated GPU IDs to use (default: 0,1,2,3,4,5)"
+    )
+    parser.add_argument(
+        "--max-concurrent", type=int, default=3,
+        help="Maximum concurrent subprocess runs (default: 3). "
+             "4090s reliably handle 3 heavy yolo-seg jobs; bump only if "
+             "you verify your system has headroom."
     )
     args = parser.parse_args()
 
@@ -1369,7 +1764,8 @@ def main():
     total_start = time.time()
 
     results = launch_experiments_parallel(
-        experiments, arcade_root, splits_dir, output_dir, args.iterations
+        experiments, arcade_root, splits_dir, output_dir, args.iterations,
+        max_concurrent=args.max_concurrent,
     )
 
     total_elapsed = time.time() - total_start
@@ -1398,6 +1794,12 @@ def main():
 
     with open(results_path, "w") as f:
         json.dump(merged, f, indent=2, default=str)
+
+    # ── S15 multi-seed aggregator ──
+    # If all 3 seed runs are present in the merged results, compute
+    # mean/std of the key metrics and append a summary entry. This
+    # runs after every session so it updates as seed runs complete.
+    _aggregate_s15_multiseed(merged, results_path)
 
     print(f"\n{'=' * 100}")
     print(f"ALL EXPERIMENTS COMPLETE ({total_elapsed / 3600:.1f}h wall time)")
