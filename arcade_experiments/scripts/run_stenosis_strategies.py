@@ -553,6 +553,168 @@ def get_experiments():
                 "min_count": 0,
             },
         },
+        # ── Round 5: Syntax-tail attack (S19-S24) ─────────────────────
+        # Round 4 finding: syntax mAP50 ≈ 0.74 is the real ceiling for
+        # overall-F1 ≥ 0.80. 3 of 12 kept classes (9, 13, 16) drag the
+        # mean down by ~7pp. Per-class analysis (S9 vs S8) showed that
+        # training on all 25 classes HELPS the hard kept ones: class 9
+        # +8.4pp, class 16 +3.1pp. All Round 5 experiments target the
+        # syntax stage and reuse the S8 mosaic stenosis recipe so they
+        # can be compared cleanly to S8/S12 on final mAP.
+        {
+            "name": "S19_syntax_yolo11l",
+            "gpu": 0,
+            "description": "yolo11l-seg on SYNTAX (capacity upgrade, "
+                           "the S12 move applied to syntax)",
+            "overrides": {
+                "degrees": 20.0,
+                "scale": 0.4,
+                "hsv_v": 0.3,
+            },
+            "pipeline_args": {},
+            "custom_pipeline": True,
+            "custom_runner": "separate_v2",
+            "syntax_overrides": {
+                "syntax_model_weights": "yolo11l-seg.pt",
+                "syntax_batch": 4,
+            },
+            "stenosis_overrides": {
+                "copy_paste": 0.3,
+                "scale": 0.5,
+                "mosaic": 0.8,
+                "close_mosaic": 15,
+            },
+        },
+        {
+            "name": "S20_syntax_all25_eval12",
+            "gpu": 1,
+            "description": "Train syntax on ALL 25 classes, evaluate "
+                           "mean only over kept-12 subset (exploits "
+                           "S9 per-class gains on classes 9/13/16)",
+            "overrides": {
+                "degrees": 20.0,
+                "scale": 0.4,
+                "hsv_v": 0.3,
+            },
+            "pipeline_args": {},
+            "custom_pipeline": True,
+            "custom_runner": "separate_v2",
+            "syntax_overrides": {
+                "syntax_min_count": 0,
+                "syntax_eval_kept_ids": [1, 2, 3, 4, 5, 6, 7, 8, 9,
+                                         11, 13, 16],
+            },
+            "stenosis_overrides": {
+                "copy_paste": 0.3,
+                "scale": 0.5,
+                "mosaic": 0.8,
+                "close_mosaic": 15,
+            },
+        },
+        {
+            "name": "S21_syntax_max_capacity",
+            "gpu": 2,
+            "description": "Kitchen-sink syntax: yolo11l + imgsz 1024 "
+                           "+ patience 50 + freeze 5 "
+                           "(max capacity & exposure)",
+            "overrides": {
+                "degrees": 20.0,
+                "scale": 0.4,
+                "hsv_v": 0.3,
+            },
+            "pipeline_args": {},
+            "custom_pipeline": True,
+            "custom_runner": "separate_v2",
+            "syntax_overrides": {
+                "syntax_model_weights": "yolo11l-seg.pt",
+                "syntax_imgsz": 1024,
+                "syntax_batch": 2,
+                "freeze": 5,
+                "patience": 50,
+            },
+            "stenosis_overrides": {
+                "copy_paste": 0.3,
+                "scale": 0.5,
+                "mosaic": 0.8,
+                "close_mosaic": 15,
+            },
+        },
+        {
+            "name": "S22_syntax_yolo11l_all25",
+            "gpu": 3,
+            "description": "S19 + S20 stack: yolo11l syntax trained on "
+                           "all 25 classes, eval on kept-12. Highest "
+                           "expected syntax gain this round.",
+            "overrides": {
+                "degrees": 20.0,
+                "scale": 0.4,
+                "hsv_v": 0.3,
+            },
+            "pipeline_args": {},
+            "custom_pipeline": True,
+            "custom_runner": "separate_v2",
+            "syntax_overrides": {
+                "syntax_model_weights": "yolo11l-seg.pt",
+                "syntax_batch": 4,
+                "syntax_min_count": 0,
+                "syntax_eval_kept_ids": [1, 2, 3, 4, 5, 6, 7, 8, 9,
+                                         11, 13, 16],
+            },
+            "stenosis_overrides": {
+                "copy_paste": 0.3,
+                "scale": 0.5,
+                "mosaic": 0.8,
+                "close_mosaic": 15,
+            },
+        },
+        {
+            "name": "S23_syntax_1024",
+            "gpu": 4,
+            "description": "Syntax at imgsz=1024 (more pixels for "
+                           "thin distal branches, yolo11m unchanged)",
+            "overrides": {
+                "degrees": 20.0,
+                "scale": 0.4,
+                "hsv_v": 0.3,
+            },
+            "pipeline_args": {},
+            "custom_pipeline": True,
+            "custom_runner": "separate_v2",
+            "syntax_overrides": {
+                "syntax_imgsz": 1024,
+                "syntax_batch": 4,
+            },
+            "stenosis_overrides": {
+                "copy_paste": 0.3,
+                "scale": 0.5,
+                "mosaic": 0.8,
+                "close_mosaic": 15,
+            },
+        },
+        {
+            "name": "S24_syntax_long",
+            "gpu": 5,
+            "description": "Longer syntax training: patience 50, "
+                           "freeze 5 (more unfrozen fine-tuning time)",
+            "overrides": {
+                "degrees": 20.0,
+                "scale": 0.4,
+                "hsv_v": 0.3,
+            },
+            "pipeline_args": {},
+            "custom_pipeline": True,
+            "custom_runner": "separate_v2",
+            "syntax_overrides": {
+                "freeze": 5,
+                "patience": 50,
+            },
+            "stenosis_overrides": {
+                "copy_paste": 0.3,
+                "scale": 0.5,
+                "mosaic": 0.8,
+                "close_mosaic": 15,
+            },
+        },
     ]
 
     # Merge base config into each experiment
@@ -761,10 +923,24 @@ def run_separate_stenosis_v2(exp: dict, arcade_root: Path, splits_dir: Path,
     results_dir.mkdir(parents=True, exist_ok=True)
 
     stenosis_overrides = exp.get("stenosis_overrides", {})
+    syntax_overrides = exp.get("syntax_overrides", {}) or {}
 
-    # ── Part A: Syntax-only model at 768px ──
+    # ── Part A: Syntax-only model ──
+    # Honors per-experiment ``syntax_overrides`` with these specials:
+    #   - syntax_model_weights : swap backbone (yolo11l-seg, etc.)
+    #   - syntax_imgsz         : training + eval resolution
+    #   - syntax_batch         : batch size
+    #   - syntax_epochs        : epoch budget (both stages of train_two_stage)
+    #   - syntax_cos_lr        : cosine LR schedule
+    #   - syntax_min_count     : class-count filter for data_prep (0 = all 25)
+    #   - syntax_eval_kept_ids : list[int] — after evaluation, compute a
+    #                            filtered mean AP50 over these class IDs only.
+    #                            Used by S20/S22 (train-25-eval-12).
+    # Non-special keys are applied verbatim to the syntax config.
     print(f"\n{'#' * 60}")
     print(f"# {name} — Part A: Syntax-only model")
+    if syntax_overrides:
+        print(f"#   Syntax overrides: {syntax_overrides}")
     print(f"{'#' * 60}")
 
     cfg_syntax = dict(exp["config"])
@@ -774,6 +950,25 @@ def run_separate_stenosis_v2(exp: dict, arcade_root: Path, splits_dir: Path,
     cfg_syntax["results_dir"] = str(results_dir / "syntax_model")
     cfg_syntax["data_dir"] = str(output_dir / "data" / name)
 
+    # Pull out special keys that don't belong directly in cfg_syntax
+    syn_filtered = dict(syntax_overrides)
+    syntax_min_count = int(syn_filtered.pop("syntax_min_count", 300))
+    syntax_eval_kept_ids = syn_filtered.pop("syntax_eval_kept_ids", None)
+    # Remaining special-key-to-cfg mappings
+    syn_special = {
+        "syntax_imgsz": "imgsz",
+        "syntax_batch": "batch",
+        "syntax_model_weights": "model",
+        "syntax_epochs": "epochs",
+        "syntax_cos_lr": "cos_lr",
+    }
+    for src_key, dst_key in syn_special.items():
+        if src_key in syn_filtered:
+            cfg_syntax[dst_key] = syn_filtered.pop(src_key)
+    # Apply any remaining syntax overrides verbatim
+    for key, val in syn_filtered.items():
+        cfg_syntax[key] = val
+
     config_path_syntax = results_dir / "config_syntax.yaml"
     with open(config_path_syntax, "w") as f:
         yaml.dump(cfg_syntax, f, default_flow_style=False)
@@ -781,19 +976,60 @@ def run_separate_stenosis_v2(exp: dict, arcade_root: Path, splits_dir: Path,
     cfg_s = load_run_config(str(config_path_syntax))
     data_dir = Path(cfg_s["data_dir"]).resolve()
 
-    data_prep(arcade_root, data_dir, min_count=300, splits_dir=splits_dir)
+    data_prep(arcade_root, data_dir, min_count=syntax_min_count,
+              splits_dir=splits_dir)
 
     syntax_yaml = str(data_dir / "dataset_configs" / "syntax_only.yaml")
+    syn_imgsz = int(cfg_s.get("imgsz", 768))
+    syn_run_name = f"syntax_{syn_imgsz}"
     syntax_weights = train_two_stage(
         cfg_s, syntax_yaml,
         project=str(results_dir / "syntax_model"),
-        run_name="syntax_768",
+        run_name=syn_run_name,
     )
 
-    syntax_metrics = evaluate_model(
+    syntax_metrics_raw = evaluate_model(
         syntax_weights, syntax_yaml, split="test",
-        augment=True, imgsz=768,
+        augment=True, imgsz=syn_imgsz,
     )
+
+    # ── Optional post-eval class filter (S20/S22) ──
+    # When the model was trained on all 25 classes but we only care
+    # about a specific subset for the final score, compute a filtered
+    # mean over just those class IDs. The full per-class table is
+    # preserved under ``syntax_all_classes_test`` for transparency.
+    if syntax_eval_kept_ids:
+        kept_str = {str(cid) for cid in syntax_eval_kept_ids}
+        all_pc = syntax_metrics_raw.get("per_class", {}) or {}
+        kept_pc = {k: v for k, v in all_pc.items() if k in kept_str}
+        if kept_pc:
+            aps = [v.get("ap50", 0) for v in kept_pc.values()]
+            ps = [v.get("precision", 0) for v in kept_pc.values()]
+            rs = [v.get("recall", 0) for v in kept_pc.values()]
+            syntax_metrics = {
+                "split": "test",
+                "model": syntax_metrics_raw.get("model"),
+                "mAP50": round(sum(aps) / len(aps), 4),
+                "mAP50_95": 0.0,
+                "precision": round(sum(ps) / len(ps), 4),
+                "recall": round(sum(rs) / len(rs), 4),
+                "per_class": kept_pc,
+                "syntax_mAP50": round(sum(aps) / len(aps), 4),
+                "kept_class_ids": sorted(int(k) for k in kept_pc),
+                "filtered_from_n_classes": len(all_pc),
+            }
+            print(f"  [S20-style filter] kept-{len(kept_pc)} syntax "
+                  f"mAP50={syntax_metrics['mAP50']:.4f} "
+                  f"(from all-{len(all_pc)} {syntax_metrics_raw.get('mAP50'):.4f})")
+            _save_metrics(results_dir, "syntax_all_classes_test",
+                          syntax_metrics_raw)
+        else:
+            print(f"  [S20-style filter] no kept classes matched — "
+                  f"using raw all-class metrics")
+            syntax_metrics = syntax_metrics_raw
+    else:
+        syntax_metrics = syntax_metrics_raw
+
     _save_metrics(results_dir, "syntax_model_test", syntax_metrics)
 
     # ── Part B: Dedicated stenosis model at 768px ──
@@ -1562,6 +1798,7 @@ def _reap_orphan_compute_pids(
     parent_pid: int,
     project_marker: str = "run_stenosis_strategies",
     kill: bool = False,
+    extra_exclude_pids: set[int] | None = None,
 ) -> list[dict]:
     """Detect (and optionally SIGTERM) stale compute PIDs on ``gpu_pool``.
 
@@ -1582,9 +1819,13 @@ def _reap_orphan_compute_pids(
     """
     import signal
 
+    exclude = {parent_pid}
+    if extra_exclude_pids:
+        exclude |= set(extra_exclude_pids)
+
     orphans = []
     for gpu_id in gpu_pool:
-        for pid in _gpu_compute_pids(gpu_id, exclude_pids={parent_pid}):
+        for pid in _gpu_compute_pids(gpu_id, exclude_pids=exclude):
             cmdline = _pid_cmdline(pid)
             is_ours = project_marker in cmdline
             entry = {
@@ -1707,7 +1948,7 @@ def launch_experiments_parallel(experiments, arcade_root, splits_dir,
                                 stagger_seconds=15,
                                 min_free_mb=2000,
                                 gpu_pool=None,
-                                reap_orphans=False):
+                                reap_orphans=True):
     """Launch experiments as subprocesses with hardened concurrency.
 
     Four defences against the "first 3 succeed, rest OOM" failure mode:
@@ -1766,7 +2007,8 @@ def launch_experiments_parallel(experiments, arcade_root, splits_dir,
         kill=reap_orphans,
     )
     if orphans:
-        print(f"\n  Orphan sweep ({'kill' if reap_orphans else 'dry-run'}):")
+        print(f"\n  Startup orphan sweep "
+              f"({'kill ON' if reap_orphans else 'report only'}):")
         for o in orphans:
             tag = "OURS" if o["is_project"] else "foreign"
             action = o["action"]
@@ -1809,6 +2051,11 @@ def launch_experiments_parallel(experiments, arcade_root, splits_dir,
             json.dump(job, f, indent=2, default=str)
         return name, job_path, result_path, log_path
 
+    # PIDs of workers we ourselves spawned this session. Used so the
+    # mid-run orphan sweep doesn't accidentally kill a still-running
+    # sibling worker from the same launch.
+    our_running_pids: set[int] = set()
+
     def _spawn(exp, gpu_id):
         """Spawn a worker on ``gpu_id``.
 
@@ -1825,6 +2072,25 @@ def launch_experiments_parallel(experiments, arcade_root, splits_dir,
         exp["config"] = cfg
 
         name, job_path, result_path, log_path = _prepare_job(exp)
+
+        # ── Mid-run orphan sweep (only on the target GPU) ──
+        # Before we pay the 600s pre-flight wait, kill any lingering
+        # project-marked workers on THIS GPU. They would be zombies
+        # from an earlier experiment on this slot. Healthy sibling
+        # workers (spawned this session) are protected via
+        # ``extra_exclude_pids=our_running_pids``.
+        if reap_orphans:
+            mid = _reap_orphan_compute_pids(
+                [gpu_id], parent_pid,
+                project_marker="run_stenosis_strategies",
+                kill=True,
+                extra_exclude_pids=our_running_pids,
+            )
+            killed = [o for o in mid if o["is_project"]
+                      and o["action"] in ("SIGTERM", "SIGKILL", "terminated")]
+            if killed:
+                print(f"  [GPU {gpu_id}] mid-run reaper: "
+                      f"killed {len(killed)} stale worker(s) before spawn")
 
         # ── Pre-flight idle check ──
         # Wait until the GPU is proven idle: no compute PIDs running and
@@ -1874,6 +2140,7 @@ def launch_experiments_parallel(experiments, arcade_root, splits_dir,
             cwd=str(script_path.parent),
             env=env,
         )
+        our_running_pids.add(proc.pid)
         print(f"  Launched {name} on GPU {gpu_id} "
               f"(PID {proc.pid}, free={_gpu_free_mb(gpu_id)}MB, "
               f"baseline={gpu_baseline_free_mb.get(gpu_id, -1)}MB, "
@@ -1965,6 +2232,7 @@ def launch_experiments_parallel(experiments, arcade_root, splits_dir,
         # the next worker on this slot starts from a clean state.
         gpu_id = job["gpu"]
         child_pid = job["proc"].pid
+        our_running_pids.discard(child_pid)
         time.sleep(2)  # initial driver-catchup grace period
         ok, reason = _wait_for_gpu_free(
             gpu_id,
@@ -1978,8 +2246,29 @@ def launch_experiments_parallel(experiments, arcade_root, splits_dir,
         if ok:
             print(f"    [GPU {gpu_id}] released: {reason}")
         else:
+            # Post-completion wait timed out. Round 4 post-mortem: this
+            # is exactly when a ghost from the just-finished training
+            # is about to block the next spawn. Aggressively SIGKILL
+            # any lingering project-marked PIDs on this GPU now,
+            # before returning it to the pool.
             print(f"    [GPU {gpu_id}] WARNING: not idle after "
                   f"completion — {reason}")
+            if reap_orphans:
+                killed = _reap_orphan_compute_pids(
+                    [gpu_id], parent_pid,
+                    project_marker="run_stenosis_strategies",
+                    kill=True,
+                    extra_exclude_pids=our_running_pids,
+                )
+                killed_ours = [o for o in killed if o["is_project"]
+                               and o["action"] in ("SIGTERM", "SIGKILL",
+                                                   "terminated")]
+                if killed_ours:
+                    print(f"    [GPU {gpu_id}] post-completion reaper: "
+                          f"killed {len(killed_ours)} stale worker(s)")
+                    # One more short wait so the kill is reflected
+                    # in nvidia-smi before the next pre-flight runs.
+                    time.sleep(5)
 
         # Return the GPU to the free pool for the next queued experiment
         free_gpus.append(gpu_id)
@@ -2079,9 +2368,33 @@ def _aggregate_multiseed(
     treat like any other experiment.
     """
     by_name = {r["name"]: r for r in merged if isinstance(r, dict)}
-    seed_runs = [by_name[n] for n in seed_names if n in by_name]
-    if len(seed_runs) < len(seed_names):
-        return  # wait until all seeds are in
+
+    def _has_real_metrics(run):
+        """True if the run produced non-zero metrics (not a skipped failure)."""
+        if not isinstance(run, dict):
+            return False
+        if run.get("status") == "failed":
+            return False
+        m = (run.get("metrics", {}) or {})
+        ft = m.get("final_test", {}) or {}
+        stm = m.get("stenosis_model_test", {}) or {}
+        sym = m.get("syntax_model_test", {}) or {}
+        # Non-zero final mAP50 is the cheapest signal of "actually ran"
+        if (ft.get("mAP50", 0) or 0) > 0:
+            return True
+        if (sym.get("mAP50", 0) or 0) > 0:
+            return True
+        if (stm.get("mAP50", 0) or 0) > 0:
+            return True
+        return False
+
+    seed_runs = [by_name[n] for n in seed_names
+                 if n in by_name and _has_real_metrics(by_name[n])]
+    if len(seed_runs) < 2:
+        # Need at least 2 real seeds for a meaningful mean/std. Skip
+        # silently — the aggregator runs every session so the summary
+        # will be computed once enough valid seeds land.
+        return
 
     def _final(r):
         return (r.get("metrics", {}) or {}).get("final_test", {}) or {}
@@ -2235,11 +2548,18 @@ def main():
              "pre-flight memory check."
     )
     parser.add_argument(
-        "--reap-orphans", action="store_true",
-        help="On startup, SIGTERM/SIGKILL any lingering compute "
-             "processes on pool GPUs whose cmdline identifies them as "
-             "stale workers from this script (ignored if cmdline "
-             "doesn't match). Default: print orphans but don't kill."
+        "--reap-orphans", dest="reap_orphans", action="store_true",
+        default=True,
+        help="SIGTERM/SIGKILL lingering compute processes on pool GPUs "
+             "whose cmdline identifies them as stale workers from this "
+             "script (never touches foreign processes). Runs at startup, "
+             "before each spawn, and after any post-completion wait that "
+             "times out. Default: ON."
+    )
+    parser.add_argument(
+        "--no-reap-orphans", dest="reap_orphans", action="store_false",
+        help="Disable the orphan reaper. Then the scheduler will only "
+             "REPORT stale project workers; it will not kill them."
     )
     args = parser.parse_args()
 
