@@ -446,6 +446,82 @@ def get_experiments():
                 "close_mosaic": 15,
             },
         },
+        # ── Round 4 experiments (S18+) ────────────────────────────────
+        # Round 3 finding: S12 (yolo11l-seg) produced the highest
+        # stenosis F1 ever seen (0.4548, +4pp over S8), BUT S15's
+        # 2-of-3 seeds showed ~5pp seed-to-seed variance on the S8
+        # recipe — so S12 vs S8 (+4pp) is not yet >1σ above noise.
+        # S18 reruns the S12 recipe with 3 seeds to confirm the gain
+        # is real. Aggregator in main() produces S18_multiseed_summary.
+        {
+            "name": "S18_s12_seed42",
+            "gpu": 0,
+            "description": "S12 (yolo11l-seg) recipe with seed=42 "
+                           "(Round 4 variance confirmation)",
+            "overrides": {
+                "degrees": 20.0,
+                "scale": 0.4,
+                "hsv_v": 0.3,
+                "seed": 42,
+            },
+            "pipeline_args": {},
+            "custom_pipeline": True,
+            "custom_runner": "separate_v2",
+            "stenosis_overrides": {
+                "copy_paste": 0.3,
+                "scale": 0.5,
+                "mosaic": 0.8,
+                "close_mosaic": 15,
+                "stenosis_model_weights": "yolo11l-seg.pt",
+                "stenosis_batch": 4,
+            },
+        },
+        {
+            "name": "S18_s12_seed7",
+            "gpu": 1,
+            "description": "S12 (yolo11l-seg) recipe with seed=7 "
+                           "(Round 4 variance confirmation)",
+            "overrides": {
+                "degrees": 20.0,
+                "scale": 0.4,
+                "hsv_v": 0.3,
+                "seed": 7,
+            },
+            "pipeline_args": {},
+            "custom_pipeline": True,
+            "custom_runner": "separate_v2",
+            "stenosis_overrides": {
+                "copy_paste": 0.3,
+                "scale": 0.5,
+                "mosaic": 0.8,
+                "close_mosaic": 15,
+                "stenosis_model_weights": "yolo11l-seg.pt",
+                "stenosis_batch": 4,
+            },
+        },
+        {
+            "name": "S18_s12_seed2024",
+            "gpu": 0,
+            "description": "S12 (yolo11l-seg) recipe with seed=2024 "
+                           "(Round 4 variance confirmation)",
+            "overrides": {
+                "degrees": 20.0,
+                "scale": 0.4,
+                "hsv_v": 0.3,
+                "seed": 2024,
+            },
+            "pipeline_args": {},
+            "custom_pipeline": True,
+            "custom_runner": "separate_v2",
+            "stenosis_overrides": {
+                "copy_paste": 0.3,
+                "scale": 0.5,
+                "mosaic": 0.8,
+                "close_mosaic": 15,
+                "stenosis_model_weights": "yolo11l-seg.pt",
+                "stenosis_batch": 4,
+            },
+        },
         {
             "name": "S17_mosaic_crop_1024",
             "gpu": 1,
@@ -1466,6 +1542,98 @@ def _gpu_compute_pids(gpu_id: int, exclude_pids: set[int] | None = None) -> list
         return []
 
 
+def _pid_cmdline(pid: int) -> str:
+    """Return the cmdline of ``pid`` as a space-joined string, or ''.
+
+    Reads ``/proc/<pid>/cmdline`` directly so we don't depend on ps
+    or psutil. Returns empty string if the process has disappeared
+    or the platform doesn't expose /proc.
+    """
+    try:
+        with open(f"/proc/{pid}/cmdline", "rb") as f:
+            raw = f.read()
+        return raw.replace(b"\x00", b" ").decode("utf-8", "replace").strip()
+    except Exception:
+        return ""
+
+
+def _reap_orphan_compute_pids(
+    gpu_pool: list[int],
+    parent_pid: int,
+    project_marker: str = "run_stenosis_strategies",
+    kill: bool = False,
+) -> list[dict]:
+    """Detect (and optionally SIGTERM) stale compute PIDs on ``gpu_pool``.
+
+    Round 3 taught us that a single zombie from an earlier run can
+    silently block multiple experiments via the pre-flight idle check.
+    At scheduler startup we now enumerate every compute PID on every
+    GPU in the pool (excluding our own parent_pid), and for each one:
+
+    - If its cmdline contains ``project_marker`` it's clearly a stale
+      worker from an earlier session. Log it, and if ``kill=True``
+      send SIGTERM (then SIGKILL after a short grace window).
+    - Otherwise it's an unrelated process (someone else's training,
+      a Jupyter kernel, etc.). Log it as a warning but DO NOT touch
+      it — we don't know whose work we'd be destroying.
+
+    Returns a list of dicts describing each orphan found, so callers
+    can decide whether to abort or proceed.
+    """
+    import signal
+
+    orphans = []
+    for gpu_id in gpu_pool:
+        for pid in _gpu_compute_pids(gpu_id, exclude_pids={parent_pid}):
+            cmdline = _pid_cmdline(pid)
+            is_ours = project_marker in cmdline
+            entry = {
+                "gpu": gpu_id,
+                "pid": pid,
+                "cmdline": cmdline or "<unknown>",
+                "is_project": is_ours,
+                "action": "none",
+            }
+            if is_ours and kill:
+                try:
+                    os.kill(pid, signal.SIGTERM)
+                    entry["action"] = "SIGTERM"
+                except ProcessLookupError:
+                    entry["action"] = "gone"
+                except PermissionError:
+                    entry["action"] = "permission_denied"
+                except Exception as e:
+                    entry["action"] = f"error: {e}"
+            orphans.append(entry)
+
+    # If we SIGTERM'd anything, give it a grace window then follow up
+    # with SIGKILL on any that are still around.
+    if kill and any(o["action"] == "SIGTERM" for o in orphans):
+        time.sleep(5)
+        for entry in orphans:
+            if entry["action"] != "SIGTERM":
+                continue
+            pid = entry["pid"]
+            try:
+                os.kill(pid, 0)  # probe — raises if gone
+            except ProcessLookupError:
+                entry["action"] = "terminated"
+                continue
+            except Exception:
+                continue
+            # Still alive after SIGTERM → SIGKILL
+            try:
+                os.kill(pid, signal.SIGKILL)
+                entry["action"] = "SIGKILL"
+            except Exception as e:
+                entry["action"] = f"kill_failed: {e}"
+        # Another short wait so nvidia-smi reflects the kills before
+        # the scheduler captures its per-GPU baseline.
+        time.sleep(3)
+
+    return orphans
+
+
 def _wait_for_gpu_free(
     gpu_id: int,
     min_free_mb: int,
@@ -1538,7 +1706,8 @@ def launch_experiments_parallel(experiments, arcade_root, splits_dir,
                                 max_concurrent=None,
                                 stagger_seconds=15,
                                 min_free_mb=2000,
-                                gpu_pool=None):
+                                gpu_pool=None,
+                                reap_orphans=False):
     """Launch experiments as subprocesses with hardened concurrency.
 
     Four defences against the "first 3 succeed, rest OOM" failure mode:
@@ -1582,15 +1751,44 @@ def launch_experiments_parallel(experiments, arcade_root, splits_dir,
     max_concurrent = min(max_concurrent, len(gpu_pool))
 
     free_gpus = list(gpu_pool)  # pool of GPUs currently free
+    parent_pid = os.getpid()
 
-    # ── Capture per-GPU idle baseline before any worker starts ──
+    # ── Orphan-process sweep (before baseline capture) ──
+    # Round 3 post-mortem: a single zombie process from an earlier
+    # session blocked TWO Round 3 experiments via the pre-flight idle
+    # check. Sweep each pool GPU for compute PIDs we didn't spawn and,
+    # if they look like our own stale workers (cmdline contains
+    # ``run_stenosis_strategies``), kill them BEFORE we capture the
+    # idle baseline. Unrelated processes are logged but never killed.
+    orphans = _reap_orphan_compute_pids(
+        gpu_pool, parent_pid,
+        project_marker="run_stenosis_strategies",
+        kill=reap_orphans,
+    )
+    if orphans:
+        print(f"\n  Orphan sweep ({'kill' if reap_orphans else 'dry-run'}):")
+        for o in orphans:
+            tag = "OURS" if o["is_project"] else "foreign"
+            action = o["action"]
+            cmdline = (o["cmdline"][:80] + "…") if len(o["cmdline"]) > 80 else o["cmdline"]
+            print(f"    [GPU {o['gpu']}] PID {o['pid']} ({tag}, {action}): {cmdline}")
+        stale_still_alive = [
+            o for o in orphans
+            if o["is_project"] and o["action"] not in ("SIGKILL", "terminated", "gone")
+        ]
+        if stale_still_alive and not reap_orphans:
+            print(f"  NOTE: {len(stale_still_alive)} stale worker(s) still "
+                  f"holding memory. Pass --reap-orphans to SIGTERM/SIGKILL "
+                  f"them, otherwise the scheduler will wait and may skip "
+                  f"experiments whose GPU is blocked.")
+
+    # ── Capture per-GPU idle baseline AFTER orphan sweep ──
     # These baselines let the scheduler prove "GPU is back to idle" by
     # waiting until free memory returns to near the captured level,
     # rather than accepting any arbitrary ``min_free_mb``.
     gpu_baseline_free_mb = {}
     for g in gpu_pool:
         gpu_baseline_free_mb[g] = _gpu_free_mb(g)
-    parent_pid = os.getpid()
 
     def _prepare_job(exp):
         name = exp["name"]
@@ -1864,22 +2062,26 @@ def print_results_table(results: list) -> None:
             print(line)
 
 
-def _aggregate_s15_multiseed(merged: list, results_path: Path) -> None:
-    """Compute mean/std across the 3 S15 seed runs and append a summary.
+def _aggregate_multiseed(
+    merged: list,
+    results_path: Path,
+    summary_name: str,
+    seed_names: list[str],
+    description: str,
+) -> None:
+    """Compute mean/std across a set of seed runs and append a summary.
 
-    S7's 16pp syntax mAP50 swing vs S8 (on identical configs) proved
-    single-seed runs are unreliable. S15 reruns the S8 recipe with
-    seeds {42, 7, 2024}. This helper reads whichever seed entries are
-    present in the merged results and, if all 3 exist, computes mean
-    and std of the headline metrics and writes a synthetic
-    ``S15_multiseed_summary`` entry so downstream tooling can treat
-    it like any other experiment.
+    Generalised aggregator used for both S15 (S8 recipe × 3 seeds) and
+    S18 (S12 recipe × 3 seeds). Reads whichever seed entries are
+    present in the merged results and, if ALL of ``seed_names`` exist,
+    computes mean and std of the headline metrics and writes a
+    synthetic ``<summary_name>`` entry that downstream tooling can
+    treat like any other experiment.
     """
-    seed_names = ["S15_s8_seed42", "S15_s8_seed7", "S15_s8_seed2024"]
     by_name = {r["name"]: r for r in merged if isinstance(r, dict)}
     seed_runs = [by_name[n] for n in seed_names if n in by_name]
-    if len(seed_runs) < 3:
-        return  # wait until all 3 seeds are in
+    if len(seed_runs) < len(seed_names):
+        return  # wait until all seeds are in
 
     def _final(r):
         return (r.get("metrics", {}) or {}).get("final_test", {}) or {}
@@ -1920,10 +2122,9 @@ def _aggregate_s15_multiseed(merged: list, results_path: Path) -> None:
     map_mean, map_std = _mean_std(mAP50s)
 
     summary = {
-        "name": "S15_multiseed_summary",
+        "name": summary_name,
         "gpu": -1,
-        "description": "Mean ± std of S8 recipe over 3 seeds "
-                       "(42, 7, 2024) — variance baseline",
+        "description": description,
         "elapsed_hours": round(sum(r.get("elapsed_hours", 0) for r in seed_runs), 2),
         "status": "success",
         "metrics": {
@@ -1962,14 +2163,18 @@ def _aggregate_s15_multiseed(merged: list, results_path: Path) -> None:
         },
     }
 
-    # Replace existing summary (if any) and rewrite the merged file
+    # Replace existing summary (if any) and rewrite the merged file.
+    # NOTE: we mutate the caller's ``merged`` list in place so that
+    # subsequent aggregator calls (e.g. S18 after S15) see the freshly
+    # written S15 entry.
     merged_by_name = {r["name"]: r for r in merged if isinstance(r, dict)}
-    merged_by_name["S15_multiseed_summary"] = summary
+    merged_by_name[summary_name] = summary
     new_merged = list(merged_by_name.values())
+    merged[:] = new_merged
     with open(results_path, "w") as f:
         json.dump(new_merged, f, indent=2, default=str)
 
-    print(f"\n  S15 multi-seed summary written "
+    print(f"\n  {summary_name} written "
           f"(n={len(seed_runs)}):")
     print(f"    syntax mAP50  : {syntax_mean:.4f} ± {syntax_std:.4f}")
     print(f"    stenosis AP50 : {sten_ap_mean:.4f} ± {sten_ap_std:.4f}")
@@ -2028,6 +2233,13 @@ def main():
         help="Minimum free VRAM (MB) required on a GPU before spawning "
              "a worker there (default: 2000). Set to 0 to disable the "
              "pre-flight memory check."
+    )
+    parser.add_argument(
+        "--reap-orphans", action="store_true",
+        help="On startup, SIGTERM/SIGKILL any lingering compute "
+             "processes on pool GPUs whose cmdline identifies them as "
+             "stale workers from this script (ignored if cmdline "
+             "doesn't match). Default: print orphans but don't kill."
     )
     args = parser.parse_args()
 
@@ -2101,6 +2313,7 @@ def main():
         stagger_seconds=args.stagger_seconds,
         min_free_mb=args.min_free_mb,
         gpu_pool=available_gpus,
+        reap_orphans=args.reap_orphans,
     )
 
     total_elapsed = time.time() - total_start
@@ -2130,11 +2343,25 @@ def main():
     with open(results_path, "w") as f:
         json.dump(merged, f, indent=2, default=str)
 
-    # ── S15 multi-seed aggregator ──
-    # If all 3 seed runs are present in the merged results, compute
-    # mean/std of the key metrics and append a summary entry. This
-    # runs after every session so it updates as seed runs complete.
-    _aggregate_s15_multiseed(merged, results_path)
+    # ── Multi-seed aggregators ──
+    # If all seed runs for a given recipe are present in the merged
+    # results, compute mean/std of the key metrics and append a
+    # summary entry. These run after every session so they update as
+    # seed runs complete across multiple invocations.
+    _aggregate_multiseed(
+        merged, results_path,
+        summary_name="S15_multiseed_summary",
+        seed_names=["S15_s8_seed42", "S15_s8_seed7", "S15_s8_seed2024"],
+        description="Mean ± std of S8 recipe over 3 seeds "
+                    "(42, 7, 2024) — variance baseline",
+    )
+    _aggregate_multiseed(
+        merged, results_path,
+        summary_name="S18_multiseed_summary",
+        seed_names=["S18_s12_seed42", "S18_s12_seed7", "S18_s12_seed2024"],
+        description="Mean ± std of S12 (yolo11l-seg) recipe over "
+                    "3 seeds (42, 7, 2024) — confirms yolo11l gain",
+    )
 
     print(f"\n{'=' * 100}")
     print(f"ALL EXPERIMENTS COMPLETE ({total_elapsed / 3600:.1f}h wall time)")
