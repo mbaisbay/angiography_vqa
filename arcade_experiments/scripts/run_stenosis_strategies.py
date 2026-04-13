@@ -2587,9 +2587,18 @@ def main():
     # ── Step 2: Define experiments ──
     experiments = get_experiments()
 
-    # Filter experiments if specified
+    # Filter experiments if specified. Accept both space-separated
+    # (nargs="+") and comma-separated forms, e.g.
+    #   --experiments S11 S12 S13
+    #   --experiments S11,S12,S13
     if args.experiments:
-        experiments = [e for e in experiments if e["name"] in args.experiments]
+        requested: set[str] = set()
+        for tok in args.experiments:
+            for part in str(tok).split(","):
+                part = part.strip()
+                if part:
+                    requested.add(part)
+        experiments = [e for e in experiments if e["name"] in requested]
         if not experiments:
             print(f"ERROR: No matching experiments. Available: "
                   f"{[e['name'] for e in get_experiments()]}")
