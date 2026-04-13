@@ -715,6 +715,97 @@ def get_experiments():
                 "close_mosaic": 15,
             },
         },
+        # ──────────────────────────────────────────────────────────
+        # Round 6 — first-order-lever attack
+        #
+        # 25 prior experiments never touched: classification loss
+        # weight, optimizer choice, or lesion-centric training. All
+        # three are first-order knobs that COCO defaults leave at
+        # values unsuitable for this task. This round tests each in
+        # isolation so the effect is unambiguous.
+        # ──────────────────────────────────────────────────────────
+        {
+            "name": "S25_cls_loss_2x",
+            "gpu": 0,
+            "description": "S8 recipe + cls loss weight 0.5 -> 2.0 "
+                           "on SYNTAX model. Targets class-confusion "
+                           "bottleneck on tail classes 9/13/16.",
+            "overrides": {
+                "degrees": 20.0,
+                "scale": 0.4,
+                "hsv_v": 0.3,
+            },
+            "pipeline_args": {},
+            "custom_pipeline": True,
+            "custom_runner": "separate_v2",
+            "syntax_overrides": {
+                "cls": 2.0,
+            },
+            "stenosis_overrides": {
+                "copy_paste": 0.3,
+                "scale": 0.5,
+                "mosaic": 0.8,
+                "close_mosaic": 15,
+            },
+        },
+        {
+            "name": "S26_lesion_crops",
+            "gpu": 1,
+            "description": "S8 recipe + lesion-centric stenosis "
+                           "training. Train crops (256px, 3/lesion) "
+                           "blended with full images; val/test "
+                           "untouched. Attacks small-object bottleneck "
+                           "directly via effective-resolution upsampling.",
+            "overrides": {
+                "degrees": 20.0,
+                "scale": 0.4,
+                "hsv_v": 0.3,
+            },
+            "pipeline_args": {},
+            "custom_pipeline": True,
+            "custom_runner": "separate_v2",
+            "syntax_overrides": {},
+            "stenosis_overrides": {
+                "copy_paste": 0.3,
+                "scale": 0.5,
+                "mosaic": 0.8,
+                "close_mosaic": 15,
+                # Special key -> runner swaps the stenosis dataset yaml
+                # to a pre-built lesion-crop variant (see
+                # prepare_lesion_crops.py). When set, the runner will
+                # auto-generate the crop dataset at experiment start.
+                "stenosis_dataset": "lesion_crops",
+                "lesion_crops_n": 3,
+                "lesion_crops_size": 256,
+                "lesion_crops_jitter": 50,
+            },
+        },
+        {
+            "name": "S27_sgd_optimizer",
+            "gpu": 2,
+            "description": "S8 recipe + SGD (lr=0.01, wd=0.0005) "
+                           "replacing AdamW. YOLO's native optimizer; "
+                           "ultralytics reports SGD +1-3pp over AdamW "
+                           "on segmentation.",
+            "overrides": {
+                "degrees": 20.0,
+                "scale": 0.4,
+                "hsv_v": 0.3,
+                "optimizer": "SGD",
+                "lr0": 0.01,
+                "weight_decay": 0.0005,
+            },
+            "pipeline_args": {},
+            "custom_pipeline": True,
+            "custom_runner": "separate_v2",
+            "syntax_overrides": {},
+            "stenosis_overrides": {
+                "copy_paste": 0.3,
+                "scale": 0.5,
+                "mosaic": 0.8,
+                "close_mosaic": 15,
+            },
+        },
     ]
 
     # Merge base config into each experiment
@@ -1060,6 +1151,13 @@ def run_separate_stenosis_v2(exp: dict, arcade_root: Path, splits_dir: Path,
         if src_key in filtered_overrides:
             cfg_sten[dst_key] = filtered_overrides.pop(src_key)
 
+    # Pop S26-style dataset-override controls so they don't leak into
+    # YOLO train kwargs as unknown arguments.
+    stenosis_dataset = filtered_overrides.pop("stenosis_dataset", None)
+    lesion_crops_n = filtered_overrides.pop("lesion_crops_n", 3)
+    lesion_crops_size = filtered_overrides.pop("lesion_crops_size", 256)
+    lesion_crops_jitter = filtered_overrides.pop("lesion_crops_jitter", 50)
+
     # Apply remaining per-experiment stenosis overrides
     # (copy_paste, scale, mosaic, mixup, close_mosaic, etc.)
     for key, val in filtered_overrides.items():
@@ -1068,7 +1166,32 @@ def run_separate_stenosis_v2(exp: dict, arcade_root: Path, splits_dir: Path,
     sten_imgsz = cfg_sten["imgsz"]
     run_name = f"stenosis_{sten_imgsz}"
 
+    # Default: standard stenosis dataset. S26 swaps to a pre-generated
+    # lesion-crop variant built from the stratified splits.
     stenosis_yaml = str(data_dir / "dataset_configs" / "stenosis_only.yaml")
+    if stenosis_dataset == "lesion_crops":
+        from prepare_lesion_crops import generate_lesion_crops
+        crops_dir = data_dir / "stenosis_lesion_crops"
+        print(f"\n  [S26] Generating lesion crops -> {crops_dir}")
+        stats = generate_lesion_crops(
+            stenosis_dir=data_dir / "stenosis",
+            output_dir=crops_dir,
+            n_crops=lesion_crops_n,
+            crop_size=lesion_crops_size,
+            jitter_px=lesion_crops_jitter,
+            seed=cfg_sten.get("seed", 42),
+            keep_full_images=True,
+        )
+        print(f"  [S26] crops={stats['train_crops_written']} "
+              f"full_imgs={stats['train_full_images_kept']} "
+              f"lesions={stats['lesion_instances_seen']} "
+              f"multi={stats['crops_with_multi_lesion']}")
+        stenosis_yaml = stats["dataset_yaml"]
+    elif stenosis_dataset is not None:
+        raise ValueError(
+            f"Unknown stenosis_dataset variant: {stenosis_dataset}. "
+            f"Supported: 'lesion_crops', None."
+        )
     stenosis_weights = train_two_stage(
         cfg_sten, stenosis_yaml,
         project=str(results_dir / "stenosis_model"),
