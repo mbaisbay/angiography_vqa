@@ -806,6 +806,226 @@ def get_experiments():
                 "close_mosaic": 15,
             },
         },
+        # ──────────────────────────────────────────────────────────
+        # Round 7 — HP sweep on the S27 SGD baseline
+        #
+        # S27 is the new project-best (final 0.7212, syntax 0.7494,
+        # stenosis 0.3832 — the first dominant win in 27 experiments,
+        # beats Old S5 historical). Round 7 sweeps around S27 on the
+        # levers that matter:
+        #
+        #   Sweep A: cls loss (S25 showed the lever exists but cls=2
+        #            overshot — tail classes regressed 9-12pp).
+        #   Sweep B: SGD learning rate and weight decay (single-point
+        #            tuned; quick sanity sweep).
+        #   Sweep C: lesion crops retuned (S26 showed real AP50 gain
+        #            but under-trained and mis-calibrated).
+        #
+        # Base: S27 SGD recipe (optimizer=SGD, lr0=0.01, wd=0.0005)
+        # plus S8 mosaic stenosis overrides. Each experiment is a
+        # one-variable delta from that base so the effect is readable.
+        # ──────────────────────────────────────────────────────────
+        # ── Sweep A: cls loss weight ──
+        {
+            "name": "S28_sgd_cls075",
+            "gpu": 0,
+            "description": "S27 SGD baseline + syntax cls=0.75",
+            "overrides": {
+                "degrees": 20.0,
+                "scale": 0.4,
+                "hsv_v": 0.3,
+                "optimizer": "SGD",
+                "lr0": 0.01,
+                "weight_decay": 0.0005,
+            },
+            "pipeline_args": {},
+            "custom_pipeline": True,
+            "custom_runner": "separate_v2",
+            "syntax_overrides": {"cls": 0.75},
+            "stenosis_overrides": {
+                "copy_paste": 0.3,
+                "scale": 0.5,
+                "mosaic": 0.8,
+                "close_mosaic": 15,
+            },
+        },
+        {
+            "name": "S29_sgd_cls100",
+            "gpu": 1,
+            "description": "S27 SGD baseline + syntax cls=1.0",
+            "overrides": {
+                "degrees": 20.0,
+                "scale": 0.4,
+                "hsv_v": 0.3,
+                "optimizer": "SGD",
+                "lr0": 0.01,
+                "weight_decay": 0.0005,
+            },
+            "pipeline_args": {},
+            "custom_pipeline": True,
+            "custom_runner": "separate_v2",
+            "syntax_overrides": {"cls": 1.0},
+            "stenosis_overrides": {
+                "copy_paste": 0.3,
+                "scale": 0.5,
+                "mosaic": 0.8,
+                "close_mosaic": 15,
+            },
+        },
+        {
+            "name": "S30_sgd_cls125",
+            "gpu": 2,
+            "description": "S27 SGD baseline + syntax cls=1.25",
+            "overrides": {
+                "degrees": 20.0,
+                "scale": 0.4,
+                "hsv_v": 0.3,
+                "optimizer": "SGD",
+                "lr0": 0.01,
+                "weight_decay": 0.0005,
+            },
+            "pipeline_args": {},
+            "custom_pipeline": True,
+            "custom_runner": "separate_v2",
+            "syntax_overrides": {"cls": 1.25},
+            "stenosis_overrides": {
+                "copy_paste": 0.3,
+                "scale": 0.5,
+                "mosaic": 0.8,
+                "close_mosaic": 15,
+            },
+        },
+        # ── Sweep B: SGD LR / WD sanity sweep ──
+        {
+            "name": "S31_sgd_lr005",
+            "gpu": 3,
+            "description": "S27 SGD + lr0=0.005 (half LR)",
+            "overrides": {
+                "degrees": 20.0,
+                "scale": 0.4,
+                "hsv_v": 0.3,
+                "optimizer": "SGD",
+                "lr0": 0.005,
+                "weight_decay": 0.0005,
+            },
+            "pipeline_args": {},
+            "custom_pipeline": True,
+            "custom_runner": "separate_v2",
+            "syntax_overrides": {},
+            "stenosis_overrides": {
+                "copy_paste": 0.3,
+                "scale": 0.5,
+                "mosaic": 0.8,
+                "close_mosaic": 15,
+            },
+        },
+        {
+            "name": "S32_sgd_lr020",
+            "gpu": 4,
+            "description": "S27 SGD + lr0=0.02 (double LR)",
+            "overrides": {
+                "degrees": 20.0,
+                "scale": 0.4,
+                "hsv_v": 0.3,
+                "optimizer": "SGD",
+                "lr0": 0.02,
+                "weight_decay": 0.0005,
+            },
+            "pipeline_args": {},
+            "custom_pipeline": True,
+            "custom_runner": "separate_v2",
+            "syntax_overrides": {},
+            "stenosis_overrides": {
+                "copy_paste": 0.3,
+                "scale": 0.5,
+                "mosaic": 0.8,
+                "close_mosaic": 15,
+            },
+        },
+        {
+            "name": "S33_sgd_wd001",
+            "gpu": 5,
+            "description": "S27 SGD + weight_decay=0.001 (2x default)",
+            "overrides": {
+                "degrees": 20.0,
+                "scale": 0.4,
+                "hsv_v": 0.3,
+                "optimizer": "SGD",
+                "lr0": 0.01,
+                "weight_decay": 0.001,
+            },
+            "pipeline_args": {},
+            "custom_pipeline": True,
+            "custom_runner": "separate_v2",
+            "syntax_overrides": {},
+            "stenosis_overrides": {
+                "copy_paste": 0.3,
+                "scale": 0.5,
+                "mosaic": 0.8,
+                "close_mosaic": 15,
+            },
+        },
+        # ── Sweep C: lesion crops retuned on SGD base ──
+        {
+            "name": "S34_crops_sgd_long",
+            "gpu": 0,
+            "description": "S27 SGD + lesion crops (n=3, size=256) "
+                           "with longer training (epochs=250). Retries "
+                           "S26 on the hypothesis that crops were "
+                           "under-trained (4x more data, same epochs).",
+            "overrides": {
+                "degrees": 20.0,
+                "scale": 0.4,
+                "hsv_v": 0.3,
+                "optimizer": "SGD",
+                "lr0": 0.01,
+                "weight_decay": 0.0005,
+                "epochs": 250,
+            },
+            "pipeline_args": {},
+            "custom_pipeline": True,
+            "custom_runner": "separate_v2",
+            "syntax_overrides": {},
+            "stenosis_overrides": {
+                "copy_paste": 0.3,
+                "scale": 0.5,
+                "mosaic": 0.8,
+                "close_mosaic": 15,
+                "stenosis_dataset": "lesion_crops",
+                "lesion_crops_n": 3,
+                "lesion_crops_size": 256,
+                "lesion_crops_jitter": 50,
+            },
+        },
+        {
+            "name": "S35_crops_sgd_tight",
+            "gpu": 1,
+            "description": "S27 SGD + lesion crops (n=2, size=320). "
+                           "Bigger crops, less duplication — keeps "
+                           "more anatomical context per sample.",
+            "overrides": {
+                "degrees": 20.0,
+                "scale": 0.4,
+                "hsv_v": 0.3,
+                "optimizer": "SGD",
+                "lr0": 0.01,
+                "weight_decay": 0.0005,
+            },
+            "pipeline_args": {},
+            "custom_pipeline": True,
+            "custom_runner": "separate_v2",
+            "syntax_overrides": {},
+            "stenosis_overrides": {
+                "copy_paste": 0.3,
+                "scale": 0.5,
+                "mosaic": 0.8,
+                "close_mosaic": 15,
+                "stenosis_dataset": "lesion_crops",
+                "lesion_crops_n": 2,
+                "lesion_crops_size": 320,
+                "lesion_crops_jitter": 50,
+            },
+        },
     ]
 
     # Merge base config into each experiment
