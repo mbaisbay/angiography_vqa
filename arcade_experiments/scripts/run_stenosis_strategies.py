@@ -1217,6 +1217,133 @@ def get_experiments():
                 "stenosis_batch": 4,
             },
         },
+        # ── Round 9: Medipixel/SSASS-style "less-is-more" augmentation ──
+        # Research finding (SSASS, ARCADE 1st place, F1=0.5699): Medipixel's
+        # winning YOLOv8m-seg recipe uses NO mosaic and NO copy_paste, only
+        # conservative geometric + HSV aug. Their supervised-only baseline
+        # was 0.520 (vs our S36=0.4613). Hypothesis: mosaic/copy_paste
+        # destroys the fine-scale vessel context that stenosis detection
+        # depends on. S43a/b/c ablate which of the two augmentations is
+        # actually hurting us; S44 is the full SSASS recipe port.
+        {
+            "name": "S43a_no_mosaic",
+            "gpu": 0,
+            "description": "S36 recipe minus mosaic (copy_paste stays 0.3). "
+                           "Ablation arm 1: does mosaic hurt stenosis?",
+            "overrides": {
+                "degrees": 20.0,
+                "scale": 0.4,
+                "hsv_v": 0.3,
+                "optimizer": "SGD",
+                "lr0": 0.01,
+                "weight_decay": 0.0005,
+            },
+            "pipeline_args": {},
+            "custom_pipeline": True,
+            "custom_runner": "separate_v2",
+            "syntax_overrides": {},
+            "stenosis_overrides": {
+                "copy_paste": 0.3,
+                "scale": 0.5,
+                "mosaic": 0.0,
+                "close_mosaic": 0,
+                "stenosis_lr0": 0.005,
+            },
+        },
+        {
+            "name": "S43b_no_cp",
+            "gpu": 1,
+            "description": "S36 recipe minus copy_paste (mosaic stays 0.8). "
+                           "Ablation arm 2: does copy_paste hurt stenosis?",
+            "overrides": {
+                "degrees": 20.0,
+                "scale": 0.4,
+                "hsv_v": 0.3,
+                "optimizer": "SGD",
+                "lr0": 0.01,
+                "weight_decay": 0.0005,
+            },
+            "pipeline_args": {},
+            "custom_pipeline": True,
+            "custom_runner": "separate_v2",
+            "syntax_overrides": {},
+            "stenosis_overrides": {
+                "copy_paste": 0.0,
+                "scale": 0.5,
+                "mosaic": 0.8,
+                "close_mosaic": 15,
+                "stenosis_lr0": 0.005,
+            },
+        },
+        {
+            "name": "S43c_no_both",
+            "gpu": 2,
+            "description": "S36 recipe minus BOTH mosaic and copy_paste "
+                           "(Medipixel-style conservative aug). Ablation "
+                           "arm 3 — the unified 'less-is-more' hypothesis.",
+            "overrides": {
+                "degrees": 20.0,
+                "scale": 0.4,
+                "hsv_v": 0.3,
+                "optimizer": "SGD",
+                "lr0": 0.01,
+                "weight_decay": 0.0005,
+            },
+            "pipeline_args": {},
+            "custom_pipeline": True,
+            "custom_runner": "separate_v2",
+            "syntax_overrides": {},
+            "stenosis_overrides": {
+                "copy_paste": 0.0,
+                "scale": 0.5,
+                "mosaic": 0.0,
+                "close_mosaic": 0,
+                "stenosis_lr0": 0.005,
+            },
+        },
+        {
+            "name": "S44_ssass_port",
+            "gpu": 3,
+            "description": "Full port of Medipixel's SSASS supervised recipe "
+                           "(ARCADE 1st, F1=0.5699): stenosis at 640px, SGD "
+                           "lr=0.01, 300 epochs, no mosaic/cp, conservative "
+                           "geometric + HSV aug, patience=50. Target ≥0.52 "
+                           "stenosis F1. Overnight experiment.",
+            "overrides": {
+                "degrees": 20.0,
+                "scale": 0.4,
+                "hsv_v": 0.3,
+                "optimizer": "SGD",
+                "lr0": 0.01,
+                "weight_decay": 0.0005,
+            },
+            "pipeline_args": {},
+            "custom_pipeline": True,
+            "custom_runner": "separate_v2",
+            "syntax_overrides": {},
+            "stenosis_overrides": {
+                # no mosaic / copy_paste / mixup (SSASS uses none)
+                "mosaic": 0.0,
+                "close_mosaic": 0,
+                "copy_paste": 0.0,
+                "mixup": 0.0,
+                # SSASS geometric + HSV aug
+                "degrees": 30.0,
+                "scale": 0.5,
+                "translate": 0.3,
+                "perspective": 0.001,
+                "hsv_h": 0.015,
+                "hsv_s": 0.7,
+                "hsv_v": 0.4,
+                # SSASS resolution / schedule
+                "stenosis_imgsz": 640,
+                "stenosis_batch": 16,
+                "stenosis_epochs": 300,
+                "stenosis_freeze_epochs": 30,
+                "stenosis_lr0": 0.01,
+                "patience": 50,
+            },
+        },
     ]
 
     # Merge base config into each experiment
