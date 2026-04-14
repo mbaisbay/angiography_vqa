@@ -8878,5 +8878,845 @@
         }
       }
     }
+  },
+  {
+    "name": "S43a_no_mosaic",
+    "gpu": 1,
+    "description": "S36 recipe minus mosaic (copy_paste stays 0.3). Ablation arm 1: does mosaic hurt stenosis?",
+    "elapsed_hours": 0.45,
+    "status": "success",
+    "metrics": {
+      "syntax_model_test": {
+        "split": "test",
+        "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/stenosis_strategies/S43a_no_mosaic/syntax_model/syntax_768_best.pt",
+        "mAP50": 0.7494,
+        "mAP50_95": 0.3205,
+        "precision": 0.7364,
+        "recall": 0.7053,
+        "per_class": {
+          "1": {
+            "ap50": 0.8913,
+            "precision": 0.8048,
+            "recall": 0.8545,
+            "f1": 0.8289
+          },
+          "2": {
+            "ap50": 0.7968,
+            "precision": 0.6987,
+            "recall": 0.8091,
+            "f1": 0.7499
+          },
+          "3": {
+            "ap50": 0.907,
+            "precision": 0.8508,
+            "recall": 0.8349,
+            "f1": 0.8428
+          },
+          "4": {
+            "ap50": 0.8323,
+            "precision": 0.8074,
+            "recall": 0.8105,
+            "f1": 0.8089
+          },
+          "5": {
+            "ap50": 0.9039,
+            "precision": 0.8827,
+            "recall": 0.8363,
+            "f1": 0.8589
+          },
+          "6": {
+            "ap50": 0.733,
+            "precision": 0.7149,
+            "recall": 0.653,
+            "f1": 0.6825
+          },
+          "7": {
+            "ap50": 0.7701,
+            "precision": 0.8014,
+            "recall": 0.6702,
+            "f1": 0.73
+          },
+          "8": {
+            "ap50": 0.7916,
+            "precision": 0.7869,
+            "recall": 0.7586,
+            "f1": 0.7725
+          },
+          "9": {
+            "ap50": 0.3792,
+            "precision": 0.4871,
+            "recall": 0.4138,
+            "f1": 0.4475
+          },
+          "11": {
+            "ap50": 0.8915,
+            "precision": 0.8957,
+            "recall": 0.8511,
+            "f1": 0.8728
+          },
+          "13": {
+            "ap50": 0.4445,
+            "precision": 0.5676,
+            "recall": 0.3302,
+            "f1": 0.4175
+          },
+          "16": {
+            "ap50": 0.6518,
+            "precision": 0.5393,
+            "recall": 0.641,
+            "f1": 0.5858
+          }
+        },
+        "syntax_mAP50": 0.7494
+      },
+      "stenosis_model_test": {
+        "split": "test",
+        "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/stenosis_strategies/S43a_no_mosaic/stenosis_model/stenosis_768_best.pt",
+        "mAP50": 0.3341,
+        "mAP50_95": 0.1093,
+        "precision": 0.4107,
+        "recall": 0.41,
+        "per_class": {
+          "stenosis": {
+            "ap50": 0.3341,
+            "precision": 0.4107,
+            "recall": 0.41,
+            "f1": 0.4103
+          }
+        },
+        "stenosis_AP50": 0.3341
+      },
+      "final_test": {
+        "split": "test",
+        "mAP50": 0.7175,
+        "per_class": {
+          "1": {
+            "ap50": 0.8913,
+            "precision": 0.8048,
+            "recall": 0.8545,
+            "f1": 0.8289
+          },
+          "2": {
+            "ap50": 0.7968,
+            "precision": 0.6987,
+            "recall": 0.8091,
+            "f1": 0.7499
+          },
+          "3": {
+            "ap50": 0.907,
+            "precision": 0.8508,
+            "recall": 0.8349,
+            "f1": 0.8428
+          },
+          "4": {
+            "ap50": 0.8323,
+            "precision": 0.8074,
+            "recall": 0.8105,
+            "f1": 0.8089
+          },
+          "5": {
+            "ap50": 0.9039,
+            "precision": 0.8827,
+            "recall": 0.8363,
+            "f1": 0.8589
+          },
+          "6": {
+            "ap50": 0.733,
+            "precision": 0.7149,
+            "recall": 0.653,
+            "f1": 0.6825
+          },
+          "7": {
+            "ap50": 0.7701,
+            "precision": 0.8014,
+            "recall": 0.6702,
+            "f1": 0.73
+          },
+          "8": {
+            "ap50": 0.7916,
+            "precision": 0.7869,
+            "recall": 0.7586,
+            "f1": 0.7725
+          },
+          "9": {
+            "ap50": 0.3792,
+            "precision": 0.4871,
+            "recall": 0.4138,
+            "f1": 0.4475
+          },
+          "11": {
+            "ap50": 0.8915,
+            "precision": 0.8957,
+            "recall": 0.8511,
+            "f1": 0.8728
+          },
+          "13": {
+            "ap50": 0.4445,
+            "precision": 0.5676,
+            "recall": 0.3302,
+            "f1": 0.4175
+          },
+          "16": {
+            "ap50": 0.6518,
+            "precision": 0.5393,
+            "recall": 0.641,
+            "f1": 0.5858
+          },
+          "stenosis": {
+            "ap50": 0.3341,
+            "precision": 0.4107,
+            "recall": 0.41,
+            "f1": 0.4103
+          }
+        },
+        "syntax_mAP50": 0.7494,
+        "stenosis_AP50": 0.3341,
+        "syntax_model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/stenosis_strategies/S43a_no_mosaic/syntax_model/syntax_768_best.pt",
+        "stenosis_model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/stenosis_strategies/S43a_no_mosaic/stenosis_model/stenosis_768_best.pt",
+        "precision": 0.7114,
+        "recall": 0.6826,
+        "mAP50_95": 0
+      },
+      "stenosis_overrides": {
+        "copy_paste": 0.3,
+        "scale": 0.5,
+        "mosaic": 0.0,
+        "close_mosaic": 0,
+        "stenosis_lr0": 0.005
+      }
+    }
+  },
+  {
+    "name": "S43c_no_both",
+    "gpu": 1,
+    "description": "S36 recipe minus BOTH mosaic and copy_paste (Medipixel-style conservative aug). Ablation arm 3 \u2014 the unified 'less-is-more' hypothesis.",
+    "elapsed_hours": 0.38,
+    "status": "success",
+    "metrics": {
+      "syntax_model_test": {
+        "split": "test",
+        "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/stenosis_strategies/S43c_no_both/syntax_model/syntax_768_best.pt",
+        "mAP50": 0.7494,
+        "mAP50_95": 0.3205,
+        "precision": 0.7364,
+        "recall": 0.7053,
+        "per_class": {
+          "1": {
+            "ap50": 0.8913,
+            "precision": 0.8048,
+            "recall": 0.8545,
+            "f1": 0.8289
+          },
+          "2": {
+            "ap50": 0.7968,
+            "precision": 0.6987,
+            "recall": 0.8091,
+            "f1": 0.7499
+          },
+          "3": {
+            "ap50": 0.907,
+            "precision": 0.8508,
+            "recall": 0.8349,
+            "f1": 0.8428
+          },
+          "4": {
+            "ap50": 0.8323,
+            "precision": 0.8074,
+            "recall": 0.8105,
+            "f1": 0.8089
+          },
+          "5": {
+            "ap50": 0.9039,
+            "precision": 0.8827,
+            "recall": 0.8363,
+            "f1": 0.8589
+          },
+          "6": {
+            "ap50": 0.733,
+            "precision": 0.7149,
+            "recall": 0.653,
+            "f1": 0.6825
+          },
+          "7": {
+            "ap50": 0.7701,
+            "precision": 0.8014,
+            "recall": 0.6702,
+            "f1": 0.73
+          },
+          "8": {
+            "ap50": 0.7916,
+            "precision": 0.7869,
+            "recall": 0.7586,
+            "f1": 0.7725
+          },
+          "9": {
+            "ap50": 0.3792,
+            "precision": 0.4871,
+            "recall": 0.4138,
+            "f1": 0.4475
+          },
+          "11": {
+            "ap50": 0.8915,
+            "precision": 0.8957,
+            "recall": 0.8511,
+            "f1": 0.8728
+          },
+          "13": {
+            "ap50": 0.4445,
+            "precision": 0.5676,
+            "recall": 0.3302,
+            "f1": 0.4175
+          },
+          "16": {
+            "ap50": 0.6518,
+            "precision": 0.5393,
+            "recall": 0.641,
+            "f1": 0.5858
+          }
+        },
+        "syntax_mAP50": 0.7494
+      },
+      "stenosis_model_test": {
+        "split": "test",
+        "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/stenosis_strategies/S43c_no_both/stenosis_model/stenosis_768_best.pt",
+        "mAP50": 0.33,
+        "mAP50_95": 0.1163,
+        "precision": 0.3872,
+        "recall": 0.4112,
+        "per_class": {
+          "stenosis": {
+            "ap50": 0.33,
+            "precision": 0.3872,
+            "recall": 0.4112,
+            "f1": 0.3988
+          }
+        },
+        "stenosis_AP50": 0.33
+      },
+      "final_test": {
+        "split": "test",
+        "mAP50": 0.7172,
+        "per_class": {
+          "1": {
+            "ap50": 0.8913,
+            "precision": 0.8048,
+            "recall": 0.8545,
+            "f1": 0.8289
+          },
+          "2": {
+            "ap50": 0.7968,
+            "precision": 0.6987,
+            "recall": 0.8091,
+            "f1": 0.7499
+          },
+          "3": {
+            "ap50": 0.907,
+            "precision": 0.8508,
+            "recall": 0.8349,
+            "f1": 0.8428
+          },
+          "4": {
+            "ap50": 0.8323,
+            "precision": 0.8074,
+            "recall": 0.8105,
+            "f1": 0.8089
+          },
+          "5": {
+            "ap50": 0.9039,
+            "precision": 0.8827,
+            "recall": 0.8363,
+            "f1": 0.8589
+          },
+          "6": {
+            "ap50": 0.733,
+            "precision": 0.7149,
+            "recall": 0.653,
+            "f1": 0.6825
+          },
+          "7": {
+            "ap50": 0.7701,
+            "precision": 0.8014,
+            "recall": 0.6702,
+            "f1": 0.73
+          },
+          "8": {
+            "ap50": 0.7916,
+            "precision": 0.7869,
+            "recall": 0.7586,
+            "f1": 0.7725
+          },
+          "9": {
+            "ap50": 0.3792,
+            "precision": 0.4871,
+            "recall": 0.4138,
+            "f1": 0.4475
+          },
+          "11": {
+            "ap50": 0.8915,
+            "precision": 0.8957,
+            "recall": 0.8511,
+            "f1": 0.8728
+          },
+          "13": {
+            "ap50": 0.4445,
+            "precision": 0.5676,
+            "recall": 0.3302,
+            "f1": 0.4175
+          },
+          "16": {
+            "ap50": 0.6518,
+            "precision": 0.5393,
+            "recall": 0.641,
+            "f1": 0.5858
+          },
+          "stenosis": {
+            "ap50": 0.33,
+            "precision": 0.3872,
+            "recall": 0.4112,
+            "f1": 0.3988
+          }
+        },
+        "syntax_mAP50": 0.7494,
+        "stenosis_AP50": 0.33,
+        "syntax_model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/stenosis_strategies/S43c_no_both/syntax_model/syntax_768_best.pt",
+        "stenosis_model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/stenosis_strategies/S43c_no_both/stenosis_model/stenosis_768_best.pt",
+        "precision": 0.7096,
+        "recall": 0.6826,
+        "mAP50_95": 0
+      },
+      "stenosis_overrides": {
+        "copy_paste": 0.0,
+        "scale": 0.5,
+        "mosaic": 0.0,
+        "close_mosaic": 0,
+        "stenosis_lr0": 0.005
+      }
+    }
+  },
+  {
+    "name": "S43b_no_cp",
+    "gpu": 1,
+    "description": "S36 recipe minus copy_paste (mosaic stays 0.8). Ablation arm 2: does copy_paste hurt stenosis?",
+    "elapsed_hours": 0.37,
+    "status": "success",
+    "metrics": {
+      "syntax_model_test": {
+        "split": "test",
+        "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/stenosis_strategies/S43b_no_cp/syntax_model/syntax_768_best.pt",
+        "mAP50": 0.7494,
+        "mAP50_95": 0.3205,
+        "precision": 0.7364,
+        "recall": 0.7053,
+        "per_class": {
+          "1": {
+            "ap50": 0.8913,
+            "precision": 0.8048,
+            "recall": 0.8545,
+            "f1": 0.8289
+          },
+          "2": {
+            "ap50": 0.7968,
+            "precision": 0.6987,
+            "recall": 0.8091,
+            "f1": 0.7499
+          },
+          "3": {
+            "ap50": 0.907,
+            "precision": 0.8508,
+            "recall": 0.8349,
+            "f1": 0.8428
+          },
+          "4": {
+            "ap50": 0.8323,
+            "precision": 0.8074,
+            "recall": 0.8105,
+            "f1": 0.8089
+          },
+          "5": {
+            "ap50": 0.9039,
+            "precision": 0.8827,
+            "recall": 0.8363,
+            "f1": 0.8589
+          },
+          "6": {
+            "ap50": 0.733,
+            "precision": 0.7149,
+            "recall": 0.653,
+            "f1": 0.6825
+          },
+          "7": {
+            "ap50": 0.7701,
+            "precision": 0.8014,
+            "recall": 0.6702,
+            "f1": 0.73
+          },
+          "8": {
+            "ap50": 0.7916,
+            "precision": 0.7869,
+            "recall": 0.7586,
+            "f1": 0.7725
+          },
+          "9": {
+            "ap50": 0.3792,
+            "precision": 0.4871,
+            "recall": 0.4138,
+            "f1": 0.4475
+          },
+          "11": {
+            "ap50": 0.8915,
+            "precision": 0.8957,
+            "recall": 0.8511,
+            "f1": 0.8728
+          },
+          "13": {
+            "ap50": 0.4445,
+            "precision": 0.5676,
+            "recall": 0.3302,
+            "f1": 0.4175
+          },
+          "16": {
+            "ap50": 0.6518,
+            "precision": 0.5393,
+            "recall": 0.641,
+            "f1": 0.5858
+          }
+        },
+        "syntax_mAP50": 0.7494
+      },
+      "stenosis_model_test": {
+        "split": "test",
+        "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/stenosis_strategies/S43b_no_cp/stenosis_model/stenosis_768_best.pt",
+        "mAP50": 0.3869,
+        "mAP50_95": 0.1322,
+        "precision": 0.425,
+        "recall": 0.431,
+        "per_class": {
+          "stenosis": {
+            "ap50": 0.3869,
+            "precision": 0.425,
+            "recall": 0.431,
+            "f1": 0.428
+          }
+        },
+        "stenosis_AP50": 0.3869
+      },
+      "final_test": {
+        "split": "test",
+        "mAP50": 0.7215,
+        "per_class": {
+          "1": {
+            "ap50": 0.8913,
+            "precision": 0.8048,
+            "recall": 0.8545,
+            "f1": 0.8289
+          },
+          "2": {
+            "ap50": 0.7968,
+            "precision": 0.6987,
+            "recall": 0.8091,
+            "f1": 0.7499
+          },
+          "3": {
+            "ap50": 0.907,
+            "precision": 0.8508,
+            "recall": 0.8349,
+            "f1": 0.8428
+          },
+          "4": {
+            "ap50": 0.8323,
+            "precision": 0.8074,
+            "recall": 0.8105,
+            "f1": 0.8089
+          },
+          "5": {
+            "ap50": 0.9039,
+            "precision": 0.8827,
+            "recall": 0.8363,
+            "f1": 0.8589
+          },
+          "6": {
+            "ap50": 0.733,
+            "precision": 0.7149,
+            "recall": 0.653,
+            "f1": 0.6825
+          },
+          "7": {
+            "ap50": 0.7701,
+            "precision": 0.8014,
+            "recall": 0.6702,
+            "f1": 0.73
+          },
+          "8": {
+            "ap50": 0.7916,
+            "precision": 0.7869,
+            "recall": 0.7586,
+            "f1": 0.7725
+          },
+          "9": {
+            "ap50": 0.3792,
+            "precision": 0.4871,
+            "recall": 0.4138,
+            "f1": 0.4475
+          },
+          "11": {
+            "ap50": 0.8915,
+            "precision": 0.8957,
+            "recall": 0.8511,
+            "f1": 0.8728
+          },
+          "13": {
+            "ap50": 0.4445,
+            "precision": 0.5676,
+            "recall": 0.3302,
+            "f1": 0.4175
+          },
+          "16": {
+            "ap50": 0.6518,
+            "precision": 0.5393,
+            "recall": 0.641,
+            "f1": 0.5858
+          },
+          "stenosis": {
+            "ap50": 0.3869,
+            "precision": 0.425,
+            "recall": 0.431,
+            "f1": 0.428
+          }
+        },
+        "syntax_mAP50": 0.7494,
+        "stenosis_AP50": 0.3869,
+        "syntax_model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/stenosis_strategies/S43b_no_cp/syntax_model/syntax_768_best.pt",
+        "stenosis_model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/stenosis_strategies/S43b_no_cp/stenosis_model/stenosis_768_best.pt",
+        "precision": 0.7125,
+        "recall": 0.6842,
+        "mAP50_95": 0
+      },
+      "stenosis_overrides": {
+        "copy_paste": 0.0,
+        "scale": 0.5,
+        "mosaic": 0.8,
+        "close_mosaic": 15,
+        "stenosis_lr0": 0.005
+      }
+    }
+  },
+  {
+    "name": "S44_ssass_port",
+    "gpu": 1,
+    "description": "Full port of Medipixel's SSASS supervised recipe (ARCADE 1st, F1=0.5699): stenosis at 640px, SGD lr=0.01, 300 epochs, no mosaic/cp, conservative geometric + HSV aug, patience=50. Target \u22650.52 stenosis F1. Overnight experiment.",
+    "elapsed_hours": 0.46,
+    "status": "success",
+    "metrics": {
+      "syntax_model_test": {
+        "split": "test",
+        "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/stenosis_strategies/S44_ssass_port/syntax_model/syntax_768_best.pt",
+        "mAP50": 0.7494,
+        "mAP50_95": 0.3205,
+        "precision": 0.7364,
+        "recall": 0.7053,
+        "per_class": {
+          "1": {
+            "ap50": 0.8913,
+            "precision": 0.8048,
+            "recall": 0.8545,
+            "f1": 0.8289
+          },
+          "2": {
+            "ap50": 0.7968,
+            "precision": 0.6987,
+            "recall": 0.8091,
+            "f1": 0.7499
+          },
+          "3": {
+            "ap50": 0.907,
+            "precision": 0.8508,
+            "recall": 0.8349,
+            "f1": 0.8428
+          },
+          "4": {
+            "ap50": 0.8323,
+            "precision": 0.8074,
+            "recall": 0.8105,
+            "f1": 0.8089
+          },
+          "5": {
+            "ap50": 0.9039,
+            "precision": 0.8827,
+            "recall": 0.8363,
+            "f1": 0.8589
+          },
+          "6": {
+            "ap50": 0.733,
+            "precision": 0.7149,
+            "recall": 0.653,
+            "f1": 0.6825
+          },
+          "7": {
+            "ap50": 0.7701,
+            "precision": 0.8014,
+            "recall": 0.6702,
+            "f1": 0.73
+          },
+          "8": {
+            "ap50": 0.7916,
+            "precision": 0.7869,
+            "recall": 0.7586,
+            "f1": 0.7725
+          },
+          "9": {
+            "ap50": 0.3792,
+            "precision": 0.4871,
+            "recall": 0.4138,
+            "f1": 0.4475
+          },
+          "11": {
+            "ap50": 0.8915,
+            "precision": 0.8957,
+            "recall": 0.8511,
+            "f1": 0.8728
+          },
+          "13": {
+            "ap50": 0.4445,
+            "precision": 0.5676,
+            "recall": 0.3302,
+            "f1": 0.4175
+          },
+          "16": {
+            "ap50": 0.6518,
+            "precision": 0.5393,
+            "recall": 0.641,
+            "f1": 0.5858
+          }
+        },
+        "syntax_mAP50": 0.7494
+      },
+      "stenosis_model_test": {
+        "split": "test",
+        "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/stenosis_strategies/S44_ssass_port/stenosis_model/stenosis_640_best.pt",
+        "mAP50": 0.3646,
+        "mAP50_95": 0.1179,
+        "precision": 0.4752,
+        "recall": 0.3996,
+        "per_class": {
+          "stenosis": {
+            "ap50": 0.3646,
+            "precision": 0.4752,
+            "recall": 0.3996,
+            "f1": 0.4341
+          }
+        },
+        "stenosis_AP50": 0.3646
+      },
+      "final_test": {
+        "split": "test",
+        "mAP50": 0.7198,
+        "per_class": {
+          "1": {
+            "ap50": 0.8913,
+            "precision": 0.8048,
+            "recall": 0.8545,
+            "f1": 0.8289
+          },
+          "2": {
+            "ap50": 0.7968,
+            "precision": 0.6987,
+            "recall": 0.8091,
+            "f1": 0.7499
+          },
+          "3": {
+            "ap50": 0.907,
+            "precision": 0.8508,
+            "recall": 0.8349,
+            "f1": 0.8428
+          },
+          "4": {
+            "ap50": 0.8323,
+            "precision": 0.8074,
+            "recall": 0.8105,
+            "f1": 0.8089
+          },
+          "5": {
+            "ap50": 0.9039,
+            "precision": 0.8827,
+            "recall": 0.8363,
+            "f1": 0.8589
+          },
+          "6": {
+            "ap50": 0.733,
+            "precision": 0.7149,
+            "recall": 0.653,
+            "f1": 0.6825
+          },
+          "7": {
+            "ap50": 0.7701,
+            "precision": 0.8014,
+            "recall": 0.6702,
+            "f1": 0.73
+          },
+          "8": {
+            "ap50": 0.7916,
+            "precision": 0.7869,
+            "recall": 0.7586,
+            "f1": 0.7725
+          },
+          "9": {
+            "ap50": 0.3792,
+            "precision": 0.4871,
+            "recall": 0.4138,
+            "f1": 0.4475
+          },
+          "11": {
+            "ap50": 0.8915,
+            "precision": 0.8957,
+            "recall": 0.8511,
+            "f1": 0.8728
+          },
+          "13": {
+            "ap50": 0.4445,
+            "precision": 0.5676,
+            "recall": 0.3302,
+            "f1": 0.4175
+          },
+          "16": {
+            "ap50": 0.6518,
+            "precision": 0.5393,
+            "recall": 0.641,
+            "f1": 0.5858
+          },
+          "stenosis": {
+            "ap50": 0.3646,
+            "precision": 0.4752,
+            "recall": 0.3996,
+            "f1": 0.4341
+          }
+        },
+        "syntax_mAP50": 0.7494,
+        "stenosis_AP50": 0.3646,
+        "syntax_model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/stenosis_strategies/S44_ssass_port/syntax_model/syntax_768_best.pt",
+        "stenosis_model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/stenosis_strategies/S44_ssass_port/stenosis_model/stenosis_640_best.pt",
+        "precision": 0.7163,
+        "recall": 0.6818,
+        "mAP50_95": 0
+      },
+      "stenosis_overrides": {
+        "mosaic": 0.0,
+        "close_mosaic": 0,
+        "copy_paste": 0.0,
+        "mixup": 0.0,
+        "degrees": 30.0,
+        "scale": 0.5,
+        "translate": 0.3,
+        "perspective": 0.001,
+        "hsv_h": 0.015,
+        "hsv_s": 0.7,
+        "hsv_v": 0.4,
+        "stenosis_imgsz": 640,
+        "stenosis_batch": 16,
+        "stenosis_epochs": 300,
+        "stenosis_freeze_epochs": 30,
+        "stenosis_lr0": 0.01,
+        "patience": 50
+      }
+    }
   }
 ]
