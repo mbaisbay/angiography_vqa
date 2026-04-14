@@ -1295,7 +1295,7 @@ def run_separate_stenosis(exp: dict, arcade_root: Path, splits_dir: Path,
     cfg_syntax = dict(exp["config"])
     cfg_syntax["imgsz"] = 768
     cfg_syntax["batch"] = 8
-    cfg_syntax["device"] = "0"  # CUDA_VISIBLE_DEVICES already set by worker
+    cfg_syntax["device"] = str(exp["gpu"])  # physical GPU id (ultralytics overrides CUDA_VISIBLE_DEVICES based on this)
     cfg_syntax["results_dir"] = str(results_dir / "syntax_model")
     cfg_syntax["data_dir"] = str(output_dir / "data" / name)
 
@@ -1332,7 +1332,7 @@ def run_separate_stenosis(exp: dict, arcade_root: Path, splits_dir: Path,
     cfg_sten = dict(exp["config"])
     cfg_sten["imgsz"] = 768
     cfg_sten["batch"] = 8
-    cfg_sten["device"] = "0"  # CUDA_VISIBLE_DEVICES already set by worker
+    cfg_sten["device"] = str(exp["gpu"])  # physical GPU id (ultralytics overrides CUDA_VISIBLE_DEVICES based on this)
     cfg_sten["box"] = 10.0
     cfg_sten["cls"] = 1.0
     cfg_sten["results_dir"] = str(results_dir / "stenosis_model")
@@ -1448,7 +1448,7 @@ def run_separate_stenosis_v2(exp: dict, arcade_root: Path, splits_dir: Path,
     cfg_syntax = dict(exp["config"])
     cfg_syntax["imgsz"] = 768
     cfg_syntax["batch"] = 8
-    cfg_syntax["device"] = "0"
+    cfg_syntax["device"] = str(exp["gpu"])
     cfg_syntax["results_dir"] = str(results_dir / "syntax_model")
     cfg_syntax["data_dir"] = str(output_dir / "data" / name)
 
@@ -1544,7 +1544,7 @@ def run_separate_stenosis_v2(exp: dict, arcade_root: Path, splits_dir: Path,
     cfg_sten = dict(exp["config"])
     cfg_sten["imgsz"] = 768
     cfg_sten["batch"] = 8
-    cfg_sten["device"] = "0"
+    cfg_sten["device"] = str(exp["gpu"])
     cfg_sten["box"] = 10.0
     cfg_sten["cls"] = 1.0
     cfg_sten["results_dir"] = str(results_dir / "stenosis_model")
@@ -1738,7 +1738,7 @@ def run_vessel_guided_stenosis(exp: dict, arcade_root: Path, splits_dir: Path,
     cfg_syntax = dict(exp["config"])
     cfg_syntax["imgsz"] = 768
     cfg_syntax["batch"] = 8
-    cfg_syntax["device"] = "0"  # CUDA_VISIBLE_DEVICES set by worker
+    cfg_syntax["device"] = str(exp["gpu"])  # physical GPU id (ultralytics overrides CUDA_VISIBLE_DEVICES based on this)
     cfg_syntax["results_dir"] = str(results_dir / "syntax_model")
     cfg_syntax["data_dir"] = str(output_dir / "data" / name)
 
@@ -1797,7 +1797,7 @@ def run_vessel_guided_stenosis(exp: dict, arcade_root: Path, splits_dir: Path,
         cfg_sten = dict(exp["config"])
         cfg_sten["imgsz"] = 768
         cfg_sten["batch"] = 8
-        cfg_sten["device"] = "0"
+        cfg_sten["device"] = str(exp["gpu"])
         cfg_sten["box"] = 10.0
         cfg_sten["cls"] = 1.0
         cfg_sten["results_dir"] = str(results_dir / f"stenosis_model_{v}")
@@ -1960,7 +1960,7 @@ def run_vessel_filtered_stenosis(exp: dict, arcade_root: Path, splits_dir: Path,
     cfg_syntax = dict(exp["config"])
     cfg_syntax["imgsz"] = 768
     cfg_syntax["batch"] = 8
-    cfg_syntax["device"] = "0"
+    cfg_syntax["device"] = str(exp["gpu"])
     cfg_syntax["results_dir"] = str(results_dir / "syntax_model")
     cfg_syntax["data_dir"] = str(output_dir / "data" / name)
 
@@ -2013,7 +2013,7 @@ def run_vessel_filtered_stenosis(exp: dict, arcade_root: Path, splits_dir: Path,
     cfg_sten = dict(exp["config"])
     cfg_sten["imgsz"] = 768
     cfg_sten["batch"] = 8
-    cfg_sten["device"] = "0"
+    cfg_sten["device"] = str(exp["gpu"])
     cfg_sten["box"] = 10.0
     cfg_sten["cls"] = 1.0
     cfg_sten["results_dir"] = str(results_dir / "stenosis_model")
@@ -2171,7 +2171,13 @@ def _run_single_worker_script():
     # CUDA_VISIBLE_DEVICES should already be set by the parent via Popen(env=...)
     # — this assignment is a belt-and-suspenders no-op in normal operation.
     os.environ["CUDA_VISIBLE_DEVICES"] = str(gpu)
-    exp["config"]["device"] = "0"
+    # IMPORTANT: pass the physical GPU id (not "0") to ultralytics. Ultralytics'
+    # select_device() unconditionally does `os.environ["CUDA_VISIBLE_DEVICES"] = device`,
+    # so if we pass "0" here it will OVERWRITE the parent's CUDA_VISIBLE_DEVICES
+    # to "0" before torch CUDA init, sending every worker to physical GPU 0
+    # regardless of the scheduler's intent. Passing the real physical id makes
+    # ultralytics' override a no-op (same value the parent already set).
+    exp["config"]["device"] = str(gpu)
 
     start = time.time()
     print(f"\n[GPU {gpu}] Starting {name}: {exp['description']}")
