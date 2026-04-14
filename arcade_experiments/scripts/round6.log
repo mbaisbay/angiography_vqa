@@ -1,0 +1,181 @@
+nohup: ignoring input
+############################################################
+# Creating stratified splits (shared by all experiments)
+############################################################
+============================================================
+Creating stratified splits
+  Source: /home/c504-5090-x2/Documents/repos/angiography_vqa/arcade/submission
+  Output: /home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/stenosis_strategies/stratified_splits
+  Seed:   42
+============================================================
+
+────────────────────────────────────────────────────────────
+  Task: SYNTAX
+────────────────────────────────────────────────────────────
+  Pooled: 1500 images, 7816 annotations
+  Strata (5 groups):
+    dhigh_r0: 758 images
+    dhigh_r1: 331 images
+    dlow_r0: 8 images
+    dmed_r0: 394 images
+    dmed_r1: 9 images
+
+  Split sizes: train=999, val=200, test=301
+    train: 999 images, 5192 annotations
+    val: 200 images, 1042 annotations
+    test: 301 images, 1582 annotations
+
+────────────────────────────────────────────────────────────
+  Task: STENOSIS
+────────────────────────────────────────────────────────────
+  Pooled: 1500 images, 2417 annotations
+  Strata (7 groups):
+    dmulti_slarge: 70 images
+    dmulti_smedium: 246 images
+    dmulti_ssmall: 285 images
+    dnone_snone: 3 images
+    dsingle_slarge: 259 images
+    dsingle_smedium: 274 images
+    dsingle_ssmall: 363 images
+
+  Split sizes: train=998, val=201, test=301
+    train: 998 images, 1615 annotations
+      stenosis: 1615 instances, 1.62/img, mean_area=5055px
+    val: 201 images, 324 annotations
+      stenosis: 324 instances, 1.61/img, mean_area=5032px
+    test: 301 images, 478 annotations
+      stenosis: 478 instances, 1.59/img, mean_area=5298px
+
+============================================================
+Stratified splits saved to: /home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/stenosis_strategies/stratified_splits
+============================================================
+
+############################################################
+# Running 3 experiments on 6 GPUs
+#   Output: /home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/stenosis_strategies
+############################################################
+  advisory GPU 0: S25_cls_loss_2x — S8 recipe + cls loss weight 0.5 -> 2.0 on SYNTAX model. Targets class-confusion bottleneck on tail classes 9/13/16.
+  advisory GPU 1: S26_lesion_crops — S8 recipe + lesion-centric stenosis training. Train crops (256px, 3/lesion) blended with full images; val/test untouched. Attacks small-object bottleneck directly via effective-resolution upsampling.
+  advisory GPU 2: S27_sgd_optimizer — S8 recipe + SGD (lr=0.01, wd=0.0005) replacing AdamW. YOLO's native optimizer; ultralytics reports SGD +1-3pp over AdamW on segmentation.
+
+  Initial GPU memory (nvidia-smi):
+    GPU 0: OK free=31463 MB
+    GPU 1: OK free=32092 MB
+    GPU 2: nvidia-smi unavailable (proceeding blind)
+    GPU 3: nvidia-smi unavailable (proceeding blind)
+    GPU 4: nvidia-smi unavailable (proceeding blind)
+    GPU 5: nvidia-smi unavailable (proceeding blind)
+
+  Startup orphan sweep (kill ON):
+    [GPU 0] PID 3125624 (foreign, none): /usr/share/rustdesk/rustdesk --server
+
+Scheduling 3 experiments
+  GPU pool            : [0, 1, 2, 3, 4, 5]
+  per-GPU baseline    : {0: '31463MB', 1: '32092MB', 2: '-1MB', 3: '-1MB', 4: '-1MB', 5: '-1MB'}
+  max_concurrent      : 2
+  stagger_seconds     : 15
+  min_free_mb         : 2000
+  idle tolerance (MB) : 500
+  idle timeout (s)    : 600
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [3125624] (waited 0s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [3125624] (waited 5s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [3125624] (waited 10s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [3125624] (waited 15s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [3125624] (waited 20s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [3125624] (waited 25s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [3125624] (waited 30s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [3125624] (waited 35s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [3125624] (waited 40s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [3125624] (waited 45s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [3125624] (waited 50s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [3125624] (waited 55s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [3125624] (waited 60s / 600s)
+  Launched S25_cls_loss_2x on GPU 0 (PID 3148624, free=32030MB, baseline=31463MB, log: /home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/stenosis_strategies/S25_cls_loss_2x/worker.log)
+  (staggering 15s before next launch)
+  Launched S26_lesion_crops on GPU 1 (PID 3148761, free=32095MB, baseline=32092MB, log: /home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/stenosis_strategies/S26_lesion_crops/worker.log)
+  [1/3] [GPU 0] S25_cls_loss_2x: OK
+    [GPU 0] waiting for idle — 2 lingering compute PID(s): [3148761, 3148414]; free=25778MB < baseline(31463)-tol(500)=30963 (waited 0s / 120s)
+    [GPU 0] waiting for idle — 2 lingering compute PID(s): [3148761, 3148414]; free=25778MB < baseline(31463)-tol(500)=30963 (waited 3s / 120s)
+    [GPU 0] waiting for idle — 2 lingering compute PID(s): [3148761, 3148414]; free=25778MB < baseline(31463)-tol(500)=30963 (waited 6s / 120s)
+    [GPU 0] waiting for idle — 2 lingering compute PID(s): [3148761, 3148414]; free=25778MB < baseline(31463)-tol(500)=30963 (waited 9s / 120s)
+    [GPU 0] waiting for idle — 2 lingering compute PID(s): [3148761, 3148414]; free=25778MB < baseline(31463)-tol(500)=30963 (waited 12s / 120s)
+    [GPU 0] waiting for idle — 2 lingering compute PID(s): [3148761, 3148414]; free=25778MB < baseline(31463)-tol(500)=30963 (waited 15s / 120s)
+    [GPU 0] waiting for idle — 2 lingering compute PID(s): [3148761, 3148414]; free=25778MB < baseline(31463)-tol(500)=30963 (waited 18s / 120s)
+    [GPU 0] waiting for idle — 2 lingering compute PID(s): [3148761, 3148414]; free=25778MB < baseline(31463)-tol(500)=30963 (waited 21s / 120s)
+    [GPU 0] waiting for idle — 2 lingering compute PID(s): [3148761, 3148414]; free=25778MB < baseline(31463)-tol(500)=30963 (waited 24s / 120s)
+    [GPU 0] waiting for idle — 2 lingering compute PID(s): [3148761, 3148414]; free=25778MB < baseline(31463)-tol(500)=30963 (waited 27s / 120s)
+    [GPU 0] waiting for idle — 2 lingering compute PID(s): [3148761, 3148414]; free=25778MB < baseline(31463)-tol(500)=30963 (waited 30s / 120s)
+    [GPU 0] waiting for idle — 2 lingering compute PID(s): [3148761, 3148414]; free=25778MB < baseline(31463)-tol(500)=30963 (waited 33s / 120s)
+    [GPU 0] waiting for idle — 2 lingering compute PID(s): [3148761, 3148414]; free=25778MB < baseline(31463)-tol(500)=30963 (waited 36s / 120s)
+    [GPU 0] waiting for idle — 2 lingering compute PID(s): [3148761, 3148414]; free=25778MB < baseline(31463)-tol(500)=30963 (waited 39s / 120s)
+    [GPU 0] waiting for idle — 2 lingering compute PID(s): [3148761, 3148414]; free=25778MB < baseline(31463)-tol(500)=30963 (waited 42s / 120s)
+    [GPU 0] waiting for idle — 2 lingering compute PID(s): [3148761, 3148414]; free=25778MB < baseline(31463)-tol(500)=30963 (waited 45s / 120s)
+    [GPU 0] waiting for idle — 2 lingering compute PID(s): [3148761, 3148414]; free=25778MB < baseline(31463)-tol(500)=30963 (waited 48s / 120s)
+    [GPU 0] waiting for idle — 2 lingering compute PID(s): [3148761, 3148414]; free=25778MB < baseline(31463)-tol(500)=30963 (waited 51s / 120s)
+    [GPU 0] waiting for idle — 2 lingering compute PID(s): [3148761, 3148414]; free=25778MB < baseline(31463)-tol(500)=30963 (waited 54s / 120s)
+    [GPU 0] waiting for idle — 2 lingering compute PID(s): [3148761, 3148414]; free=25778MB < baseline(31463)-tol(500)=30963 (waited 57s / 120s)
+    [GPU 0] waiting for idle — 2 lingering compute PID(s): [3148761, 3148414]; free=25778MB < baseline(31463)-tol(500)=30963 (waited 60s / 120s)
+    [GPU 0] waiting for idle — 2 lingering compute PID(s): [3148761, 3148414]; free=25778MB < baseline(31463)-tol(500)=30963 (waited 63s / 120s)
+    [GPU 0] waiting for idle — 2 lingering compute PID(s): [3148761, 3148414]; free=25778MB < baseline(31463)-tol(500)=30963 (waited 66s / 120s)
+    [GPU 0] waiting for idle — 2 lingering compute PID(s): [3148761, 3148414]; free=25778MB < baseline(31463)-tol(500)=30963 (waited 69s / 120s)
+    [GPU 0] waiting for idle — 2 lingering compute PID(s): [3148761, 3148414]; free=25778MB < baseline(31463)-tol(500)=30963 (waited 72s / 120s)
+    [GPU 0] waiting for idle — 2 lingering compute PID(s): [3148761, 3148414]; free=25778MB < baseline(31463)-tol(500)=30963 (waited 75s / 120s)
+    [GPU 0] waiting for idle — 2 lingering compute PID(s): [3148761, 3148414]; free=25778MB < baseline(31463)-tol(500)=30963 (waited 78s / 120s)
+    [GPU 0] waiting for idle — 2 lingering compute PID(s): [3148761, 3148414]; free=25778MB < baseline(31463)-tol(500)=30963 (waited 81s / 120s)
+    [GPU 0] waiting for idle — 2 lingering compute PID(s): [3148761, 3148414]; free=25778MB < baseline(31463)-tol(500)=30963 (waited 84s / 120s)
+    [GPU 0] waiting for idle — 2 lingering compute PID(s): [3148761, 3148414]; free=25778MB < baseline(31463)-tol(500)=30963 (waited 87s / 120s)
+    [GPU 0] waiting for idle — 2 lingering compute PID(s): [3148761, 3148414]; free=25778MB < baseline(31463)-tol(500)=30963 (waited 90s / 120s)
+    [GPU 0] waiting for idle — 2 lingering compute PID(s): [3148761, 3148414]; free=25778MB < baseline(31463)-tol(500)=30963 (waited 93s / 120s)
+    [GPU 0] waiting for idle — 2 lingering compute PID(s): [3148761, 3148414]; free=25778MB < baseline(31463)-tol(500)=30963 (waited 96s / 120s)
+    [GPU 0] waiting for idle — 2 lingering compute PID(s): [3148761, 3148414]; free=25778MB < baseline(31463)-tol(500)=30963 (waited 99s / 120s)
+    [GPU 0] waiting for idle — 2 lingering compute PID(s): [3148761, 3148414]; free=25778MB < baseline(31463)-tol(500)=30963 (waited 102s / 120s)
+    [GPU 0] waiting for idle — 2 lingering compute PID(s): [3148761, 3148414]; free=25778MB < baseline(31463)-tol(500)=30963 (waited 105s / 120s)
+    [GPU 0] waiting for idle — 2 lingering compute PID(s): [3148761, 3148414]; free=25778MB < baseline(31463)-tol(500)=30963 (waited 108s / 120s)
+    [GPU 0] waiting for idle — 2 lingering compute PID(s): [3148761, 3148414]; free=25778MB < baseline(31463)-tol(500)=30963 (waited 111s / 120s)
+    [GPU 0] waiting for idle — 2 lingering compute PID(s): [3148761, 3148414]; free=25778MB < baseline(31463)-tol(500)=30963 (waited 114s / 120s)
+    [GPU 0] waiting for idle — 2 lingering compute PID(s): [3148761, 3148414]; free=25778MB < baseline(31463)-tol(500)=30963 (waited 117s / 120s)
+    [GPU 0] waiting for idle — 2 lingering compute PID(s): [3148761, 3148414]; free=25778MB < baseline(31463)-tol(500)=30963 (waited 120s / 120s)
+    [GPU 0] WARNING: not idle after completion — timeout after 120s — 2 lingering compute PID(s): [3148761, 3148414]; free=25778MB < baseline(31463)-tol(500)=30963
+  Launched S27_sgd_optimizer on GPU 2 (PID 3181752, free=-1MB, baseline=-1MB, log: /home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/stenosis_strategies/S27_sgd_optimizer/worker.log)
+  [2/3] [GPU 2] S27_sgd_optimizer: OK
+    [GPU 2] released: nvidia-smi unavailable — proceeding blind
+  [3/3] [GPU 1] S26_lesion_crops: OK
+    [GPU 1] released: idle (free=32092MB)
+
+====================================================================================================
+STENOSIS IMPROVEMENT STRATEGIES — COMPARISON
+====================================================================================================
+
+Name                         Status    Hours    mAP50       F1   Syn mAP   Sten AP   Sten F1
+----------------------------------------------------------------------------------------------------
+S25_cls_loss_2x              OK          0.9   0.7096   0.7043    0.7375    0.3744    0.4469
+S27_sgd_optimizer            OK          0.9   0.7212   0.6985    0.7494    0.3832    0.4341
+S26_lesion_crops             OK          2.1   0.7172   0.7047    0.7491    0.3333    0.3933
+
+====================================================================================================
+PER-CLASS F1 (Test)
+====================================================================================================
+Name                                1       11       13       16        2        3        4        5        6        7        8        9 stenosis
+-------------------------------------------------------------------------------------------------------------------------------------------------
+S25_cls_loss_2x                0.8931   0.8752   0.5162   0.6075   0.7929   0.8317   0.7326   0.8599   0.7590   0.7121   0.7745   0.3188   0.4469
+S27_sgd_optimizer              0.8289   0.8728   0.4175   0.5858   0.7499   0.8428   0.8089   0.8589   0.6825   0.7300   0.7725   0.4475   0.4341
+S26_lesion_crops               0.8775   0.8628   0.5575   0.6260   0.7787   0.7997   0.7600   0.8262   0.7669   0.7165   0.7056   0.4227   0.3933
+
+  S15_multiseed_summary written (n=3):
+    syntax mAP50  : 0.7375 ± 0.0102
+    stenosis AP50 : 0.3466 ± 0.0306
+    stenosis F1   : 0.4177 ± 0.0265
+    overall F1    : 0.6999 ± 0.0083
+
+  S18_multiseed_summary written (n=2):
+    syntax mAP50  : 0.7414 ± 0.0109
+    stenosis AP50 : 0.3620 ± 0.0105
+    stenosis F1   : 0.4375 ± 0.0246
+    overall F1    : 0.7029 ± 0.0096
+
+====================================================================================================
+ALL EXPERIMENTS COMPLETE (2.2h wall time)
+Results saved: /home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/stenosis_strategies/strategy_results.json
+  (merged with 25 existing entries, total 28 entries)
+  3 succeeded, 0 failed
+====================================================================================================
