@@ -6544,7 +6544,7 @@
     "name": "S29_sgd_cls100",
     "gpu": 1,
     "description": "S27 SGD baseline + syntax cls=1.0",
-    "elapsed_hours": 0.71,
+    "elapsed_hours": 0.72,
     "status": "success",
     "metrics": {
       "syntax_model_test": {
@@ -7162,7 +7162,7 @@
     "name": "S32_sgd_lr020",
     "gpu": 4,
     "description": "S27 SGD + lr0=0.02 (double LR)",
-    "elapsed_hours": 1.01,
+    "elapsed_hours": 1.04,
     "status": "success",
     "metrics": {
       "syntax_model_test": {
@@ -7368,7 +7368,7 @@
     "name": "S33_sgd_wd001",
     "gpu": 5,
     "description": "S27 SGD + weight_decay=0.001 (2x default)",
-    "elapsed_hours": 1.08,
+    "elapsed_hours": 1.11,
     "status": "success",
     "metrics": {
       "syntax_model_test": {
@@ -7574,7 +7574,7 @@
     "name": "S35_crops_sgd_tight",
     "gpu": 1,
     "description": "S27 SGD + lesion crops (n=2, size=320). Bigger crops, less duplication \u2014 keeps more anatomical context per sample.",
-    "elapsed_hours": 1.52,
+    "elapsed_hours": 0.78,
     "status": "success",
     "metrics": {
       "syntax_model_test": {
@@ -7783,211 +7783,8 @@
   {
     "name": "S34_crops_sgd_long",
     "gpu": 0,
-    "description": "S27 SGD + lesion crops (n=3, size=256) with longer training (epochs=250). Retries S26 on the hypothesis that crops were under-trained (4x more data, same epochs).",
-    "elapsed_hours": 1.78,
-    "status": "success",
-    "metrics": {
-      "syntax_model_test": {
-        "split": "test",
-        "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/stenosis_strategies/S34_crops_sgd_long/syntax_model/syntax_768_best.pt",
-        "mAP50": 0.7186,
-        "mAP50_95": 0.3135,
-        "precision": 0.7056,
-        "recall": 0.6991,
-        "per_class": {
-          "1": {
-            "ap50": 0.9068,
-            "precision": 0.8001,
-            "recall": 0.8636,
-            "f1": 0.8306
-          },
-          "2": {
-            "ap50": 0.7594,
-            "precision": 0.6611,
-            "recall": 0.8159,
-            "f1": 0.7304
-          },
-          "3": {
-            "ap50": 0.8797,
-            "precision": 0.8505,
-            "recall": 0.7798,
-            "f1": 0.8136
-          },
-          "4": {
-            "ap50": 0.794,
-            "precision": 0.7534,
-            "recall": 0.7398,
-            "f1": 0.7465
-          },
-          "5": {
-            "ap50": 0.8962,
-            "precision": 0.8838,
-            "recall": 0.8363,
-            "f1": 0.8594
-          },
-          "6": {
-            "ap50": 0.7404,
-            "precision": 0.7143,
-            "recall": 0.6746,
-            "f1": 0.6939
-          },
-          "7": {
-            "ap50": 0.7091,
-            "precision": 0.6952,
-            "recall": 0.6277,
-            "f1": 0.6597
-          },
-          "8": {
-            "ap50": 0.7126,
-            "precision": 0.7108,
-            "recall": 0.7816,
-            "f1": 0.7445
-          },
-          "9": {
-            "ap50": 0.3596,
-            "precision": 0.5029,
-            "recall": 0.3276,
-            "f1": 0.3967
-          },
-          "11": {
-            "ap50": 0.877,
-            "precision": 0.8296,
-            "recall": 0.8919,
-            "f1": 0.8596
-          },
-          "13": {
-            "ap50": 0.4031,
-            "precision": 0.4671,
-            "recall": 0.3962,
-            "f1": 0.4287
-          },
-          "16": {
-            "ap50": 0.5856,
-            "precision": 0.5981,
-            "recall": 0.6538,
-            "f1": 0.6247
-          }
-        },
-        "syntax_mAP50": 0.7186
-      },
-      "stenosis_model_test": {
-        "split": "test",
-        "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/stenosis_strategies/S34_crops_sgd_long/stenosis_model/stenosis_768_best.pt",
-        "mAP50": 0.345,
-        "mAP50_95": 0.1133,
-        "precision": 0.3918,
-        "recall": 0.4163,
-        "per_class": {
-          "stenosis": {
-            "ap50": 0.345,
-            "precision": 0.3918,
-            "recall": 0.4163,
-            "f1": 0.4037
-          }
-        },
-        "stenosis_AP50": 0.345
-      },
-      "final_test": {
-        "split": "test",
-        "mAP50": 0.6899,
-        "per_class": {
-          "1": {
-            "ap50": 0.9068,
-            "precision": 0.8001,
-            "recall": 0.8636,
-            "f1": 0.8306
-          },
-          "2": {
-            "ap50": 0.7594,
-            "precision": 0.6611,
-            "recall": 0.8159,
-            "f1": 0.7304
-          },
-          "3": {
-            "ap50": 0.8797,
-            "precision": 0.8505,
-            "recall": 0.7798,
-            "f1": 0.8136
-          },
-          "4": {
-            "ap50": 0.794,
-            "precision": 0.7534,
-            "recall": 0.7398,
-            "f1": 0.7465
-          },
-          "5": {
-            "ap50": 0.8962,
-            "precision": 0.8838,
-            "recall": 0.8363,
-            "f1": 0.8594
-          },
-          "6": {
-            "ap50": 0.7404,
-            "precision": 0.7143,
-            "recall": 0.6746,
-            "f1": 0.6939
-          },
-          "7": {
-            "ap50": 0.7091,
-            "precision": 0.6952,
-            "recall": 0.6277,
-            "f1": 0.6597
-          },
-          "8": {
-            "ap50": 0.7126,
-            "precision": 0.7108,
-            "recall": 0.7816,
-            "f1": 0.7445
-          },
-          "9": {
-            "ap50": 0.3596,
-            "precision": 0.5029,
-            "recall": 0.3276,
-            "f1": 0.3967
-          },
-          "11": {
-            "ap50": 0.877,
-            "precision": 0.8296,
-            "recall": 0.8919,
-            "f1": 0.8596
-          },
-          "13": {
-            "ap50": 0.4031,
-            "precision": 0.4671,
-            "recall": 0.3962,
-            "f1": 0.4287
-          },
-          "16": {
-            "ap50": 0.5856,
-            "precision": 0.5981,
-            "recall": 0.6538,
-            "f1": 0.6247
-          },
-          "stenosis": {
-            "ap50": 0.345,
-            "precision": 0.3918,
-            "recall": 0.4163,
-            "f1": 0.4037
-          }
-        },
-        "syntax_mAP50": 0.7186,
-        "stenosis_AP50": 0.345,
-        "syntax_model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/stenosis_strategies/S34_crops_sgd_long/syntax_model/syntax_768_best.pt",
-        "stenosis_model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/stenosis_strategies/S34_crops_sgd_long/stenosis_model/stenosis_768_best.pt",
-        "precision": 0.6814,
-        "recall": 0.6773,
-        "mAP50_95": 0
-      },
-      "stenosis_overrides": {
-        "copy_paste": 0.3,
-        "scale": 0.5,
-        "mosaic": 0.8,
-        "close_mosaic": 15,
-        "stenosis_dataset": "lesion_crops",
-        "lesion_crops_n": 3,
-        "lesion_crops_size": 256,
-        "lesion_crops_jitter": 50
-      }
-    }
+    "status": "failed",
+    "error": "Pre-flight GPU idle check failed: timeout after 600s \u2014 1 lingering compute PID(s): [3616183]",
+    "elapsed_hours": 0
   }
 ]
