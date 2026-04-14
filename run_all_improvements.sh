@@ -1,21 +1,26 @@
 #!/usr/bin/env bash
 # =============================================================================
-# Run All Improvement Experiments — Sequential on Single GPU (5090)
+# Run All Improvement Experiments — Concurrent, Auto-GPU
 # =============================================================================
 #
 # Usage:
 #   bash run_all_improvements.sh              # run all 9 experiments
 #   bash run_all_improvements.sh 2>&1 | tee improvements.log  # with full log
 #
-# Each experiment is run as a separate process for:
-#   - Per-experiment log files (runs/logs/exp*.log)
-#   - Better GPU memory cleanup between runs
-#   - Ability to continue if one experiment fails
+# Each experiment runs as a separate background process. ANGIO_FORCE_AUTO_DEVICE
+# causes utils/config_loader.load_config to call gpu_scheduler.acquire_free_gpu
+# at startup: each process claims a per-GPU fcntl lock under
+# /tmp/angiography_vqa_gpu_locks/, so N processes spread across whatever GPUs
+# are free and the surplus blocks until a lock is released. No manual
+# concurrency cap is needed — the lockfiles enforce exclusion.
+#
+# Per-experiment log files still live in runs/logs/<EXP_NAME>.log. Failures
+# are aggregated and reported in the summary.
 # =============================================================================
 
-set -euo pipefail
+set -uo pipefail
 
-export CUDA_VISIBLE_DEVICES=0
+export ANGIO_FORCE_AUTO_DEVICE=1
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
@@ -48,18 +53,19 @@ EXP_DESCRIPTIONS=(
 )
 
 TOTAL=${#EXPERIMENTS[@]}
-PASSED=0
-FAILED=0
-FAILED_LIST=""
-
 OVERALL_START=$(date +%s)
 
 echo "============================================================"
-echo " IMPROVEMENT EXPERIMENTS — Single GPU (5090)"
+echo " IMPROVEMENT EXPERIMENTS — Concurrent, Auto-GPU"
 echo " Started: $(date)"
 echo " Total experiments: $TOTAL"
+echo " GPU pool: auto (via utils/gpu_scheduler file locks)"
 echo "============================================================"
 echo ""
+
+PIDS=()
+PID_TO_NAME=()
+PID_TO_START=()
 
 for i in "${!EXPERIMENTS[@]}"; do
     EXP_NUM=${EXPERIMENTS[$i]}
@@ -68,40 +74,70 @@ for i in "${!EXPERIMENTS[@]}"; do
     LOG_FILE="${LOG_DIR}/${EXP_NAME}.log"
 
     echo "------------------------------------------------------------"
-    echo " [$((i+1))/$TOTAL] ${EXP_NAME}"
+    echo " [launch $((i+1))/$TOTAL] ${EXP_NAME}"
     echo " ${EXP_DESC}"
     echo " Log: ${LOG_FILE}"
     echo " Start: $(date)"
     echo "------------------------------------------------------------"
 
     EXP_START=$(date +%s)
+    python run_improvement_experiments.py --experiments "$EXP_NUM" \
+        > "$LOG_FILE" 2>&1 &
+    PID=$!
+    PIDS+=("$PID")
+    PID_TO_NAME+=("$EXP_NAME")
+    PID_TO_START+=("$EXP_START")
+    echo " PID: $PID"
+    echo ""
 
-    if python run_improvement_experiments.py --experiments "$EXP_NUM" 2>&1 | tee "$LOG_FILE"; then
-        EXP_END=$(date +%s)
-        ELAPSED=$(( (EXP_END - EXP_START) / 60 ))
-        echo ""
+    # Tiny stagger so two processes don't race the same lock fd in the same
+    # microsecond. acquire_free_gpu is race-free, but spacing keeps the
+    # banner output legible.
+    sleep 1
+done
+
+echo "============================================================"
+echo " All $TOTAL experiments launched; waiting for completion…"
+echo "============================================================"
+echo ""
+
+PASSED=0
+FAILED=0
+FAILED_LIST=""
+
+for idx in "${!PIDS[@]}"; do
+    PID=${PIDS[$idx]}
+    EXP_NAME=${PID_TO_NAME[$idx]}
+    EXP_START=${PID_TO_START[$idx]}
+    LOG_FILE="${LOG_DIR}/${EXP_NAME}.log"
+
+    if wait "$PID"; then
+        RC=0
+    else
+        RC=$?
+    fi
+    EXP_END=$(date +%s)
+    ELAPSED=$(( (EXP_END - EXP_START) / 60 ))
+
+    if [ "$RC" -eq 0 ]; then
         echo " [PASS] ${EXP_NAME} completed in ${ELAPSED} min"
         PASSED=$((PASSED + 1))
     else
-        EXP_END=$(date +%s)
-        ELAPSED=$(( (EXP_END - EXP_START) / 60 ))
-        echo ""
-        echo " [FAIL] ${EXP_NAME} failed after ${ELAPSED} min (see ${LOG_FILE})"
+        echo " [FAIL] ${EXP_NAME} failed after ${ELAPSED} min (rc=${RC}, see ${LOG_FILE})"
         FAILED=$((FAILED + 1))
         FAILED_LIST="${FAILED_LIST}  - ${EXP_NAME}\n"
     fi
-
-    echo ""
 done
 
 OVERALL_END=$(date +%s)
 TOTAL_ELAPSED=$(( (OVERALL_END - OVERALL_START) / 60 ))
 
+echo ""
 echo "============================================================"
 echo " SUMMARY"
 echo "============================================================"
 echo " Finished: $(date)"
-echo " Total time: ${TOTAL_ELAPSED} min"
+echo " Total wall time: ${TOTAL_ELAPSED} min"
 echo " Passed: ${PASSED}/${TOTAL}"
 echo " Failed: ${FAILED}/${TOTAL}"
 
@@ -115,3 +151,7 @@ echo "============================================================"
 echo " Results saved to: improvement_experiments.json"
 echo " Logs directory:   ${LOG_DIR}/"
 echo "============================================================"
+
+if [ "$FAILED" -gt 0 ]; then
+    exit 1
+fi

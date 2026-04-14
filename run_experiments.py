@@ -328,7 +328,11 @@ def main():
             overrides["training"]["patience"] = args.epochs  # disable early stopping
         if args.device is not None:
             overrides.setdefault("training", {})
-            overrides["training"]["device"] = args.device
+            dev_override = args.device
+            if isinstance(dev_override, str) and dev_override.strip().lower() == "auto":
+                from utils.gpu_scheduler import acquire_free_gpu
+                dev_override = acquire_free_gpu()
+            overrides["training"]["device"] = dev_override
         config_path = generate_experiment_config(
             args.config, exp_name, overrides, "runs/configs"
         )

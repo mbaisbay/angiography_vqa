@@ -1,5 +1,7 @@
 """Configuration loader and parameter extraction for the ARCADE pipeline."""
 
+import os
+
 import yaml
 from pathlib import Path
 
@@ -75,6 +77,26 @@ def load_config(config_path: str) -> dict:
         raise ValueError(f"Missing required config keys: {missing}")
 
     config["_base_dir"] = str(base_dir)
+
+    # Resolve auto-acquire GPU device. This must happen once, up-front, so
+    # that downstream code (get_training_args, run_improvement_experiments,
+    # etc.) sees a concrete GPU id rather than the "auto" sentinel.
+    #
+    # Two opt-ins:
+    #   1. device: "auto" literally in config.yaml.
+    #   2. ANGIO_FORCE_AUTO_DEVICE=1 in the environment (set by queue_run.sh
+    #      or anyone who wants to flip the default without touching YAML).
+    #
+    # Default device values ("0", 0, [0,1], etc.) pass through untouched.
+    training = config.get("training", {}) if isinstance(config, dict) else {}
+    if isinstance(training, dict):
+        dev = training.get("device")
+        if os.environ.get("ANGIO_FORCE_AUTO_DEVICE") == "1":
+            dev = "auto"
+        if isinstance(dev, str) and dev.strip().lower() == "auto":
+            from utils.gpu_scheduler import acquire_free_gpu
+            training["device"] = acquire_free_gpu()
+
     return config
 
 
