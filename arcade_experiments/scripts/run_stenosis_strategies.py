@@ -1026,6 +1026,197 @@ def get_experiments():
                 "lesion_crops_jitter": 50,
             },
         },
+        # ── Round 8 experiments (S36-S42) ─────────────────────────────
+        # Goal: break the 0.7212 ceiling by exploiting the Round 7
+        # finding that syntax and stenosis have opposite HP preferences.
+        # Round 7 showed that S31 (lr0=0.005) gave the project-best
+        # stenosis F1 (0.4613) but regressed syntax. Round 8 decouples
+        # the two stages so stenosis can run slow while syntax stays at
+        # the S27 SGD optimum.
+        {
+            "name": "S36_sten_lr_half",
+            "gpu": 0,
+            "description": "S27 SGD, stenosis LR halved (0.005). "
+                           "Syntax stays at 0.01. Decoupled application "
+                           "of the Round 7 S31 finding.",
+            "overrides": {
+                "degrees": 20.0,
+                "scale": 0.4,
+                "hsv_v": 0.3,
+                "optimizer": "SGD",
+                "lr0": 0.01,
+                "weight_decay": 0.0005,
+            },
+            "pipeline_args": {},
+            "custom_pipeline": True,
+            "custom_runner": "separate_v2",
+            "syntax_overrides": {},
+            "stenosis_overrides": {
+                "copy_paste": 0.3,
+                "scale": 0.5,
+                "mosaic": 0.8,
+                "close_mosaic": 15,
+                "stenosis_lr0": 0.005,
+            },
+        },
+        {
+            "name": "S37_sten_1024",
+            "gpu": 1,
+            "description": "S27 SGD + stenosis imgsz=1024, batch=4. "
+                           "Never-run S11 idea on top of the proven "
+                           "SGD baseline — more pixels for the small-"
+                           "object head.",
+            "overrides": {
+                "degrees": 20.0,
+                "scale": 0.4,
+                "hsv_v": 0.3,
+                "optimizer": "SGD",
+                "lr0": 0.01,
+                "weight_decay": 0.0005,
+            },
+            "pipeline_args": {},
+            "custom_pipeline": True,
+            "custom_runner": "separate_v2",
+            "syntax_overrides": {},
+            "stenosis_overrides": {
+                "copy_paste": 0.3,
+                "scale": 0.5,
+                "mosaic": 0.8,
+                "close_mosaic": 15,
+                "stenosis_imgsz": 1024,
+                "stenosis_batch": 4,
+            },
+        },
+        {
+            "name": "S38_freeze_25",
+            "gpu": 2,
+            "description": "S27 SGD + freeze_epochs=25 (vs 15 default). "
+                           "Longer head-only warmup before unfreezing "
+                           "the backbone. Untouched lever.",
+            "overrides": {
+                "degrees": 20.0,
+                "scale": 0.4,
+                "hsv_v": 0.3,
+                "optimizer": "SGD",
+                "lr0": 0.01,
+                "weight_decay": 0.0005,
+                "freeze_epochs": 25,
+            },
+            "pipeline_args": {},
+            "custom_pipeline": True,
+            "custom_runner": "separate_v2",
+            "syntax_overrides": {},
+            "stenosis_overrides": {
+                "copy_paste": 0.3,
+                "scale": 0.5,
+                "mosaic": 0.8,
+                "close_mosaic": 15,
+            },
+        },
+        # Multi-seed S27 variance bundle (3 seeds). Post-hoc aggregator
+        # at end of main() reads these and appends a summary entry the
+        # same way it does for S15/S18.
+        {
+            "name": "S39_s27_seed42",
+            "gpu": 3,
+            "description": "S27 SGD recipe, seed=42 (variance study)",
+            "overrides": {
+                "degrees": 20.0,
+                "scale": 0.4,
+                "hsv_v": 0.3,
+                "optimizer": "SGD",
+                "lr0": 0.01,
+                "weight_decay": 0.0005,
+                "seed": 42,
+            },
+            "pipeline_args": {},
+            "custom_pipeline": True,
+            "custom_runner": "separate_v2",
+            "syntax_overrides": {},
+            "stenosis_overrides": {
+                "copy_paste": 0.3,
+                "scale": 0.5,
+                "mosaic": 0.8,
+                "close_mosaic": 15,
+            },
+        },
+        {
+            "name": "S40_s27_seed7",
+            "gpu": 4,
+            "description": "S27 SGD recipe, seed=7 (variance study)",
+            "overrides": {
+                "degrees": 20.0,
+                "scale": 0.4,
+                "hsv_v": 0.3,
+                "optimizer": "SGD",
+                "lr0": 0.01,
+                "weight_decay": 0.0005,
+                "seed": 7,
+            },
+            "pipeline_args": {},
+            "custom_pipeline": True,
+            "custom_runner": "separate_v2",
+            "syntax_overrides": {},
+            "stenosis_overrides": {
+                "copy_paste": 0.3,
+                "scale": 0.5,
+                "mosaic": 0.8,
+                "close_mosaic": 15,
+            },
+        },
+        {
+            "name": "S41_s27_seed2024",
+            "gpu": 5,
+            "description": "S27 SGD recipe, seed=2024 (variance study)",
+            "overrides": {
+                "degrees": 20.0,
+                "scale": 0.4,
+                "hsv_v": 0.3,
+                "optimizer": "SGD",
+                "lr0": 0.01,
+                "weight_decay": 0.0005,
+                "seed": 2024,
+            },
+            "pipeline_args": {},
+            "custom_pipeline": True,
+            "custom_runner": "separate_v2",
+            "syntax_overrides": {},
+            "stenosis_overrides": {
+                "copy_paste": 0.3,
+                "scale": 0.5,
+                "mosaic": 0.8,
+                "close_mosaic": 15,
+            },
+        },
+        {
+            "name": "S42_sten_slow_1024",
+            "gpu": 0,
+            "description": "S36 + S37 combined: S27 SGD base, stenosis "
+                           "at 1024px with halved LR (0.005). Stacks "
+                           "both Round 8 orthogonal bets if they win "
+                           "solo. Highest ceiling of Round 8.",
+            "overrides": {
+                "degrees": 20.0,
+                "scale": 0.4,
+                "hsv_v": 0.3,
+                "optimizer": "SGD",
+                "lr0": 0.01,
+                "weight_decay": 0.0005,
+            },
+            "pipeline_args": {},
+            "custom_pipeline": True,
+            "custom_runner": "separate_v2",
+            "syntax_overrides": {},
+            "stenosis_overrides": {
+                "copy_paste": 0.3,
+                "scale": 0.5,
+                "mosaic": 0.8,
+                "close_mosaic": 15,
+                "stenosis_lr0": 0.005,
+                "stenosis_imgsz": 1024,
+                "stenosis_batch": 4,
+            },
+        },
     ]
 
     # Merge base config into each experiment
@@ -1359,12 +1550,21 @@ def run_separate_stenosis_v2(exp: dict, arcade_root: Path, splits_dir: Path,
     cfg_sten["results_dir"] = str(results_dir / "stenosis_model")
 
     # Special keys in stenosis_overrides redirect to dedicated cfg slots
-    # (so experiments can raise resolution, shrink batch, or swap the
-    # backbone for the stenosis model without affecting the syntax model).
+    # (so experiments can raise resolution, shrink batch, swap the
+    # backbone, or decouple optimizer/LR/WD/freeze_epochs for the
+    # stenosis model without affecting the syntax model). Round 8's
+    # S36/S37/S42 rely on stenosis_lr0 and stenosis_freeze_epochs to
+    # apply the Round 7 "stenosis wants slower steps" finding to the
+    # stenosis stage only.
     special = {
         "stenosis_imgsz": "imgsz",
         "stenosis_batch": "batch",
         "stenosis_model_weights": "model",
+        "stenosis_lr0": "lr0",
+        "stenosis_weight_decay": "weight_decay",
+        "stenosis_freeze_epochs": "freeze_epochs",
+        "stenosis_epochs": "epochs",
+        "stenosis_optimizer": "optimizer",
     }
     filtered_overrides = dict(stenosis_overrides)
     for src_key, dst_key in special.items():
@@ -1608,6 +1808,11 @@ def run_vessel_guided_stenosis(exp: dict, arcade_root: Path, splits_dir: Path,
             "stenosis_imgsz": "imgsz",
             "stenosis_batch": "batch",
             "stenosis_model_weights": "model",
+            "stenosis_lr0": "lr0",
+            "stenosis_weight_decay": "weight_decay",
+            "stenosis_freeze_epochs": "freeze_epochs",
+            "stenosis_epochs": "epochs",
+            "stenosis_optimizer": "optimizer",
         }
         filtered_overrides = dict(stenosis_overrides)
         for src_key, dst_key in special.items():
@@ -3033,6 +3238,13 @@ def main():
         seed_names=["S18_s12_seed42", "S18_s12_seed7", "S18_s12_seed2024"],
         description="Mean ± std of S12 (yolo11l-seg) recipe over "
                     "3 seeds (42, 7, 2024) — confirms yolo11l gain",
+    )
+    _aggregate_multiseed(
+        merged, results_path,
+        summary_name="S27_multiseed_summary",
+        seed_names=["S39_s27_seed42", "S40_s27_seed7", "S41_s27_seed2024"],
+        description="Mean ± std of S27 SGD recipe over 3 seeds "
+                    "(42, 7, 2024) — variance on the project-best config",
     )
 
     print(f"\n{'=' * 100}")
