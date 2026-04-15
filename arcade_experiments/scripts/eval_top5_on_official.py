@@ -153,7 +153,17 @@ def main():
     p.add_argument("--device", type=str, default="0")
     p.add_argument("--no-tta", action="store_true",
                    help="Disable test-time augmentation")
+    p.add_argument("--only", type=str, default=None,
+                   help="Comma-separated subset of experiment names to run")
     args = p.parse_args()
+
+    only = None
+    if args.only:
+        only = {s.strip() for s in args.only.split(",") if s.strip()}
+
+    # Pin to requested GPU — evaluate_model uses ultralytics' model.val()
+    # which honors CUDA_VISIBLE_DEVICES. Must be set before torch import.
+    os.environ["CUDA_VISIBLE_DEVICES"] = str(args.device)
 
     script_dir = Path(__file__).resolve().parent
     sys.path.insert(0, str(script_dir))
@@ -162,7 +172,9 @@ def main():
 
     arcade_root = args.arcade_root.resolve()
     results_dir = args.results_dir.resolve()
-    out_path = args.output or (results_dir / "top5_on_official.json")
+    out_suffix = f"_device{args.device}" if only else ""
+    out_path = args.output or (
+        results_dir / f"top5_on_official{out_suffix}.json")
 
     # ── Build the shared eval data dir once ──
     eval_root = results_dir / "_eval_official"
@@ -180,7 +192,13 @@ def main():
     augment = not args.no_tta
     all_results = {}
 
-    for exp_name, needs_clahe in EXPERIMENTS:
+    experiments = [(n, c) for n, c in EXPERIMENTS
+                   if only is None or n in only]
+    if not experiments:
+        print(f"No experiments matched --only={args.only}")
+        sys.exit(1)
+
+    for exp_name, needs_clahe in experiments:
         print(f"\n{'#'*60}\n# {exp_name}\n{'#'*60}")
         try:
             syn_w  = _find_weight(results_dir, exp_name, "syntax")
