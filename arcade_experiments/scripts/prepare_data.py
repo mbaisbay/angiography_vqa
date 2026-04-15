@@ -28,8 +28,15 @@ SPLITS = ["train", "val", "test"]
 
 
 def prepare_syntax(arcade_root: Path, data_dir: Path,
-                   min_count: int = 300) -> dict:
+                   min_count: int = 300,
+                   train_only_filter: bool = False) -> dict:
     """Filter SYNTAX data and convert to YOLO format.
+
+    Args:
+        train_only_filter: If True, count only the train split for the
+            min_count filter (leaderboard-compatible — F-1 proposal).
+            Default False preserves legacy pooled behaviour so existing
+            runs reproduce.
 
     Returns class mapping dict.
     """
@@ -38,15 +45,17 @@ def prepare_syntax(arcade_root: Path, data_dir: Path,
 
     print("=" * 60)
     print("Step 1: Filter SYNTAX classes")
+    print(f"  train_only_filter={train_only_filter}")
     print("=" * 60)
 
-    # Count instances across ALL splits (pooled) for robust filtering.
-    # Using only the train split is fragile: borderline classes can fall
-    # below threshold depending on the particular train/val/test partition.
+    # Count instances. Default: pooled across all splits. F-1 mode:
+    # train-only so kept-class list matches the official leaderboard
+    # protocol (filter is applied to train, then val/test inherit it).
     from collections import Counter
     pooled_counts = Counter()
     categories = None
-    for split in SPLITS:
+    splits_for_counting = ["train"] if train_only_filter else SPLITS
+    for split in splits_for_counting:
         split_json = syntax_dir / split / "annotations" / f"{split}.json"
         if not split_json.exists():
             continue
@@ -54,6 +63,13 @@ def prepare_syntax(arcade_root: Path, data_dir: Path,
         if categories is None:
             categories = split_data["categories"]
         pooled_counts += count_train_instances(split_data)
+    if categories is None:
+        # Still need categories from any split for label writing
+        for split in SPLITS:
+            split_json = syntax_dir / split / "annotations" / f"{split}.json"
+            if split_json.exists():
+                categories = load_coco_json(split_json)["categories"]
+                break
 
     print(f"  Pooled instance counts across {len(SPLITS)} splits:")
     cat_names = {c["id"]: c["name"] for c in categories}

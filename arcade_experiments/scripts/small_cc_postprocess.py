@@ -4,12 +4,11 @@ SSASS post-processing: drop any predicted instance whose mask area
 (in pixels) falls below a threshold. This cleans the false positives
 that small spurious detections produce in the F1 metric.
 
-Operates on Ultralytics `Results` objects in-memory by filtering the
-prediction tensors. We rebuild Results.boxes / Results.masks with the
-kept indices.
-
-Also exposes a thin re-evaluation helper that re-runs metric computation
-against COCO-format ground truth using only the post-filtered predictions.
+Two entry points:
+  - `filter_results`: mutate Ultralytics Results objects in memory.
+  - `evaluate_with_filter_cpu`: CPU-only re-eval that avoids the GPU
+    OOM that bit E1/E3 — it streams predict() one image at a time and
+    immediately releases the GPU tensors.
 """
 
 from __future__ import annotations
@@ -83,6 +82,114 @@ def predict_and_filter(
         retina_masks=True,
     )
     return filter_results(list(results), min_area_px=min_area_px)
+
+
+def evaluate_with_filter_cpu(
+    model_path: str,
+    data_yaml: str,
+    split: str = "test",
+    imgsz: int = 768,
+    min_area_px: int = 30,
+    device: str = "0",
+    conf: float = 0.25,
+) -> dict:
+    """CPU-only streaming eval — fix for the GPU OOM in E1/E3.
+
+    Predict one image at a time, move each result to CPU numpy, release
+    the GPU tensors, then compute per-image TP/FP/FN with CC filtering.
+    Never holds >1 image worth of tensors on the GPU.
+    """
+    import yaml as _yaml
+    import cv2
+    import torch
+    from ultralytics import YOLO
+
+    with open(data_yaml) as f:
+        cfg = _yaml.safe_load(f)
+    root = Path(cfg["path"])
+    img_rel = cfg.get(split, f"images/{split}")
+    img_dir = root / img_rel
+    lbl_dir = root / img_rel.replace("images", "labels")
+    if not lbl_dir.exists():
+        lbl_dir = root / f"labels/{split}"
+
+    model = YOLO(model_path)
+    img_files = sorted(list(img_dir.glob("*.png"))
+                        + list(img_dir.glob("*.PNG")))
+
+    tp = fp = fn = 0
+    tp_raw = fp_raw = fn_raw = 0
+    for img_path in img_files:
+        results = model.predict(
+            source=str(img_path), conf=conf, imgsz=imgsz,
+            device=str(device), verbose=False, save=False, retina_masks=True,
+        )
+        if not results:
+            continue
+        r = results[0]
+        h, w = r.orig_shape
+        gt_path = lbl_dir / f"{img_path.stem}.txt"
+        gt_polys = _read_yolo_polys(gt_path) if gt_path.exists() else []
+        gt_masks = [_poly_to_mask(p, h, w) for p in gt_polys]
+
+        preds_raw = []
+        preds_filt = []
+        if r.masks is not None and len(r.masks) > 0:
+            masks_np = (r.masks.data.cpu().numpy() > 0.5).astype(np.uint8)
+            confs = r.boxes.conf.cpu().numpy().tolist()
+            for i, m in enumerate(masks_np):
+                preds_raw.append({"conf": confs[i], "mask": m})
+                # CC filter (per-instance; drop if its single blob <min area)
+                num_labels, _labels, stats, _ = cv2.connectedComponentsWithStats(
+                    m.astype(np.uint8), connectivity=8)
+                areas = stats[1:, cv2.CC_STAT_AREA] if num_labels > 1 else np.array([])
+                if areas.size > 0 and areas.max() >= min_area_px:
+                    preds_filt.append({"conf": confs[i], "mask": m})
+        # Release GPU memory
+        del r, results
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+
+        def _match(preds, gts):
+            matched = set()
+            ltp = lfp = 0
+            for pr in sorted(preds, key=lambda x: -x["conf"]):
+                best_iou = 0
+                best_j = -1
+                for j, g in enumerate(gts):
+                    if j in matched:
+                        continue
+                    inter = np.logical_and(pr["mask"] > 0, g > 0).sum()
+                    union = np.logical_or(pr["mask"] > 0, g > 0).sum()
+                    iou = inter / union if union > 0 else 0
+                    if iou > best_iou:
+                        best_iou = iou
+                        best_j = j
+                if best_iou >= 0.5:
+                    ltp += 1
+                    matched.add(best_j)
+                else:
+                    lfp += 1
+            lfn = len(gts) - len(matched)
+            return ltp, lfp, lfn
+
+        _tp, _fp, _fn = _match(preds_raw, gt_masks)
+        tp_raw += _tp; fp_raw += _fp; fn_raw += _fn
+        _tp, _fp, _fn = _match(preds_filt, gt_masks)
+        tp += _tp; fp += _fp; fn += _fn
+
+    def _prf(tp, fp, fn):
+        p = tp / (tp + fp) if (tp + fp) else 0
+        r = tp / (tp + fn) if (tp + fn) else 0
+        f1 = 2 * p * r / (p + r) if (p + r) else 0
+        return {"precision": round(p, 4), "recall": round(r, 4),
+                "f1": round(f1, 4), "tp": tp, "fp": fp, "fn": fn}
+
+    return {
+        "raw": _prf(tp_raw, fp_raw, fn_raw),
+        "filtered": _prf(tp, fp, fn),
+        "min_area_px": min_area_px,
+    }
 
 
 def evaluate_with_filter(

@@ -2294,6 +2294,161 @@ def get_experiments():
         experiments_strat.append(strat)
     experiments.extend(experiments_strat)
 
+    # ══════════════════════════════════════════════════════════
+    # PROPOSAL EXPERIMENTS: F / B / C / D
+    # ══════════════════════════════════════════════════════════
+    # Every entry here reuses the S54 "best recipe" as its base:
+    #   SGD, lr0=0.01, wd=0.0005, epochs 300, patience 50, imgsz 512,
+    #   batch 16, mosaic=0.8 + cp=0.3 on stenosis, CLAHE on stenosis.
+    # Variations below toggle ONE thing at a time so post-hoc attribution
+    # is clean.
+    S54_BASE = {
+        "overrides": {
+            "degrees": 20.0, "scale": 0.4, "hsv_v": 0.3,
+            "optimizer": "SGD", "lr0": 0.01, "weight_decay": 0.0005,
+            "epochs": 300, "patience": 50,
+        },
+        "pipeline_args": {},
+        "custom_pipeline": True,
+        "custom_runner": "separate_v2",
+        "syntax_overrides": {},
+        "stenosis_overrides": {
+            "copy_paste": 0.3, "scale": 0.5, "mosaic": 0.8,
+            "close_mosaic": 15,
+            "stenosis_lr0": 0.005, "stenosis_epochs": 300,
+            "clahe_preprocess": True, "clahe_clip_limit": 2.0,
+            "clahe_tile_size": 8,
+        },
+    }
+
+    def _base(name, desc, gpu, **kwargs):
+        import copy
+        exp = {"name": name, "gpu": gpu, "description": desc}
+        exp.update({k: copy.deepcopy(v) for k, v in S54_BASE.items()})
+        for k, v in kwargs.items():
+            if k in ("overrides", "syntax_overrides", "stenosis_overrides"):
+                exp[k].update(v)
+            else:
+                exp[k] = v
+        return exp
+
+    proposal_experiments = [
+        # ── F-1: S54 recipe on the OFFICIAL ARCADE split ──
+        _base("F1_official_split", gpu=0,
+              desc="F-1: S54 recipe but with raw ARCADE train(1000)/val(200)/test(300) "
+                   "split, train_only_filter. Produces leaderboard-comparable numbers.",
+              use_official=True,
+              train_only_filter=True),
+
+        # ── B-1: Per-class weighted sampling via image duplication ──
+        _base("B1_class_balanced", gpu=1,
+              desc="B-1: S54 + oversample tail classes (9, 13, 16) via image "
+                   "duplication on train split. Targets the class-floor bottleneck.",
+              use_stratified=True,
+              oversample_tail=True,
+              oversample_classes="9,13,16",
+              oversample_target=900),
+
+        # ── B-3: Background images for stenosis ──
+        _base("B3_background_stenosis", gpu=2,
+              desc="B-3: S54 + ~150 hard-negative background images from syntax "
+                   "pool added to stenosis train as empty labels.",
+              use_stratified=True,
+              custom_runner="proposal_b3",
+              background_n_hard=150),
+
+        # ── B-4: Warm-start stenosis from syntax backbone ──
+        _base("B4_warm_start_stenosis", gpu=3,
+              desc="B-4: S54 + stenosis model warm-started from the best syntax "
+                   "model's weights (transfer of coronary-vessel features) rather "
+                   "than COCO.",
+              use_stratified=True,
+              custom_runner="proposal_b4"),
+
+        # ── B-5: Iterative pseudo-labeling with decaying conf ──
+        _base("B5_iter_pl", gpu=4,
+              desc="B-5: 3-round iterative SSASS pseudo-labeling with conf "
+                   "decay 0.5->0.4->0.3. Each round retrains on GT + accumulated "
+                   "pseudo-labels.",
+              use_stratified=True,
+              custom_runner="proposal_b5",
+              pl_rounds=[0.5, 0.4, 0.3]),
+
+        # ── B-6: Synthetic tail-class copy-paste ──
+        _base("B6_tail_copy_paste", gpu=5,
+              desc="B-6: S54 + offline synthetic copy-paste of classes 9/13/16 "
+                   "instances onto other training images (with rotation/scale "
+                   "jitter). 2 composites per source instance.",
+              use_stratified=True,
+              tail_copy_paste=True,
+              tail_copy_paste_classes="9,13,16",
+              tail_copy_paste_per_instance=2),
+
+        # ── C-1: Label smoothing sweep ──
+        _base("C1a_label_smooth_05", gpu=0,
+              desc="C-1a: S54 + label_smoothing=0.05",
+              use_stratified=True,
+              overrides={"label_smoothing": 0.05}),
+        _base("C1b_label_smooth_10", gpu=1,
+              desc="C-1b: S54 + label_smoothing=0.1",
+              use_stratified=True,
+              overrides={"label_smoothing": 0.1}),
+
+        # ── C-2: Dropout sweep ──
+        _base("C2a_dropout_05", gpu=2,
+              desc="C-2a: S54 + dropout=0.05",
+              use_stratified=True,
+              overrides={"dropout": 0.05}),
+        _base("C2b_dropout_10", gpu=3,
+              desc="C-2b: S54 + dropout=0.1",
+              use_stratified=True,
+              overrides={"dropout": 0.1}),
+
+        # ── C-3: DFL weight sweep (stenosis) ──
+        _base("C3a_dfl_2", gpu=4,
+              desc="C-3a: S54 + stenosis dfl=2.0",
+              use_stratified=True,
+              stenosis_overrides={"dfl": 2.0}),
+        _base("C3b_dfl_25", gpu=5,
+              desc="C-3b: S54 + stenosis dfl=2.5",
+              use_stratified=True,
+              stenosis_overrides={"dfl": 2.5}),
+        _base("C3c_dfl_30", gpu=0,
+              desc="C-3c: S54 + stenosis dfl=3.0",
+              use_stratified=True,
+              stenosis_overrides={"dfl": 3.0}),
+
+        # ── C-4: Mask loss weight sweep ──
+        _base("C4a_mask_10", gpu=1,
+              desc="C-4a: S54 + mask loss weight=10 (default 7.5)",
+              use_stratified=True,
+              overrides={"mask": 10.0}),
+        _base("C4b_mask_15", gpu=2,
+              desc="C-4b: S54 + mask loss weight=15",
+              use_stratified=True,
+              overrides={"mask": 15.0}),
+
+        # ── C-5: Multi-scale training for stenosis ──
+        _base("C5_multiscale_stenosis", gpu=3,
+              desc="C-5: S54 + multi_scale=True for stenosis model",
+              use_stratified=True,
+              stenosis_overrides={"multi_scale": True}),
+
+        # ── D-1: Random erasing ──
+        _base("D1_erasing_4", gpu=4,
+              desc="D-1: S54 + erasing=0.4",
+              use_stratified=True,
+              overrides={"erasing": 0.4}),
+
+        # ── D-2: Vertical flip ──
+        _base("D2_flipud_5", gpu=5,
+              desc="D-2: S54 + flipud=0.5",
+              use_stratified=True,
+              overrides={"flipud": 0.5}),
+    ]
+
+    experiments.extend(proposal_experiments)
+
         # Merge base config into each experiment
     for exp in experiments:
         cfg = dict(base)
@@ -2659,6 +2814,13 @@ def run_separate_stenosis_v2(exp: dict, arcade_root: Path, splits_dir: Path,
     stenosis_overrides = exp.get("stenosis_overrides", {})
     syntax_overrides = exp.get("syntax_overrides", {}) or {}
 
+    # Proposal flag: use raw ARCADE splits (F-1) instead of stratified.
+    # Default path (no flag) keeps the stratified splits_dir the
+    # scheduler passed in — preserves every existing S-run.
+    if exp.get("use_official"):
+        splits_dir = None
+    train_only_filter = bool(exp.get("train_only_filter", False))
+
     # ── Part A: Syntax-only model ──
     # Honors per-experiment ``syntax_overrides`` with these specials:
     #   - syntax_model_weights : swap backbone (yolo11l-seg, etc.)
@@ -2721,7 +2883,27 @@ def run_separate_stenosis_v2(exp: dict, arcade_root: Path, splits_dir: Path,
     data_dir = Path(cfg_s["data_dir"]).resolve()
 
     data_prep(arcade_root, data_dir, min_count=syntax_min_count,
-              splits_dir=splits_dir)
+              splits_dir=splits_dir, train_only_filter=train_only_filter)
+
+    # ── Proposal data-mutation hooks (B-1 oversampling, B-6 copy-paste) ──
+    # Only applied when the experiment explicitly opts in. No-op for
+    # all pre-existing S runs.
+    if exp.get("oversample_tail"):
+        from oversample_tail_classes import oversample as _os
+        tail_classes = [int(c) for c in str(
+            exp.get("oversample_classes", "9,13,16")).split(",")]
+        target = int(exp.get("oversample_target", 900))
+        _os(data_dir / "syntax_filtered", tail_classes, target)
+    if exp.get("tail_copy_paste"):
+        from copy_paste_tail_classes import main as _cp_main
+        import subprocess, sys
+        subprocess.run([
+            sys.executable,
+            str(Path(__file__).parent / "copy_paste_tail_classes.py"),
+            "--syntax-data-dir", str(data_dir / "syntax_filtered"),
+            "--tail-classes", str(exp.get("tail_copy_paste_classes", "9,13,16")),
+            "--per-instance", str(exp.get("tail_copy_paste_per_instance", 2)),
+        ], check=False)
 
     # ── Optional image preprocessing (Round 10: CLAHE / unsharp mask) ──
     # syn_preprocess_overrides holds clahe_preprocess/unsharp_preprocess
@@ -3890,6 +4072,10 @@ def _resolve_data_source(exp: dict, output_dir: Path, arcade_root: Path,
     """
     if exp.get("use_stratified"):
         return arcade_root, splits_dir
+    if exp.get("use_official"):
+        # Raw ARCADE train/val/test (F-1 protocol). No fulldata merge,
+        # no val=test leak, no stratified re-split. Leaderboard-comparable.
+        return arcade_root, None
     return _ensure_fulldata_root(output_dir, arcade_root), None
 
 
@@ -4492,6 +4678,355 @@ def run_cross_task_pl(exp: dict, arcade_root: Path, splits_dir: Path,
     return all_metrics
 
 
+# ══════════════════════════════════════════════════════════════════
+# PROPOSAL RUNNERS: B-3 / B-4 / B-5
+# ══════════════════════════════════════════════════════════════════
+
+def run_proposal_b3(exp: dict, arcade_root: Path, splits_dir: Path,
+                     output_dir: Path, iterations: int) -> dict:
+    """B-3: Train stenosis with ~150 hard-negative background images.
+
+    Pipeline:
+      1. Run the normal separate_v2 flow once to get a first-pass
+         stenosis model (uses S54 recipe).
+      2. Generate hard-negative background images from syntax pool
+         using the first-pass model.
+      3. Inject background images into the stenosis training set.
+      4. Retrain stenosis ONLY (skip syntax since syntax is unchanged)
+         on the augmented stenosis dataset.
+    """
+    from build_background_stenosis import build as build_bg
+    from train import load_run_config, train_two_stage
+    from evaluate import evaluate_model
+    from run_pipeline import _save_metrics
+
+    # Step 1: first-pass separate_v2 run
+    print(f"\n[B3] Step 1: first-pass stenosis model")
+    first_pass_metrics = run_separate_stenosis_v2(
+        exp, arcade_root, splits_dir, output_dir, iterations)
+
+    name = exp["name"]
+    results_dir = output_dir / name
+    data_dir = output_dir / "data" / name
+
+    stenosis_weights_p1 = first_pass_metrics.get("final_test", {}).get("stenosis_model")
+    if not stenosis_weights_p1:
+        print("[B3] No stenosis model path returned from first-pass; aborting")
+        return first_pass_metrics
+
+    # Step 2: generate hard negatives
+    n_hard = int(exp.get("background_n_hard", 150))
+    syntax_img_dir = data_dir / "syntax_filtered" / "images" / "train"
+    stenosis_data_dir = data_dir / "stenosis"
+
+    print(f"\n[B3] Step 2: building {n_hard} hard-negative background images")
+    bg_stats = build_bg(
+        stenosis_model=stenosis_weights_p1,
+        syntax_img_dir=syntax_img_dir,
+        stenosis_data_dir=stenosis_data_dir,
+        imgsz=int(exp.get("stenosis_overrides", {}).get("stenosis_imgsz", 768)),
+        device=str(exp["gpu"]),
+        n_hard=n_hard,
+    )
+
+    # Step 3: retrain stenosis only
+    print(f"\n[B3] Step 3: retraining stenosis on augmented dataset")
+    cfg_sten = dict(exp["config"])
+    cfg_sten["imgsz"] = int(exp.get("stenosis_overrides", {}).get("stenosis_imgsz", 768))
+    cfg_sten["batch"] = 8
+    cfg_sten["device"] = str(exp["gpu"])
+    cfg_sten["box"] = 10.0
+    cfg_sten["cls"] = 1.0
+    cfg_sten["results_dir"] = str(results_dir / "stenosis_model_bg")
+    stn_ov = dict(exp.get("stenosis_overrides", {}))
+    for sk, dk in [("stenosis_lr0", "lr0"), ("stenosis_epochs", "epochs"),
+                    ("stenosis_model_weights", "model")]:
+        if sk in stn_ov:
+            cfg_sten[dk] = stn_ov.pop(sk)
+    for k in ("clahe_preprocess", "clahe_clip_limit", "clahe_tile_size",
+              "tophat_preprocess", "tophat_kernel_size"):
+        stn_ov.pop(k, None)
+    for k, v in stn_ov.items():
+        cfg_sten[k] = v
+
+    cfg_path = results_dir / "config_stenosis_bg.yaml"
+    with open(cfg_path, "w") as f:
+        yaml.dump(cfg_sten, f, default_flow_style=False)
+    cfg = load_run_config(str(cfg_path))
+
+    stenosis_yaml = str(data_dir / "dataset_configs" / "stenosis_only.yaml")
+    sten_weights_bg = train_two_stage(
+        cfg, stenosis_yaml,
+        project=str(results_dir / "stenosis_model_bg"),
+        run_name="stenosis_bg",
+    )
+    stenosis_metrics = evaluate_model(
+        sten_weights_bg, stenosis_yaml, split="test",
+        augment=True, imgsz=cfg_sten["imgsz"],
+    )
+    _save_metrics(results_dir, "stenosis_bg_test", stenosis_metrics)
+
+    # Combine with first-pass syntax
+    syntax_metrics = first_pass_metrics.get("syntax_model_test", {})
+    combined = _combine_syntax_stenosis_metrics(
+        syntax_metrics, stenosis_metrics,
+        training_note=f"B3 background aug: {bg_stats}")
+    combined["syntax_model"] = first_pass_metrics.get("final_test", {}).get("syntax_model", "")
+    combined["stenosis_model"] = sten_weights_bg
+    combined["background_stats"] = bg_stats
+    _save_metrics(results_dir, "final_test", combined)
+
+    all_metrics = {
+        "first_pass": first_pass_metrics,
+        "stenosis_bg_test": stenosis_metrics,
+        "final_test": combined,
+        "background_stats": bg_stats,
+    }
+    with open(results_dir / "all_metrics.json", "w") as f:
+        json.dump(all_metrics, f, indent=2)
+    return all_metrics
+
+
+def run_proposal_b4(exp: dict, arcade_root: Path, splits_dir: Path,
+                     output_dir: Path, iterations: int) -> dict:
+    """B-4: Warm-start stenosis model from the syntax model's weights.
+
+    After training the syntax model normally, use its best.pt as the
+    starting weights for the stenosis model (instead of COCO). YOLO
+    auto-reinitializes the head for the new class count; the backbone
+    and neck inherit coronary vessel features.
+    """
+    from train import load_run_config, train_two_stage
+    from evaluate import evaluate_model
+    from run_pipeline import data_prep, _save_metrics
+
+    name = exp["name"]
+    results_dir = output_dir / name
+    results_dir.mkdir(parents=True, exist_ok=True)
+
+    if exp.get("use_official"):
+        splits_dir = None
+    train_only_filter = bool(exp.get("train_only_filter", False))
+
+    # Data prep
+    data_dir = output_dir / "data" / name
+    data_prep(arcade_root, data_dir, min_count=300,
+              splits_dir=splits_dir, train_only_filter=train_only_filter)
+
+    # ── Train syntax first (standard S54 recipe) ──
+    print(f"\n[B4] Training syntax model first (for backbone transfer)")
+    cfg_syn = dict(exp["config"])
+    cfg_syn["imgsz"] = 768
+    cfg_syn["batch"] = 8
+    cfg_syn["device"] = str(exp["gpu"])
+    cfg_syn["results_dir"] = str(results_dir / "syntax_model")
+    syn_cfg_path = results_dir / "config_syntax.yaml"
+    with open(syn_cfg_path, "w") as f:
+        yaml.dump(cfg_syn, f, default_flow_style=False)
+    cfg_s = load_run_config(str(syn_cfg_path))
+
+    syntax_yaml = str(data_dir / "dataset_configs" / "syntax_only.yaml")
+    syntax_weights = train_two_stage(
+        cfg_s, syntax_yaml,
+        project=str(results_dir / "syntax_model"),
+        run_name="syntax_768",
+    )
+    syntax_metrics = evaluate_model(
+        syntax_weights, syntax_yaml, split="test",
+        augment=True, imgsz=768,
+    )
+    _save_metrics(results_dir, "syntax_model_test", syntax_metrics)
+
+    # ── Train stenosis warm-started from the syntax model ──
+    print(f"\n[B4] Training stenosis warm-started from {syntax_weights}")
+    cfg_sten = dict(exp["config"])
+    stn_ov = dict(exp.get("stenosis_overrides", {}))
+    cfg_sten["imgsz"] = int(stn_ov.pop("stenosis_imgsz", 768))
+    cfg_sten["batch"] = 8
+    cfg_sten["device"] = str(exp["gpu"])
+    cfg_sten["box"] = 10.0
+    cfg_sten["cls"] = 1.0
+    cfg_sten["model"] = syntax_weights   # <-- the warm-start
+    for sk, dk in [("stenosis_lr0", "lr0"), ("stenosis_epochs", "epochs")]:
+        if sk in stn_ov:
+            cfg_sten[dk] = stn_ov.pop(sk)
+    stn_ov.pop("stenosis_model_weights", None)
+    for k in ("clahe_preprocess", "clahe_clip_limit", "clahe_tile_size",
+              "tophat_preprocess", "tophat_kernel_size"):
+        stn_ov.pop(k, None)
+    for k, v in stn_ov.items():
+        cfg_sten[k] = v
+    cfg_sten["results_dir"] = str(results_dir / "stenosis_model")
+
+    sten_cfg_path = results_dir / "config_stenosis.yaml"
+    with open(sten_cfg_path, "w") as f:
+        yaml.dump(cfg_sten, f, default_flow_style=False)
+    cfg_st = load_run_config(str(sten_cfg_path))
+
+    stenosis_yaml = str(data_dir / "dataset_configs" / "stenosis_only.yaml")
+    stenosis_weights = train_two_stage(
+        cfg_st, stenosis_yaml,
+        project=str(results_dir / "stenosis_model"),
+        run_name="stenosis_warm",
+    )
+    stenosis_metrics = evaluate_model(
+        stenosis_weights, stenosis_yaml, split="test",
+        augment=True, imgsz=cfg_sten["imgsz"],
+    )
+    _save_metrics(results_dir, "stenosis_model_test", stenosis_metrics)
+
+    combined = _combine_syntax_stenosis_metrics(
+        syntax_metrics, stenosis_metrics,
+        training_note="B4: stenosis warm-started from syntax backbone")
+    combined["syntax_model"] = syntax_weights
+    combined["stenosis_model"] = stenosis_weights
+    _save_metrics(results_dir, "final_test", combined)
+
+    all_metrics = {
+        "syntax_model_test": syntax_metrics,
+        "stenosis_model_test": stenosis_metrics,
+        "final_test": combined,
+    }
+    with open(results_dir / "all_metrics.json", "w") as f:
+        json.dump(all_metrics, f, indent=2)
+    return all_metrics
+
+
+def run_proposal_b5(exp: dict, arcade_root: Path, splits_dir: Path,
+                     output_dir: Path, iterations: int) -> dict:
+    """B-5: Iterative pseudo-labeling with decaying confidence.
+
+    Three rounds: each round runs the current stenosis model on all
+    1000 syntax images at the current conf threshold, writes pseudo
+    labels, merges them into an extended stenosis train set, and
+    retrains from scratch.
+
+    conf schedule: [0.5, 0.4, 0.3] by default.
+    """
+    from train import load_run_config, train_two_stage
+    from evaluate import evaluate_model
+    from run_pipeline import data_prep, _save_metrics
+    from generate_stenosis_pseudolabels import (
+        run_stenosis_on_syntax_images,
+        build_extended_stenosis_dataset,
+    )
+
+    name = exp["name"]
+    results_dir = output_dir / name
+    results_dir.mkdir(parents=True, exist_ok=True)
+
+    if exp.get("use_official"):
+        splits_dir = None
+
+    # Round 0: prep data + train initial stenosis + syntax via separate_v2
+    print(f"\n[B5] Round 0: initial S54 training")
+    round0_metrics = run_separate_stenosis_v2(
+        exp, arcade_root, splits_dir, output_dir, iterations)
+
+    data_dir = output_dir / "data" / name
+    syntax_img_dir = data_dir / "syntax_filtered" / "images" / "train"
+    stenosis_data_dir = data_dir / "stenosis"
+    original_stenosis_yaml = str(data_dir / "dataset_configs" / "stenosis_only.yaml")
+
+    syntax_metrics = round0_metrics.get("syntax_model_test", {})
+    curr_weights = round0_metrics.get("final_test", {}).get("stenosis_model")
+    if not curr_weights:
+        print("[B5] first-round stenosis model not found; aborting")
+        return round0_metrics
+
+    rounds = exp.get("pl_rounds", [0.5, 0.4, 0.3])
+    round_history = [{"round": 0, "conf": None, "weights": curr_weights,
+                      "metrics": round0_metrics.get("stenosis_model_test", {})}]
+
+    stn_ov = dict(exp.get("stenosis_overrides", {}))
+    sten_imgsz = int(stn_ov.get("stenosis_imgsz", 768))
+
+    for r_idx, conf_thr in enumerate(rounds, start=1):
+        print(f"\n[B5] Round {r_idx}: pseudo-label at conf={conf_thr}")
+        pl_dir = results_dir / f"pseudo_r{r_idx}_conf{conf_thr}"
+        stats = run_stenosis_on_syntax_images(
+            model_path=curr_weights,
+            syntax_img_dir=syntax_img_dir,
+            output_label_dir=pl_dir,
+            conf_threshold=float(conf_thr),
+            imgsz=sten_imgsz,
+            device=str(exp["gpu"]),
+        )
+        if stats["images_with_predictions"] == 0:
+            print(f"[B5] no predictions at conf {conf_thr} — stopping")
+            break
+
+        ext_dir = results_dir / f"ext_r{r_idx}"
+        ext_yaml = build_extended_stenosis_dataset(
+            original_stenosis_dir=stenosis_data_dir,
+            syntax_img_dir=syntax_img_dir,
+            pseudo_label_dir=pl_dir,
+            output_dir=ext_dir,
+            apply_clahe=False,
+        )
+
+        # Retrain from scratch
+        cfg_r = dict(exp["config"])
+        cfg_r["imgsz"] = sten_imgsz
+        cfg_r["batch"] = 8
+        cfg_r["device"] = str(exp["gpu"])
+        cfg_r["box"] = 10.0
+        cfg_r["cls"] = 1.0
+        cfg_r["results_dir"] = str(results_dir / f"stenosis_r{r_idx}")
+        filt = dict(stn_ov)
+        for sk, dk in [("stenosis_lr0", "lr0"),
+                        ("stenosis_epochs", "epochs"),
+                        ("stenosis_model_weights", "model")]:
+            if sk in filt:
+                cfg_r[dk] = filt.pop(sk)
+        for k in ("clahe_preprocess", "clahe_clip_limit", "clahe_tile_size",
+                  "tophat_preprocess", "tophat_kernel_size"):
+            filt.pop(k, None)
+        for k, v in filt.items():
+            cfg_r[k] = v
+
+        cfg_p = results_dir / f"config_r{r_idx}.yaml"
+        with open(cfg_p, "w") as f:
+            yaml.dump(cfg_r, f, default_flow_style=False)
+        cfg_loaded = load_run_config(str(cfg_p))
+        curr_weights = train_two_stage(
+            cfg_loaded, ext_yaml,
+            project=str(results_dir / f"stenosis_r{r_idx}"),
+            run_name=f"stenosis_round{r_idx}",
+        )
+        r_metrics = evaluate_model(
+            curr_weights, original_stenosis_yaml,
+            split="test", augment=True, imgsz=sten_imgsz,
+        )
+        _save_metrics(results_dir, f"stenosis_r{r_idx}_test", r_metrics)
+        round_history.append({
+            "round": r_idx, "conf": float(conf_thr),
+            "weights": curr_weights,
+            "n_pseudo": stats["images_with_predictions"],
+            "metrics": r_metrics,
+        })
+
+    final_stenosis_metrics = round_history[-1]["metrics"]
+    combined = _combine_syntax_stenosis_metrics(
+        syntax_metrics, final_stenosis_metrics,
+        training_note=f"B5 iterative PL rounds={rounds}")
+    combined["syntax_model"] = round0_metrics.get("final_test", {}).get("syntax_model", "")
+    combined["stenosis_model"] = round_history[-1]["weights"]
+    combined["pl_round_history"] = [
+        {k: v for k, v in h.items() if k != "metrics"} for h in round_history
+    ]
+    _save_metrics(results_dir, "final_test", combined)
+
+    all_metrics = {
+        "round0": round0_metrics,
+        "rounds": round_history,
+        "final_test": combined,
+    }
+    with open(results_dir / "all_metrics.json", "w") as f:
+        json.dump(all_metrics, f, indent=2)
+    return all_metrics
+
+
 def _run_single_worker_script():
     """Entry point when this script is invoked as a subprocess worker.
 
@@ -4571,6 +5106,18 @@ def _run_single_worker_script():
                 )
             elif runner == "cross_task_pl":
                 metrics = run_cross_task_pl(
+                    exp, arcade_root, splits_dir, output_dir, iterations
+                )
+            elif runner == "proposal_b3":
+                metrics = run_proposal_b3(
+                    exp, arcade_root, splits_dir, output_dir, iterations
+                )
+            elif runner == "proposal_b4":
+                metrics = run_proposal_b4(
+                    exp, arcade_root, splits_dir, output_dir, iterations
+                )
+            elif runner == "proposal_b5":
+                metrics = run_proposal_b5(
                     exp, arcade_root, splits_dir, output_dir, iterations
                 )
             else:

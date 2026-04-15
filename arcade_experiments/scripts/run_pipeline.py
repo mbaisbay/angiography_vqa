@@ -31,7 +31,8 @@ from evaluate import evaluate_model
 
 
 def data_prep(arcade_root: Path, data_dir: Path, min_count: int = 300,
-              skip_images: bool = False, splits_dir: Path = None) -> dict:
+              skip_images: bool = False, splits_dir: Path = None,
+              train_only_filter: bool = False) -> dict:
     """Run data preparation (Step 0).
 
     Args:
@@ -57,7 +58,10 @@ def data_prep(arcade_root: Path, data_dir: Path, min_count: int = 300,
     # Use stratified splits dir as the source if provided
     source_root = splits_dir if splits_dir else arcade_root
 
-    syntax_mapping = prepare_syntax(source_root, data_dir, min_count)
+    syntax_mapping = prepare_syntax(
+        source_root, data_dir, min_count,
+        train_only_filter=train_only_filter,
+    )
     prepare_stenosis(source_root, data_dir)
 
     if not skip_images:

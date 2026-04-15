@@ -69,6 +69,13 @@ def build_train_args(cfg: dict, data_yaml: str, stage: str,
         "dfl": cfg.get("dfl", 1.5),
     }
 
+    # Optional extra knobs — only pass through if set, so they don't
+    # override Ultralytics defaults silently on older runs.
+    for k in ("label_smoothing", "dropout", "multi_scale", "nbs",
+              "lrf", "mask"):
+        if k in cfg and cfg[k] is not None:
+            args[k] = cfg[k]
+
     if stage == "frozen":
         args["epochs"] = cfg.get("freeze_epochs", 15)
         args["freeze"] = cfg.get("freeze", 10)
