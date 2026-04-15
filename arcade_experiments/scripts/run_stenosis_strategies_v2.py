@@ -2070,6 +2070,196 @@ def get_experiments():
                 "ensemble_seeds": [42, 7],
             },
         },
+        # ══════════════════════════════════════════════════════════
+        # FAITHFUL WINNER REPRODUCTIONS: E1 / E2 / E3 / E4
+        # ══════════════════════════════════════════════════════════
+        # These re-implement the published methods from the ARCADE 2023
+        # leaderboard *as described in the papers*, fixing divergences
+        # in the H1/H2/H3 attempts:
+        #   - SSASS conservative augs (NO mosaic, NO flips), Bezier
+        #     synthetic vessel paste-in, raw input (no CLAHE), small-CC
+        #     post-processing, yolov8m-seg + SGD.
+        #   - YOLO-Angio top-hat+CLAHE preprocess, multi-seed ensemble,
+        #     anatomy-graph post-processing.
+        #   - StenUNet multi-modal channel input (raw / CLAHE / Gabor)
+        #     ported into a YOLO-compatible 3-channel image.
+        #   - Cross-Task PL: original 1000/200 splits, syntax->stenosis
+        #     pseudo-labels (inverse of SSASS), unsharp aug.
+        # ── E1: SSASS faithful (stenosis) ────────────────────────────
+        {
+            "name": "E1_ssass_faithful",
+            "gpu": 0,
+            "description": "Faithful SSASS (1st place): yolov8m-seg, SGD, "
+                           "conservative augs (no mosaic/flips), Bezier "
+                           "synthetic vessel aug, pseudo-label iter at "
+                           "conf=0.5, retrain from scratch, small-CC "
+                           "post-processing. Expected: stenosis F1 ~0.55.",
+            "overrides": {
+                "optimizer": "SGD",
+                "lr0": 0.01,
+                "lrf": 0.01,
+                "momentum": 0.937,
+                "weight_decay": 0.0005,
+                "epochs": 300,
+                "patience": 50,
+                "warmup_epochs": 5,
+                # SSASS conservative augs
+                "mosaic": 0.0,
+                "mixup": 0.0,
+                "copy_paste": 0.0,
+                "fliplr": 0.0,
+                "flipud": 0.0,
+                "degrees": 30.0,
+                "scale": 0.5,
+                "translate": 0.3,
+                "perspective": 0.001,
+                "hsv_h": 0.015,
+                "hsv_s": 0.7,
+                "hsv_v": 0.4,
+                "erasing": 0.0,
+                "shear": 0.0,
+                "close_mosaic": 0,
+                # No backbone freeze (SSASS trains end-to-end)
+                "freeze": 0,
+                "freeze_epochs": 0,
+            },
+            "pipeline_args": {},
+            "custom_pipeline": True,
+            "custom_runner": "ssass_faithful",
+            "syntax_overrides": {},
+            "stenosis_overrides": {
+                "stenosis_imgsz": 768,
+                "stenosis_batch": 8,
+                "stenosis_lr0": 0.01,
+                "stenosis_epochs": 300,
+                "stenosis_model_weights": "yolov8m-seg.pt",
+            },
+            "hypothesis_config": {
+                "pseudo_conf": 0.5,
+                "bezier_fraction": 0.4,
+                "min_cc_area_px": 30,
+            },
+        },
+        # ── E2: YOLO-Angio faithful (syntax) ─────────────────────────
+        {
+            "name": "E2_yolo_angio",
+            "gpu": 1,
+            "description": "Faithful YOLO-Angio (3rd place syntax): "
+                           "white top-hat (50x50) + CLAHE preprocessing, "
+                           "yolov8l-seg, 3-seed ensemble, anatomy-graph "
+                           "post-processing. Expected: syntax F1 ~0.45.",
+            "overrides": {
+                "optimizer": "AdamW",
+                "lr0": 0.001,
+                "epochs": 300,
+                "patience": 50,
+                "warmup_epochs": 3,
+                "mosaic": 1.0,
+                "close_mosaic": 10,
+                "fliplr": 0.5,
+                "freeze": 0,
+                "freeze_epochs": 0,
+            },
+            "pipeline_args": {},
+            "custom_pipeline": True,
+            "custom_runner": "yolo_angio",
+            "syntax_overrides": {
+                "syntax_imgsz": 768,
+                "syntax_batch": 6,
+                "syntax_model_weights": "yolov8l-seg.pt",
+                "tophat_preprocess": True,
+                "tophat_kernel_size": 50,
+                "clahe_preprocess": True,
+                "clahe_clip_limit": 2.0,
+                "clahe_tile_size": 8,
+            },
+            "stenosis_overrides": {},
+            "hypothesis_config": {
+                "ensemble_seeds": [42, 7, 13],
+                "anatomy_dilate_px": 8,
+            },
+        },
+        # ── E3: StenUNet -> YOLO multi-channel (stenosis) ────────────
+        {
+            "name": "E3_stenunet_y",
+            "gpu": 2,
+            "description": "StenUNet-inspired YOLO port (3rd place stenosis): "
+                           "stack raw / CLAHE / Gabor-max into 3 channels, "
+                           "feed to yolov8m-seg, small-CC post-processing. "
+                           "Expected: stenosis F1 ~0.48.",
+            "overrides": {
+                "optimizer": "SGD",
+                "lr0": 0.005,
+                "epochs": 300,
+                "patience": 50,
+                "warmup_epochs": 5,
+                "mosaic": 0.0,
+                "copy_paste": 0.0,
+                "mixup": 0.0,
+                "fliplr": 0.5,
+                "degrees": 15.0,
+                "scale": 0.4,
+                "freeze": 0,
+                "freeze_epochs": 0,
+            },
+            "pipeline_args": {},
+            "custom_pipeline": True,
+            "custom_runner": "stenunet_y",
+            "syntax_overrides": {},
+            "stenosis_overrides": {
+                "stenosis_imgsz": 768,
+                "stenosis_batch": 8,
+                "stenosis_lr0": 0.005,
+                "stenosis_epochs": 300,
+                "stenosis_model_weights": "yolov8m-seg.pt",
+            },
+            "hypothesis_config": {
+                "min_cc_area_px": 30,
+            },
+        },
+        # ── E4: Cross-Task Pseudo-Label (syntax) ─────────────────────
+        {
+            "name": "E4_cross_task_pl",
+            "gpu": 3,
+            "description": "Cross-Task Pseudo-Label (4th place syntax): "
+                           "Stage1 train syntax (1000) with CLAHE+median "
+                           "blur, Stage2 pseudo-label 1000 stenosis "
+                           "images, Stage3 train syntax on combined 2000 "
+                           "with unsharp mask aug. Eval on 300 syntax "
+                           "test. Original 1000/200 splits (NOT fulldata).",
+            "overrides": {
+                "optimizer": "AdamW",
+                "lr0": 0.001,
+                "epochs": 200,
+                "patience": 30,
+                "warmup_epochs": 3,
+                "mosaic": 1.0,
+                "close_mosaic": 10,
+                "copy_paste": 0.0,
+                "mixup": 0.0,
+                "fliplr": 0.5,
+                "freeze": 0,
+                "freeze_epochs": 0,
+            },
+            "pipeline_args": {},
+            "custom_pipeline": True,
+            "custom_runner": "cross_task_pl",
+            "syntax_overrides": {
+                "syntax_imgsz": 768,
+                "syntax_batch": 8,
+                "syntax_model_weights": "yolov8m-seg.pt",
+                "clahe_preprocess": True,
+                "clahe_clip_limit": 2.0,
+                "clahe_tile_size": 8,
+                "median_blur_preprocess": True,
+                "median_blur_ksize": 3,
+            },
+            "stenosis_overrides": {},
+            "hypothesis_config": {
+                "pseudo_conf": 0.5,
+                "stage3_unsharp_strength": 1.5,
+            },
+        },
     ]
 
         # Merge base config into each experiment
@@ -2108,7 +2298,8 @@ def _apply_image_preprocessing(data_dir: Path, overrides: dict,
     do_clahe = overrides.get("clahe_preprocess", False)
     do_unsharp = overrides.get("unsharp_preprocess", False)
     do_tophat = overrides.get("tophat_preprocess", False)
-    if not (do_clahe or do_unsharp or do_tophat):
+    do_median = overrides.get("median_blur_preprocess", False)
+    if not (do_clahe or do_unsharp or do_tophat or do_median):
         return
 
     try:
@@ -2127,6 +2318,9 @@ def _apply_image_preprocessing(data_dir: Path, overrides: dict,
         unsharp_ksize += 1
 
     tophat_ksize = int(overrides.get("tophat_kernel_size", 50))
+    median_ksize = int(overrides.get("median_blur_ksize", 3))
+    if median_ksize % 2 == 0:
+        median_ksize += 1
     clahe = cv2.createCLAHE(
         clipLimit=clip_limit,
         tileGridSize=(tile_size, tile_size),
@@ -2143,7 +2337,7 @@ def _apply_image_preprocessing(data_dir: Path, overrides: dict,
         return
 
     print(f"  [{tag}] Preprocessing {len(img_paths)} images "
-          f"(CLAHE={do_clahe}, unsharp={do_unsharp}, tophat={do_tophat})")
+          f"(CLAHE={do_clahe}, unsharp={do_unsharp}, tophat={do_tophat}, median={do_median})")
 
     processed = 0
     for p in img_paths:
@@ -2171,6 +2365,8 @@ def _apply_image_preprocessing(data_dir: Path, overrides: dict,
                     blurred = cv2.GaussianBlur(gray, (unsharp_ksize, unsharp_ksize), 0)
                     gray = cv2.addWeighted(gray, 1 + unsharp_alpha,
                                            blurred, -unsharp_alpha, 0)
+                if do_median:
+                    gray = cv2.medianBlur(gray, median_ksize)
                 out = gray
             else:
                 lab = cv2.cvtColor(img, cv2.COLOR_BGR2LAB)
@@ -2187,6 +2383,8 @@ def _apply_image_preprocessing(data_dir: Path, overrides: dict,
                     blurred = cv2.GaussianBlur(l_ch, (unsharp_ksize, unsharp_ksize), 0)
                     l_ch = cv2.addWeighted(l_ch, 1 + unsharp_alpha,
                                            blurred, -unsharp_alpha, 0)
+                if do_median:
+                    l_ch = cv2.medianBlur(l_ch, median_ksize)
                 lab = cv2.merge([l_ch, a_ch, b_ch])
                 out = cv2.cvtColor(lab, cv2.COLOR_LAB2BGR)
 
@@ -2228,6 +2426,7 @@ def run_standard_experiment(exp: dict, arcade_root: Path, splits_dir: Path,
         "clahe_preprocess", "clahe_clip_limit", "clahe_tile_size",
         "unsharp_preprocess", "unsharp_strength", "unsharp_blur_ksize",
         "tophat_preprocess", "tophat_kernel_size",
+        "median_blur_preprocess", "median_blur_ksize",
     ]
     preprocess_overrides = {k: cfg.pop(k) for k in _preprocess_cfg_keys if k in cfg}
 
@@ -2475,6 +2674,7 @@ def run_separate_stenosis_v2(exp: dict, arcade_root: Path, splits_dir: Path,
         "clahe_preprocess", "clahe_clip_limit", "clahe_tile_size",
         "unsharp_preprocess", "unsharp_strength", "unsharp_blur_ksize",
         "tophat_preprocess", "tophat_kernel_size",
+        "median_blur_preprocess", "median_blur_ksize",
     ]
     syn_preprocess_overrides = {k: syn_filtered.pop(k) for k in _preprocess_keys if k in syn_filtered}
     # Apply any remaining syntax overrides verbatim
@@ -3238,6 +3438,7 @@ def run_fulldata_h1(exp: dict, arcade_root: Path, splits_dir: Path,
         "clahe_preprocess", "clahe_clip_limit", "clahe_tile_size",
         "unsharp_preprocess", "unsharp_strength", "unsharp_blur_ksize",
         "tophat_preprocess", "tophat_kernel_size",
+        "median_blur_preprocess", "median_blur_ksize",
     ]
     syn_filtered = dict(syntax_overrides)
     syntax_min_count = int(syn_filtered.pop("syntax_min_count", 300))
@@ -3456,6 +3657,7 @@ def run_fulldata_h2(exp: dict, arcade_root: Path, splits_dir: Path,
     _preprocess_keys = [
         "clahe_preprocess", "clahe_clip_limit", "clahe_tile_size",
         "tophat_preprocess", "tophat_kernel_size",
+        "median_blur_preprocess", "median_blur_ksize",
     ]
     special = {
         "stenosis_imgsz": "imgsz", "stenosis_batch": "batch",
@@ -3631,6 +3833,600 @@ def run_fulldata_h3(exp: dict, arcade_root: Path, splits_dir: Path,
     return all_metrics
 
 
+# ══════════════════════════════════════════════════════════════════
+# FAITHFUL WINNER RUNNERS: E1 / E2 / E3 / E4
+# ══════════════════════════════════════════════════════════════════
+
+def _ensure_fulldata_root(output_dir: Path, arcade_root: Path) -> Path:
+    fulldata_root = output_dir / "_fulldata_arcade_root"
+    if not fulldata_root.exists():
+        from prepare_fulldata import prepare_fulldata
+        prepare_fulldata(arcade_root, fulldata_root)
+    return fulldata_root
+
+
+def _combine_syntax_stenosis_metrics(syntax_metrics: dict,
+                                      stenosis_metrics: dict,
+                                      training_note: str = "") -> dict:
+    combined_per_class = {}
+    for cls_name, cls_m in syntax_metrics.get("per_class", {}).items():
+        combined_per_class[cls_name] = cls_m
+    for cls_name, cls_m in stenosis_metrics.get("per_class", {}).items():
+        combined_per_class["stenosis"] = cls_m
+
+    all_ap50s    = [m.get("ap50", 0) for m in combined_per_class.values()]
+    syntax_aps   = [m.get("ap50", 0) for k, m in combined_per_class.items() if k != "stenosis"]
+    stenosis_aps = [m.get("ap50", 0) for k, m in combined_per_class.items() if k == "stenosis"]
+    all_f1s      = [m.get("f1", 0) for m in combined_per_class.values()]
+
+    all_p = [m.get("precision", 0) for m in combined_per_class.values()]
+    all_r = [m.get("recall", 0)    for m in combined_per_class.values()]
+    return {
+        "split": "test",
+        "mAP50":         round(sum(all_ap50s) / len(all_ap50s), 4) if all_ap50s else 0,
+        "mean_f1":       round(sum(all_f1s)   / len(all_f1s),   4) if all_f1s else 0,
+        "per_class":     combined_per_class,
+        "syntax_mAP50":  round(sum(syntax_aps)  / len(syntax_aps),  4) if syntax_aps else 0,
+        "stenosis_AP50": round(sum(stenosis_aps) / len(stenosis_aps), 4) if stenosis_aps else 0,
+        "precision":     round(sum(all_p) / len(all_p), 4) if all_p else 0,
+        "recall":        round(sum(all_r) / len(all_r), 4) if all_r else 0,
+        "mAP50_95":      0,
+        "training_note": training_note,
+    }
+
+
+def run_ssass_faithful(exp: dict, arcade_root: Path, splits_dir: Path,
+                       output_dir: Path, iterations: int) -> dict:
+    """E1 — Faithful SSASS (1st place stenosis).
+
+    Pipeline:
+      1. Build 1200-image fulldata root.
+      2. data_prep -> data/<name>/stenosis (no preprocessing — SSASS uses raw).
+      3. Shadow dataset with Bezier synthetic-vessel augmentation.
+      4. First training pass: yolov8m-seg, SGD, conservative augs, no freeze.
+      5. Pseudo-label syntax images at conf=0.5 (SSASS technique).
+      6. Build extended stenosis dataset (GT + pseudo, apply Bezier too).
+      7. Retrain from scratch on extended dataset.
+      8. Evaluate + small-CC post-processing.
+    """
+    from run_pipeline import data_prep, _save_metrics
+    from train import load_run_config, train_two_stage
+    from evaluate import evaluate_model
+    from generate_stenosis_pseudolabels import (
+        run_stenosis_on_syntax_images,
+        build_extended_stenosis_dataset,
+    )
+    from bezier_vessel_augment import augment_dataset as bezier_augment
+    from small_cc_postprocess import evaluate_with_filter
+
+    name = exp["name"]
+    results_dir = output_dir / name
+    results_dir.mkdir(parents=True, exist_ok=True)
+
+    h_cfg = exp.get("hypothesis_config", {})
+    pseudo_conf   = float(h_cfg.get("pseudo_conf", 0.5))
+    bez_fraction  = float(h_cfg.get("bezier_fraction", 0.4))
+    min_area_px   = int(h_cfg.get("min_cc_area_px", 30))
+    stenosis_ov   = exp.get("stenosis_overrides", {})
+
+    fulldata_root = _ensure_fulldata_root(output_dir, arcade_root)
+
+    # ── Step 1: data prep (train=1200, test=300) ─────────────────────
+    print(f"\n{'#'*60}\n# {name} — data_prep (1200 train)\n{'#'*60}")
+    data_dir = output_dir / "data" / name
+    data_prep(fulldata_root, data_dir, min_count=300, splits_dir=None)
+    stenosis_dir = data_dir / "stenosis"
+
+    # ── Step 2: Bezier-augmented shadow train set ────────────────────
+    print(f"\n{'#'*60}\n# {name} — Bezier synthetic-vessel augmentation\n{'#'*60}")
+    shadow_dir = data_dir / "stenosis_bez"
+    shadow_img = shadow_dir / "images" / "train"
+    shadow_lbl = shadow_dir / "labels" / "train"
+    bez_stats = bezier_augment(
+        images_dir=stenosis_dir / "images" / "train",
+        labels_dir=stenosis_dir / "labels" / "train",
+        output_images_dir=shadow_img,
+        output_labels_dir=shadow_lbl,
+        fraction=bez_fraction,
+        seed=42,
+    )
+    for split in ("val", "test"):
+        src_i = stenosis_dir / "images" / split
+        src_l = stenosis_dir / "labels" / split
+        dst_i = shadow_dir / "images" / split
+        dst_l = shadow_dir / "labels" / split
+        dst_i.mkdir(parents=True, exist_ok=True)
+        dst_l.mkdir(parents=True, exist_ok=True)
+        for img in list(src_i.glob("*.png")) + list(src_i.glob("*.PNG")):
+            d = dst_i / img.name
+            if not d.exists() and not d.is_symlink():
+                os.symlink(img.resolve(), d)
+        for lbl in src_l.glob("*.txt"):
+            d = dst_l / lbl.name
+            if not d.exists() and not d.is_symlink():
+                os.symlink(lbl.resolve(), d)
+    bez_yaml = shadow_dir / "dataset_configs" / "stenosis_only.yaml"
+    bez_yaml.parent.mkdir(parents=True, exist_ok=True)
+    yaml.dump({
+        "path": str(shadow_dir.resolve()),
+        "train": "images/train",
+        "val":   "images/val",
+        "test":  "images/test",
+        "nc": 1,
+        "names": {0: "stenosis"},
+    }, open(bez_yaml, "w"), default_flow_style=False, sort_keys=False)
+
+    # ── Step 3: First training pass ──────────────────────────────────
+    print(f"\n{'#'*60}\n# {name} — First training pass\n{'#'*60}")
+    cfg_sten = dict(exp["config"])
+    cfg_sten["imgsz"]       = int(stenosis_ov.get("stenosis_imgsz", 768))
+    cfg_sten["batch"]       = int(stenosis_ov.get("stenosis_batch", 8))
+    cfg_sten["device"]      = str(exp["gpu"])
+    cfg_sten["lr0"]         = float(stenosis_ov.get("stenosis_lr0", 0.01))
+    cfg_sten["epochs"]      = int(stenosis_ov.get("stenosis_epochs", 300))
+    cfg_sten["model"]       = stenosis_ov.get("stenosis_model_weights", "yolov8m-seg.pt")
+    cfg_sten["box"]         = 7.5
+    cfg_sten["cls"]         = 0.5
+    cfg_sten["freeze"]      = 0
+    cfg_sten["freeze_epochs"] = 0
+    cfg_sten["results_dir"] = str(results_dir / "pass1")
+
+    cfg_path1 = results_dir / "config_pass1.yaml"
+    with open(cfg_path1, "w") as f:
+        yaml.dump(cfg_sten, f, default_flow_style=False)
+    cfg_p1 = load_run_config(str(cfg_path1))
+    pass1_weights = train_two_stage(
+        cfg_p1, str(bez_yaml),
+        project=str(results_dir / "pass1"),
+        run_name="stenosis_pass1",
+    )
+
+    # ── Step 4: Pseudo-label syntax images ───────────────────────────
+    print(f"\n{'#'*60}\n# {name} — Pseudo-labeling syntax images (conf={pseudo_conf})\n{'#'*60}")
+    syntax_img_dir = data_dir / "syntax_filtered" / "images" / "train"
+    if not syntax_img_dir.exists():
+        syntax_img_dir = data_dir / "syntax" / "images" / "train"
+    pseudo_label_dir = results_dir / "pseudo_stenosis_labels"
+    pseudo_stats = run_stenosis_on_syntax_images(
+        model_path=pass1_weights,
+        syntax_img_dir=syntax_img_dir,
+        output_label_dir=pseudo_label_dir,
+        conf_threshold=pseudo_conf,
+        imgsz=cfg_sten["imgsz"],
+        device=str(exp["gpu"]),
+    )
+
+    # ── Step 5: Build extended stenosis dataset (GT + pseudo) ────────
+    print(f"\n{'#'*60}\n# {name} — Building extended stenosis dataset\n{'#'*60}")
+    extended_dir = results_dir / "extended_stenosis_data"
+    extended_yaml = build_extended_stenosis_dataset(
+        original_stenosis_dir=stenosis_dir,
+        syntax_img_dir=syntax_img_dir,
+        pseudo_label_dir=pseudo_label_dir,
+        output_dir=extended_dir,
+        apply_clahe=False,
+    )
+
+    # ── Step 6: Retrain from scratch on extended dataset ─────────────
+    print(f"\n{'#'*60}\n# {name} — Retrain from scratch on extended dataset\n{'#'*60}")
+    cfg_sten_r = dict(cfg_sten)
+    cfg_sten_r["results_dir"] = str(results_dir / "pass2")
+    cfg_path2 = results_dir / "config_pass2.yaml"
+    with open(cfg_path2, "w") as f:
+        yaml.dump(cfg_sten_r, f, default_flow_style=False)
+    cfg_p2 = load_run_config(str(cfg_path2))
+    pass2_weights = train_two_stage(
+        cfg_p2, extended_yaml,
+        project=str(results_dir / "pass2"),
+        run_name="stenosis_pass2",
+    )
+
+    # ── Step 7: Evaluate (raw + small-CC post) ───────────────────────
+    print(f"\n{'#'*60}\n# {name} — Evaluation\n{'#'*60}")
+    orig_stenosis_yaml = str(data_dir / "dataset_configs" / "stenosis_only.yaml")
+    stenosis_metrics = evaluate_model(
+        pass2_weights, orig_stenosis_yaml, split="test",
+        augment=False, imgsz=cfg_sten["imgsz"],
+    )
+    _save_metrics(results_dir, "stenosis_model_test", stenosis_metrics)
+
+    try:
+        cc_report = evaluate_with_filter(
+            model_path=pass2_weights,
+            data_yaml=orig_stenosis_yaml,
+            split="test",
+            imgsz=cfg_sten["imgsz"],
+            min_area_px=min_area_px,
+            augment=False,
+        )
+    except Exception as exc:
+        print(f"  WARN small-CC eval failed: {exc}")
+        cc_report = {"error": str(exc)}
+
+    syntax_metrics: dict = {}
+    combined = _combine_syntax_stenosis_metrics(
+        syntax_metrics, stenosis_metrics,
+        training_note="E1 SSASS faithful: 1200 GT + pseudo-labeled syntax",
+    )
+    combined["stenosis_model"] = pass2_weights
+    combined["pseudo_stats"]   = pseudo_stats
+    combined["bezier_stats"]   = bez_stats
+    combined["small_cc_report"] = cc_report
+    _save_metrics(results_dir, "final_test", combined)
+
+    all_metrics = {
+        "stenosis_model_test": stenosis_metrics,
+        "final_test":          combined,
+        "pseudo_stats":        pseudo_stats,
+        "bezier_stats":        bez_stats,
+        "small_cc_report":     cc_report,
+        "pass1_weights":       pass1_weights,
+        "pass2_weights":       pass2_weights,
+    }
+    with open(results_dir / "all_metrics.json", "w") as f:
+        json.dump(all_metrics, f, indent=2)
+    return all_metrics
+
+
+def run_yolo_angio(exp: dict, arcade_root: Path, splits_dir: Path,
+                   output_dir: Path, iterations: int) -> dict:
+    """E2 — Faithful YOLO-Angio (3rd place syntax).
+
+    Pipeline:
+      1. Build 1200-image fulldata root.
+      2. data_prep -> data/<name>/syntax.
+      3. Apply top-hat + CLAHE to train AND test splits.
+      4. Train N syntax models (seeds 42, 7, 13).
+      5. Evaluate each. Ensemble metrics = per-class average.
+      6. Anatomy-graph post-processing report on first seed (diagnostic).
+    """
+    from run_pipeline import data_prep, _save_metrics
+    from train import load_run_config, train_two_stage
+    from evaluate import evaluate_model
+
+    name = exp["name"]
+    results_dir = output_dir / name
+    results_dir.mkdir(parents=True, exist_ok=True)
+
+    h_cfg = exp.get("hypothesis_config", {})
+    seeds: list = list(h_cfg.get("ensemble_seeds", [42, 7, 13]))
+    syntax_ov = exp.get("syntax_overrides", {})
+
+    fulldata_root = _ensure_fulldata_root(output_dir, arcade_root)
+
+    # ── Step 1: data prep ────────────────────────────────────────────
+    data_dir = output_dir / "data" / name
+    data_prep(fulldata_root, data_dir, min_count=300, splits_dir=None)
+    syntax_dir = data_dir / "syntax"
+
+    # ── Step 2: Preprocessing (train + val + test) ───────────────────
+    print(f"\n{'#'*60}\n# {name} — Top-hat + CLAHE preprocessing\n{'#'*60}")
+    _preprocess_keys = [
+        "clahe_preprocess", "clahe_clip_limit", "clahe_tile_size",
+        "tophat_preprocess", "tophat_kernel_size",
+        "unsharp_preprocess", "unsharp_strength", "unsharp_blur_ksize",
+        "median_blur_preprocess", "median_blur_ksize",
+    ]
+    syn_preprocess = {k: syntax_ov[k] for k in _preprocess_keys if k in syntax_ov}
+    _apply_image_preprocessing(syntax_dir, syn_preprocess, tag=f"{name}/syntax")
+
+    # ── Step 3: Multi-seed training ──────────────────────────────────
+    cfg_base = dict(exp["config"])
+    cfg_base["imgsz"]         = int(syntax_ov.get("syntax_imgsz", 768))
+    cfg_base["batch"]         = int(syntax_ov.get("syntax_batch", 6))
+    cfg_base["device"]        = str(exp["gpu"])
+    cfg_base["model"]         = syntax_ov.get("syntax_model_weights", "yolov8l-seg.pt")
+    cfg_base["freeze"]        = 0
+    cfg_base["freeze_epochs"] = 0
+
+    seed_weights = []
+    seed_metrics = []
+    syntax_yaml = str(data_dir / "dataset_configs" / "syntax_only.yaml")
+    for seed in seeds:
+        print(f"\n{'#'*60}\n# {name} — seed {seed}\n{'#'*60}")
+        cfg_seed = dict(cfg_base)
+        cfg_seed["seed"] = seed
+        cfg_seed["results_dir"] = str(results_dir / f"seed_{seed}")
+        cfg_path = results_dir / f"config_seed_{seed}.yaml"
+        with open(cfg_path, "w") as f:
+            yaml.dump(cfg_seed, f, default_flow_style=False)
+        cfg = load_run_config(str(cfg_path))
+        w = train_two_stage(
+            cfg, syntax_yaml,
+            project=str(results_dir / f"seed_{seed}"),
+            run_name=f"syntax_seed{seed}",
+        )
+        seed_weights.append(w)
+        m = evaluate_model(w, syntax_yaml, split="test", augment=True, imgsz=cfg_seed["imgsz"])
+        _save_metrics(results_dir, f"seed_{seed}_test", m)
+        seed_metrics.append(m)
+
+    # ── Step 4: Ensemble metrics = per-class average ─────────────────
+    ens_per_class = {}
+    for m in seed_metrics:
+        for cls, v in m.get("per_class", {}).items():
+            bucket = ens_per_class.setdefault(cls, {"f1": [], "precision": [],
+                                                      "recall": [], "ap50": []})
+            for k in ("f1", "precision", "recall", "ap50"):
+                if k in v:
+                    bucket[k].append(v[k])
+    ens_metrics = {"per_class": {cls: {k: round(sum(vs) / len(vs), 4)
+                                         for k, vs in b.items() if vs}
+                                   for cls, b in ens_per_class.items()}}
+    # Wrap in the shape expected by _combine_...
+    ens_metrics["mAP50"] = round(
+        sum(v.get("ap50", 0) for v in ens_metrics["per_class"].values())
+        / max(1, len(ens_metrics["per_class"])), 4)
+
+    # ── Step 5: Anatomy-graph post-processing diagnostic ─────────────
+    anatomy_report = {}
+    try:
+        from anatomy_graph_postprocess import postprocess as anatomy_pp
+        from ultralytics import YOLO
+        m0 = YOLO(seed_weights[0])
+        test_img_dir = syntax_dir / "images" / "test"
+        preds = m0.predict(
+            source=[str(p) for p in sorted(test_img_dir.glob("*.png"))],
+            imgsz=cfg_base["imgsz"], conf=0.25,
+            device=f"cuda:{exp['gpu']}", verbose=False, save=False,
+            retina_masks=True,
+        )
+        preds = list(preds)
+        before_n = sum(len(r.boxes) if r.boxes is not None else 0 for r in preds)
+        anatomy_pp(preds, dilate_px=int(h_cfg.get("anatomy_dilate_px", 8)))
+        after_n = sum(len(r.boxes) if r.boxes is not None else 0 for r in preds)
+        anatomy_report = {"instances_before": before_n, "instances_after": after_n}
+    except Exception as exc:
+        anatomy_report = {"error": str(exc)}
+
+    combined = _combine_syntax_stenosis_metrics(
+        ens_metrics, {},
+        training_note=f"E2 YOLO-Angio faithful: {len(seeds)} seeds, top-hat+CLAHE",
+    )
+    combined["seed_models"]    = seed_weights
+    combined["ensemble_seeds"] = seeds
+    combined["anatomy_report"] = anatomy_report
+    _save_metrics(results_dir, "final_test", combined)
+
+    all_metrics = {
+        "seed_metrics":    seed_metrics,
+        "final_test":      combined,
+        "anatomy_report":  anatomy_report,
+        "seed_models":     seed_weights,
+    }
+    with open(results_dir / "all_metrics.json", "w") as f:
+        json.dump(all_metrics, f, indent=2)
+    return all_metrics
+
+
+def run_stenunet_y(exp: dict, arcade_root: Path, splits_dir: Path,
+                    output_dir: Path, iterations: int) -> dict:
+    """E3 — StenUNet multi-channel input ported to YOLO.
+
+    Stack raw / CLAHE / Gabor-max into the BGR channels of each stenosis
+    image, then train YOLO normally. Small-CC post-processing applied at
+    evaluation time.
+    """
+    from run_pipeline import data_prep, _save_metrics
+    from train import load_run_config, train_two_stage
+    from evaluate import evaluate_model
+    from build_multichannel_stenosis import stack_directory
+    from small_cc_postprocess import evaluate_with_filter
+
+    name = exp["name"]
+    results_dir = output_dir / name
+    results_dir.mkdir(parents=True, exist_ok=True)
+
+    h_cfg = exp.get("hypothesis_config", {})
+    min_area_px = int(h_cfg.get("min_cc_area_px", 30))
+    stenosis_ov = exp.get("stenosis_overrides", {})
+
+    fulldata_root = _ensure_fulldata_root(output_dir, arcade_root)
+
+    data_dir = output_dir / "data" / name
+    data_prep(fulldata_root, data_dir, min_count=300, splits_dir=None)
+    stenosis_dir = data_dir / "stenosis"
+
+    print(f"\n{'#'*60}\n# {name} — Multi-channel stack (raw/CLAHE/Gabor)\n{'#'*60}")
+    stack_directory(stenosis_dir / "images")
+
+    cfg_sten = dict(exp["config"])
+    cfg_sten["imgsz"]         = int(stenosis_ov.get("stenosis_imgsz", 768))
+    cfg_sten["batch"]         = int(stenosis_ov.get("stenosis_batch", 8))
+    cfg_sten["device"]        = str(exp["gpu"])
+    cfg_sten["lr0"]           = float(stenosis_ov.get("stenosis_lr0", 0.005))
+    cfg_sten["epochs"]        = int(stenosis_ov.get("stenosis_epochs", 300))
+    cfg_sten["model"]         = stenosis_ov.get("stenosis_model_weights", "yolov8m-seg.pt")
+    cfg_sten["freeze"]        = 0
+    cfg_sten["freeze_epochs"] = 0
+    cfg_sten["results_dir"]   = str(results_dir / "stenosis_model")
+
+    cfg_path = results_dir / "config_stenosis.yaml"
+    with open(cfg_path, "w") as f:
+        yaml.dump(cfg_sten, f, default_flow_style=False)
+    cfg = load_run_config(str(cfg_path))
+    stenosis_yaml = str(data_dir / "dataset_configs" / "stenosis_only.yaml")
+
+    weights = train_two_stage(
+        cfg, stenosis_yaml,
+        project=str(results_dir / "stenosis_model"),
+        run_name="stenosis_mc",
+    )
+    stenosis_metrics = evaluate_model(
+        weights, stenosis_yaml, split="test",
+        augment=False, imgsz=cfg_sten["imgsz"],
+    )
+    _save_metrics(results_dir, "stenosis_model_test", stenosis_metrics)
+
+    try:
+        cc_report = evaluate_with_filter(
+            model_path=weights, data_yaml=stenosis_yaml,
+            split="test", imgsz=cfg_sten["imgsz"],
+            min_area_px=min_area_px, augment=False,
+        )
+    except Exception as exc:
+        cc_report = {"error": str(exc)}
+
+    combined = _combine_syntax_stenosis_metrics(
+        {}, stenosis_metrics,
+        training_note="E3 StenUNet-YOLO: 3-ch stack (raw/CLAHE/Gabor)",
+    )
+    combined["stenosis_model"]  = weights
+    combined["small_cc_report"] = cc_report
+    _save_metrics(results_dir, "final_test", combined)
+
+    all_metrics = {
+        "stenosis_model_test": stenosis_metrics,
+        "final_test":          combined,
+        "small_cc_report":     cc_report,
+    }
+    with open(results_dir / "all_metrics.json", "w") as f:
+        json.dump(all_metrics, f, indent=2)
+    return all_metrics
+
+
+def run_cross_task_pl(exp: dict, arcade_root: Path, splits_dir: Path,
+                       output_dir: Path, iterations: int) -> dict:
+    """E4 — Cross-Task Pseudo-Label (4th place syntax).
+
+    Three-stage pipeline on the ORIGINAL 1000/200 ARCADE splits
+    (not fulldata — the paper's data split choice matters here):
+      Stage 1: train syntax on 1000 with CLAHE+median blur.
+      Stage 2: run syntax model on 1000 stenosis images -> pseudo vessel labels.
+      Stage 3: train final syntax on combined 2000 images with unsharp mask.
+    """
+    from run_pipeline import data_prep, _save_metrics
+    from train import load_run_config, train_two_stage
+    from evaluate import evaluate_model
+    from generate_syntax_pseudolabels import run_syntax_on_stenosis_images
+    from build_combined_syntax_pl import build as build_combined
+
+    name = exp["name"]
+    results_dir = output_dir / name
+    results_dir.mkdir(parents=True, exist_ok=True)
+
+    h_cfg = exp.get("hypothesis_config", {})
+    pseudo_conf = float(h_cfg.get("pseudo_conf", 0.5))
+    syntax_ov   = exp.get("syntax_overrides", {})
+
+    # NOTE: use original arcade_root (1000/200/300), NOT fulldata
+    data_dir = output_dir / "data" / name
+    data_prep(arcade_root, data_dir, min_count=300, splits_dir=None)
+    syntax_dir = data_dir / "syntax"
+    stenosis_dir = data_dir / "stenosis"
+
+    # ── Preprocessing: CLAHE + median blur on syntax splits ──────────
+    print(f"\n{'#'*60}\n# {name} — CLAHE + median blur on syntax\n{'#'*60}")
+    _preprocess_keys = [
+        "clahe_preprocess", "clahe_clip_limit", "clahe_tile_size",
+        "tophat_preprocess", "tophat_kernel_size",
+        "unsharp_preprocess", "unsharp_strength", "unsharp_blur_ksize",
+        "median_blur_preprocess", "median_blur_ksize",
+    ]
+    syn_preprocess = {k: syntax_ov[k] for k in _preprocess_keys if k in syntax_ov}
+    _apply_image_preprocessing(syntax_dir, syn_preprocess, tag=f"{name}/syntax")
+
+    # ── Stage 1: Train syntax model on 1000 ──────────────────────────
+    print(f"\n{'#'*60}\n# {name} — Stage 1: syntax on 1000\n{'#'*60}")
+    cfg_s1 = dict(exp["config"])
+    cfg_s1["imgsz"]         = int(syntax_ov.get("syntax_imgsz", 768))
+    cfg_s1["batch"]         = int(syntax_ov.get("syntax_batch", 8))
+    cfg_s1["device"]        = str(exp["gpu"])
+    cfg_s1["model"]         = syntax_ov.get("syntax_model_weights", "yolov8m-seg.pt")
+    cfg_s1["freeze"]        = 0
+    cfg_s1["freeze_epochs"] = 0
+    cfg_s1["results_dir"]   = str(results_dir / "stage1")
+    cfg_p1 = results_dir / "config_stage1.yaml"
+    with open(cfg_p1, "w") as f:
+        yaml.dump(cfg_s1, f, default_flow_style=False)
+    cfg1 = load_run_config(str(cfg_p1))
+    stage1_yaml = str(data_dir / "dataset_configs" / "syntax_only.yaml")
+    stage1_weights = train_two_stage(
+        cfg1, stage1_yaml,
+        project=str(results_dir / "stage1"),
+        run_name="syntax_stage1",
+    )
+    stage1_metrics = evaluate_model(
+        stage1_weights, stage1_yaml, split="test",
+        augment=False, imgsz=cfg_s1["imgsz"],
+    )
+    _save_metrics(results_dir, "stage1_syntax_test", stage1_metrics)
+
+    # ── Stage 2: Pseudo-label stenosis images ────────────────────────
+    print(f"\n{'#'*60}\n# {name} — Stage 2: pseudo-label stenosis (conf={pseudo_conf})\n{'#'*60}")
+    stenosis_img_dir = stenosis_dir / "images" / "train"
+    pseudo_label_dir = results_dir / "pseudo_syntax_labels"
+    pseudo_stats = run_syntax_on_stenosis_images(
+        model_path=stage1_weights,
+        stenosis_img_dir=stenosis_img_dir,
+        output_label_dir=pseudo_label_dir,
+        conf_threshold=pseudo_conf,
+        imgsz=cfg_s1["imgsz"],
+        device=str(exp["gpu"]),
+    )
+
+    # ── Stage 3: Build combined dataset, retrain with unsharp ────────
+    print(f"\n{'#'*60}\n# {name} — Stage 3: combined dataset build\n{'#'*60}")
+    combined_dir = results_dir / "combined_syntax_pl"
+    combined_yaml = build_combined(
+        syntax_data_dir=syntax_dir,
+        stenosis_img_dir=stenosis_img_dir,
+        pseudo_label_dir=pseudo_label_dir,
+        output_dir=combined_dir,
+        syntax_yaml=Path(stage1_yaml),
+    )
+
+    # Apply unsharp mask to the combined train images (offline proxy
+    # for the paper's online aug). Do NOT touch val/test.
+    _apply_image_preprocessing(
+        combined_dir / "images" / "train",
+        {
+            "unsharp_preprocess": True,
+            "unsharp_strength": float(h_cfg.get("stage3_unsharp_strength", 1.5)),
+            "unsharp_blur_ksize": 5,
+        },
+        tag=f"{name}/stage3-unsharp",
+    )
+
+    print(f"\n{'#'*60}\n# {name} — Stage 3: train on combined ~2000\n{'#'*60}")
+    cfg_s3 = dict(cfg_s1)
+    cfg_s3["results_dir"] = str(results_dir / "stage3")
+    cfg_p3 = results_dir / "config_stage3.yaml"
+    with open(cfg_p3, "w") as f:
+        yaml.dump(cfg_s3, f, default_flow_style=False)
+    cfg3 = load_run_config(str(cfg_p3))
+    stage3_weights = train_two_stage(
+        cfg3, combined_yaml,
+        project=str(results_dir / "stage3"),
+        run_name="syntax_stage3",
+    )
+    stage3_metrics = evaluate_model(
+        stage3_weights, stage1_yaml, split="test",
+        augment=True, imgsz=cfg_s1["imgsz"],
+    )
+    _save_metrics(results_dir, "stage3_syntax_test", stage3_metrics)
+
+    combined = _combine_syntax_stenosis_metrics(
+        stage3_metrics, {},
+        training_note="E4 Cross-Task PL: stage1 1000 syntax -> pseudo-label "
+                      "1000 stenosis -> stage3 combined 2000 with unsharp",
+    )
+    combined["stage1_weights"]  = stage1_weights
+    combined["stage3_weights"]  = stage3_weights
+    combined["pseudo_stats"]    = pseudo_stats
+    _save_metrics(results_dir, "final_test", combined)
+
+    all_metrics = {
+        "stage1_syntax_test": stage1_metrics,
+        "stage3_syntax_test": stage3_metrics,
+        "pseudo_stats":       pseudo_stats,
+        "final_test":         combined,
+    }
+    with open(results_dir / "all_metrics.json", "w") as f:
+        json.dump(all_metrics, f, indent=2)
+    return all_metrics
+
+
 def _run_single_worker_script():
     """Entry point when this script is invoked as a subprocess worker.
 
@@ -3694,6 +4490,22 @@ def _run_single_worker_script():
                 )
             elif runner == "fulldata_h3":
                 metrics = run_fulldata_h3(
+                    exp, arcade_root, splits_dir, output_dir, iterations
+                )
+            elif runner == "ssass_faithful":
+                metrics = run_ssass_faithful(
+                    exp, arcade_root, splits_dir, output_dir, iterations
+                )
+            elif runner == "yolo_angio":
+                metrics = run_yolo_angio(
+                    exp, arcade_root, splits_dir, output_dir, iterations
+                )
+            elif runner == "stenunet_y":
+                metrics = run_stenunet_y(
+                    exp, arcade_root, splits_dir, output_dir, iterations
+                )
+            elif runner == "cross_task_pl":
+                metrics = run_cross_task_pl(
                     exp, arcade_root, splits_dir, output_dir, iterations
                 )
             else:
