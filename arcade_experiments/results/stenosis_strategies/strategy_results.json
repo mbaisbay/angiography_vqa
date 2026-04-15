@@ -10990,5 +10990,226 @@
         "stenosis_batch": 2
       }
     }
+  },
+  {
+    "name": "H2_fulldata_ssass_pseudolabels",
+    "gpu": 1,
+    "description": "HYPOTHESIS 2: H1 + SSASS reverse pseudo-labels. After 1200-image training, run stenosis model on syntax images (conf>=0.40) to find unlabeled stenoses. Retrain on expanded dataset (1200 GT + ~400 pseudo). This is the core SSASS (1st place) technique. Expected: stenosis F1 ~0.52-0.55",
+    "elapsed_hours": 0.47,
+    "status": "failed",
+    "error": "CUDA error: invalid device ordinal\nGPU device may be out of range, do you have enough GPUs?\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+    "traceback": "Traceback (most recent call last):\n  File \"/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/scripts/run_stenosis_strategies_v2.py\", line 3692, in _run_single_worker_script\n    metrics = run_fulldata_h2(\n              ^^^^^^^^^^^^^^^^\n  File \"/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/scripts/run_stenosis_strategies_v2.py\", line 3415, in run_fulldata_h2\n    pseudo_stats = run_stenosis_on_syntax_images(\n                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/scripts/generate_stenosis_pseudolabels.py\", line 72, in run_stenosis_on_syntax_images\n    model.to(f\"cuda:{device}\" if device.isdigit() else device)\n  File \"/home/c504-5090-x2/Documents/repos/angiography_vqa/venv/lib/python3.12/site-packages/torch/nn/modules/module.py\", line 1384, in to\n    return self._apply(convert)\n           ^^^^^^^^^^^^^^^^^^^^\n  File \"/home/c504-5090-x2/Documents/repos/angiography_vqa/venv/lib/python3.12/site-packages/ultralytics/engine/model.py\", line 867, in _apply\n    self = super()._apply(fn)\n           ^^^^^^^^^^^^^^^^^^\n  File \"/home/c504-5090-x2/Documents/repos/angiography_vqa/venv/lib/python3.12/site-packages/torch/nn/modules/module.py\", line 934, in _apply\n    module._apply(fn)\n  File \"/home/c504-5090-x2/Documents/repos/angiography_vqa/venv/lib/python3.12/site-packages/ultralytics/nn/tasks.py\", line 288, in _apply\n    self = super()._apply(fn)\n           ^^^^^^^^^^^^^^^^^^\n  File \"/home/c504-5090-x2/Documents/repos/angiography_vqa/venv/lib/python3.12/site-packages/torch/nn/modules/module.py\", line 934, in _apply\n    module._apply(fn)\n  File \"/home/c504-5090-x2/Documents/repos/angiography_vqa/venv/lib/python3.12/site-packages/torch/nn/modules/module.py\", line 934, in _apply\n    module._apply(fn)\n  File \"/home/c504-5090-x2/Documents/repos/angiography_vqa/venv/lib/python3.12/site-packages/torch/nn/modules/module.py\", line 934, in _apply\n    module._apply(fn)\n  File \"/home/c504-5090-x2/Documents/repos/angiography_vqa/venv/lib/python3.12/site-packages/torch/nn/modules/module.py\", line 965, in _apply\n    param_applied = fn(param)\n                    ^^^^^^^^^\n  File \"/home/c504-5090-x2/Documents/repos/angiography_vqa/venv/lib/python3.12/site-packages/torch/nn/modules/module.py\", line 1370, in convert\n    return t.to(\n           ^^^^^\ntorch.AcceleratorError: CUDA error: invalid device ordinal\nGPU device may be out of range, do you have enough GPUs?\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n\n"
+  },
+  {
+    "name": "H1_fulldata_best_hps",
+    "gpu": 0,
+    "description": "HYPOTHESIS 1: Train on all 1200 images (ARCADE train+val merged), eval on official 300-image test. Replicates what competition winners did at final submission. S54 config: CLAHE on stenosis, mosaic=0.8, no cp, SGD lr=0.005 stenosis / lr=0.01 syntax, 300ep, patience=50. Expected: syntax ~0.78, stenosis ~0.50, mean F1 ~0.76+",
+    "elapsed_hours": 0.53,
+    "status": "success",
+    "metrics": {
+      "syntax_model_test": {
+        "split": "test",
+        "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/stenosis_strategies/H1_fulldata_best_hps/syntax_model/syntax_1200_best.pt",
+        "mAP50": 0.5774,
+        "mAP50_95": 0.2334,
+        "precision": 0.5905,
+        "recall": 0.5578,
+        "per_class": {
+          "1": {
+            "ap50": 0.5879,
+            "precision": 0.5968,
+            "recall": 0.64,
+            "f1": 0.6176
+          },
+          "2": {
+            "ap50": 0.5699,
+            "precision": 0.5791,
+            "recall": 0.55,
+            "f1": 0.5642
+          },
+          "3": {
+            "ap50": 0.6427,
+            "precision": 0.6328,
+            "recall": 0.62,
+            "f1": 0.6263
+          },
+          "4": {
+            "ap50": 0.605,
+            "precision": 0.5451,
+            "recall": 0.6196,
+            "f1": 0.58
+          },
+          "5": {
+            "ap50": 0.8483,
+            "precision": 0.8242,
+            "recall": 0.7487,
+            "f1": 0.7846
+          },
+          "6": {
+            "ap50": 0.6856,
+            "precision": 0.687,
+            "recall": 0.6011,
+            "f1": 0.6412
+          },
+          "7": {
+            "ap50": 0.5716,
+            "precision": 0.5779,
+            "recall": 0.528,
+            "f1": 0.5518
+          },
+          "8": {
+            "ap50": 0.5319,
+            "precision": 0.6048,
+            "recall": 0.575,
+            "f1": 0.5895
+          },
+          "9": {
+            "ap50": 0.1685,
+            "precision": 0.2273,
+            "recall": 0.2424,
+            "f1": 0.2346
+          },
+          "11": {
+            "ap50": 0.769,
+            "precision": 0.6445,
+            "recall": 0.7314,
+            "f1": 0.6852
+          },
+          "13": {
+            "ap50": 0.3741,
+            "precision": 0.5731,
+            "recall": 0.2807,
+            "f1": 0.3768
+          },
+          "16": {
+            "ap50": 0.5745,
+            "precision": 0.5935,
+            "recall": 0.5568,
+            "f1": 0.5746
+          }
+        },
+        "syntax_mAP50": 0.5774
+      },
+      "stenosis_model_test": {
+        "split": "test",
+        "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/stenosis_strategies/H1_fulldata_best_hps/stenosis_model/stenosis_768_best.pt",
+        "mAP50": 0.3516,
+        "mAP50_95": 0.1079,
+        "precision": 0.4029,
+        "recall": 0.4326,
+        "per_class": {
+          "stenosis": {
+            "ap50": 0.3516,
+            "precision": 0.4029,
+            "recall": 0.4326,
+            "f1": 0.4172
+          }
+        },
+        "stenosis_AP50": 0.3516
+      },
+      "final_test": {
+        "split": "test",
+        "mAP50": 0.56,
+        "per_class": {
+          "1": {
+            "ap50": 0.5879,
+            "precision": 0.5968,
+            "recall": 0.64,
+            "f1": 0.6176
+          },
+          "2": {
+            "ap50": 0.5699,
+            "precision": 0.5791,
+            "recall": 0.55,
+            "f1": 0.5642
+          },
+          "3": {
+            "ap50": 0.6427,
+            "precision": 0.6328,
+            "recall": 0.62,
+            "f1": 0.6263
+          },
+          "4": {
+            "ap50": 0.605,
+            "precision": 0.5451,
+            "recall": 0.6196,
+            "f1": 0.58
+          },
+          "5": {
+            "ap50": 0.8483,
+            "precision": 0.8242,
+            "recall": 0.7487,
+            "f1": 0.7846
+          },
+          "6": {
+            "ap50": 0.6856,
+            "precision": 0.687,
+            "recall": 0.6011,
+            "f1": 0.6412
+          },
+          "7": {
+            "ap50": 0.5716,
+            "precision": 0.5779,
+            "recall": 0.528,
+            "f1": 0.5518
+          },
+          "8": {
+            "ap50": 0.5319,
+            "precision": 0.6048,
+            "recall": 0.575,
+            "f1": 0.5895
+          },
+          "9": {
+            "ap50": 0.1685,
+            "precision": 0.2273,
+            "recall": 0.2424,
+            "f1": 0.2346
+          },
+          "11": {
+            "ap50": 0.769,
+            "precision": 0.6445,
+            "recall": 0.7314,
+            "f1": 0.6852
+          },
+          "13": {
+            "ap50": 0.3741,
+            "precision": 0.5731,
+            "recall": 0.2807,
+            "f1": 0.3768
+          },
+          "16": {
+            "ap50": 0.5745,
+            "precision": 0.5935,
+            "recall": 0.5568,
+            "f1": 0.5746
+          },
+          "stenosis": {
+            "ap50": 0.3516,
+            "precision": 0.4029,
+            "recall": 0.4326,
+            "f1": 0.4172
+          }
+        },
+        "syntax_mAP50": 0.5774,
+        "stenosis_AP50": 0.3516,
+        "syntax_model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/stenosis_strategies/H1_fulldata_best_hps/syntax_model/syntax_1200_best.pt",
+        "stenosis_model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/stenosis_strategies/H1_fulldata_best_hps/stenosis_model/stenosis_768_best.pt",
+        "training_note": "1200 images (train+val merged), eval on official 300-image test",
+        "precision": 0.5761,
+        "recall": 0.5482,
+        "mAP50_95": 0
+      },
+      "stenosis_overrides": {
+        "copy_paste": 0.0,
+        "scale": 0.5,
+        "mosaic": 0.8,
+        "close_mosaic": 15,
+        "stenosis_lr0": 0.005,
+        "stenosis_epochs": 300,
+        "clahe_preprocess": true,
+        "clahe_clip_limit": 2.0,
+        "clahe_tile_size": 8
+      }
+    }
   }
 ]
