@@ -35,7 +35,12 @@ def run_syntax_on_stenosis_images(
     output_label_dir.mkdir(parents=True, exist_ok=True)
 
     model = YOLO(model_path)
-    model.to(f"cuda:{device}" if str(device).isdigit() else device)
+    # NOTE: do NOT call model.to(f"cuda:{device}") here. In worker
+    # subprocesses the parent sets CUDA_VISIBLE_DEVICES to the physical
+    # GPU id, so from torch's view only cuda:0 exists — a direct
+    # .to("cuda:1") raises "invalid device ordinal". Pass device=... to
+    # predict() instead; ultralytics' select_device handles the
+    # remapping correctly.
 
     img_files = sorted(
         list(stenosis_img_dir.glob("*.png"))
@@ -57,6 +62,7 @@ def run_syntax_on_stenosis_images(
             source=str(img_path),
             conf=conf_threshold,
             imgsz=imgsz,
+            device=str(device),
             verbose=False,
             save=False,
             retina_masks=True,

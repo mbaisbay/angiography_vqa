@@ -69,7 +69,10 @@ def run_stenosis_on_syntax_images(
     output_label_dir.mkdir(parents=True, exist_ok=True)
 
     model = YOLO(model_path)
-    model.to(f"cuda:{device}" if device.isdigit() else device)
+    # Do not call model.to("cuda:N") — in worker subprocesses the parent
+    # scheduler sets CUDA_VISIBLE_DEVICES so only cuda:0 is visible and
+    # .to("cuda:1") raises "invalid device ordinal". Pass device=... to
+    # predict() instead; ultralytics handles the remap correctly.
 
     img_files = (
         sorted(syntax_img_dir.glob("*.png")) +
@@ -91,6 +94,7 @@ def run_stenosis_on_syntax_images(
             source=str(img_path),
             conf=conf_threshold,
             imgsz=imgsz,
+            device=str(device),
             verbose=False,
             save=False,
             retina_masks=True,
