@@ -1,0 +1,321 @@
+nohup: ignoring input
+[SKIP] Stratified splits (--skip-splits)
+
+############################################################
+# Running 3 experiments on 2 GPUs
+#   Output: /home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/stenosis_strategies
+############################################################
+  advisory GPU 0: S43a_no_mosaic — S36 recipe minus mosaic (copy_paste stays 0.3). Ablation arm 1: does mosaic hurt stenosis?
+  advisory GPU 1: S43b_no_cp — S36 recipe minus copy_paste (mosaic stays 0.8). Ablation arm 2: does copy_paste hurt stenosis?
+  advisory GPU 0: S43c_no_both — S36 recipe minus BOTH mosaic and copy_paste (Medipixel-style conservative aug). Ablation arm 3 — the unified 'less-is-more' hypothesis.
+
+  Initial GPU memory (nvidia-smi):
+    GPU 0: OK free=31463 MB
+    GPU 1: OK free=32092 MB
+
+  Startup orphan sweep (kill ON):
+    [GPU 0] PID 4065298 (foreign, none): /usr/share/rustdesk/rustdesk --server
+
+Scheduling 3 experiments
+  GPU pool            : [0, 1]
+  per-GPU baseline    : {0: '31463MB', 1: '32092MB'}
+  max_concurrent      : 2
+  stagger_seconds     : 15
+  min_free_mb         : 0
+  idle tolerance (MB) : 500
+  idle timeout (s)    : 600
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 0s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 5s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 10s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 15s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 20s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 25s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 30s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 35s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 40s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 45s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 50s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 55s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 60s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 65s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 70s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 75s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 80s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 85s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 90s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 95s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 100s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 105s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 110s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 115s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 120s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 125s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 130s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 135s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 140s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 145s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 150s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 155s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 160s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 165s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 170s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 175s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 180s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 185s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 190s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 195s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 200s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 205s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 210s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 215s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 220s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 225s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 230s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 235s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 240s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 245s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 250s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 255s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 260s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 265s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 270s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 275s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 280s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 285s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 290s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 295s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 300s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 305s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 310s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 315s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 320s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 325s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 330s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 335s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 340s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 345s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 350s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 355s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 360s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 365s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 370s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 375s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 380s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 385s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 390s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 395s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 400s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 405s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 410s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 415s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 420s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 425s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 430s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 435s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 440s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 445s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 450s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 455s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 460s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 465s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 470s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 475s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 480s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 485s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 490s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 495s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 500s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 505s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 510s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 515s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 520s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 525s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 530s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 535s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 540s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 545s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 550s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 555s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 560s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 565s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 570s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 575s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 580s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 585s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 590s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 595s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 600s / 600s)
+  [GPU 0] SKIPPING S43a_no_mosaic: timeout after 600s — 1 lingering compute PID(s): [4065298]
+  [1/3] [GPU 0] S43a_no_mosaic: SKIPPED (pre-flight)
+  Launched S43b_no_cp on GPU 1 (PID 54407, free=32092MB, baseline=32092MB, log: /home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/stenosis_strategies/S43b_no_cp/worker.log)
+  (staggering 15s before next launch)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 0s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 5s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 10s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 15s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 20s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 25s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 30s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 35s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 40s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 45s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 50s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 55s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 60s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 65s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 70s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 75s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 80s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 85s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 90s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 95s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 100s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 105s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 110s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 115s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 120s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 125s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 130s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 135s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 140s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 145s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 150s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 155s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 160s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 165s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 170s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 175s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 180s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 185s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 190s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 195s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 200s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 205s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 210s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 215s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 220s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 225s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 230s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 235s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 240s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 245s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 250s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 255s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 260s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 265s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 270s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 275s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 280s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 285s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 290s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 295s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 300s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 305s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 310s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 315s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 320s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 325s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 330s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 335s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 340s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 345s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 350s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 355s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 360s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 365s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 370s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 375s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 380s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 385s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 390s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 395s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 400s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 405s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 410s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 415s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 420s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 425s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 430s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 435s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 440s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 445s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 450s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 455s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 460s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 465s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 470s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 475s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 480s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 485s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 490s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 495s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 500s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 505s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 510s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 515s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 520s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 525s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 530s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 535s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 540s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 545s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 550s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 555s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 560s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 565s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 570s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 575s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 580s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 585s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 590s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 595s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [4065298] (waited 600s / 600s)
+  [GPU 0] SKIPPING S43c_no_both: timeout after 600s — 1 lingering compute PID(s): [4065298]
+  [2/3] [GPU 0] S43c_no_both: SKIPPED (pre-flight)
+  [3/3] [GPU 1] S43b_no_cp: OK
+    [GPU 1] released: idle (free=32092MB)
+
+====================================================================================================
+STENOSIS IMPROVEMENT STRATEGIES — COMPARISON
+====================================================================================================
+
+Name                         Status    Hours    mAP50       F1   Syn mAP   Sten AP   Sten F1
+----------------------------------------------------------------------------------------------------
+S43a_no_mosaic               FAIL        0.0        —        —         —         —         —
+S43c_no_both                 FAIL        0.0        —        —         —         —         —
+S43b_no_cp                   OK          0.4   0.7215   0.6981    0.7494    0.3869    0.4280
+
+====================================================================================================
+PER-CLASS F1 (Test)
+====================================================================================================
+Name                                1       11       13       16        2        3        4        5        6        7        8        9 stenosis
+-------------------------------------------------------------------------------------------------------------------------------------------------
+S43b_no_cp                     0.8289   0.8728   0.4175   0.5858   0.7499   0.8428   0.8089   0.8589   0.6825   0.7300   0.7725   0.4475   0.4280
+
+  S15_multiseed_summary written (n=3):
+    syntax mAP50  : 0.7375 ± 0.0102
+    stenosis AP50 : 0.3466 ± 0.0306
+    stenosis F1   : 0.4177 ± 0.0265
+    overall F1    : 0.6999 ± 0.0083
+
+  S18_multiseed_summary written (n=2):
+    syntax mAP50  : 0.7414 ± 0.0109
+    stenosis AP50 : 0.3620 ± 0.0105
+    stenosis F1   : 0.4375 ± 0.0246
+    overall F1    : 0.7029 ± 0.0096
+
+  S27_multiseed_summary written (n=2):
+    syntax mAP50  : 0.7445 ± 0.0069
+    stenosis AP50 : 0.3775 ± 0.0081
+    stenosis F1   : 0.4422 ± 0.0115
+    overall F1    : 0.7004 ± 0.0027
+
+====================================================================================================
+ALL EXPERIMENTS COMPLETE (0.5h wall time)
+Results saved: /home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/stenosis_strategies/strategy_results.json
+  (merged with 43 existing entries, total 46 entries)
+  1 succeeded, 2 failed
+  Failed experiments:
+    S43a_no_mosaic: Pre-flight GPU idle check failed: timeout after 600s — 1 lingering compute PID(s): [4065298]
+    S43c_no_both: Pre-flight GPU idle check failed: timeout after 600s — 1 lingering compute PID(s): [4065298]
+====================================================================================================

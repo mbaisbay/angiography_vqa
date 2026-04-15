@@ -1084,3 +1084,167 @@ Traceback (most recent call last):
   File "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/scripts/run_stenosis_strategies.py", line 2620, in _wait_for_gpu_free
     time.sleep(poll_interval_s)
 KeyboardInterrupt
+############################################################
+# Creating stratified splits (shared by all experiments)
+############################################################
+============================================================
+Creating stratified splits
+  Source: /home/c504-5090-x2/Documents/repos/angiography_vqa/arcade/submission
+  Output: /home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/stenosis_strategies/stratified_splits
+  Seed:   42
+============================================================
+
+────────────────────────────────────────────────────────────
+  Task: SYNTAX
+────────────────────────────────────────────────────────────
+  Pooled: 1500 images, 7816 annotations
+  Strata (5 groups):
+    dhigh_r0: 758 images
+    dhigh_r1: 331 images
+    dlow_r0: 8 images
+    dmed_r0: 394 images
+    dmed_r1: 9 images
+
+  Split sizes: train=999, val=200, test=301
+    train: 999 images, 5192 annotations
+    val: 200 images, 1042 annotations
+    test: 301 images, 1582 annotations
+
+────────────────────────────────────────────────────────────
+  Task: STENOSIS
+────────────────────────────────────────────────────────────
+  Pooled: 1500 images, 2417 annotations
+  Strata (7 groups):
+    dmulti_slarge: 70 images
+    dmulti_smedium: 246 images
+    dmulti_ssmall: 285 images
+    dnone_snone: 3 images
+    dsingle_slarge: 259 images
+    dsingle_smedium: 274 images
+    dsingle_ssmall: 363 images
+
+  Split sizes: train=998, val=201, test=301
+    train: 998 images, 1615 annotations
+      stenosis: 1615 instances, 1.62/img, mean_area=5055px
+    val: 201 images, 324 annotations
+      stenosis: 324 instances, 1.61/img, mean_area=5032px
+    test: 301 images, 478 annotations
+      stenosis: 478 instances, 1.59/img, mean_area=5298px
+
+============================================================
+Stratified splits saved to: /home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/stenosis_strategies/stratified_splits
+============================================================
+
+############################################################
+# Running 66 experiments on 6 GPUs
+#   Output: /home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/stenosis_strategies
+############################################################
+  advisory GPU 0: S0_baseline_fixed — Baseline with bug fixes (pooled counting + iter2 fix)
+  advisory GPU 1: S1_resolution_768 — Higher resolution training (768px)
+  advisory GPU 2: S2_loss_weights — Tuned loss weights (box=10, cls=1.0, dfl=2.0)
+  advisory GPU 3: S3_copypaste_oversample — Copy-paste augmentation + 2x stenosis oversampling
+  advisory GPU 4: S4_combined_best — Combined: 768px + loss weights + copy-paste + oversample
+  advisory GPU 5: S5_separate_stenosis — Separate dedicated stenosis model at 768px
+  advisory GPU 0: S6_vessel_guided_stenosis — Vessel-guided stenosis: syntax model masks the image, dedicated stenosis model trains on the vessel-restricted view (blackout + crop variants)
+  advisory GPU 1: S7_reproduce_old_s5 — Reproduce Old S5: original aug (degrees=20, scale=0.4, hsv_v=0.3) + copy_paste=0.3 on stenosis + 10x LR reduction (default in train.py)
+  advisory GPU 2: S8_mosaic_stenosis — Old S5 config + mosaic=0.8 on stenosis model only (syntax stays mosaic=0.0)
+  advisory GPU 3: S9_vessel_guided_all25 — Vessel-guided stenosis with ALL 25 syntax classes (min_count=0) + old S5 params
+  advisory GPU 4: S10a_vessel_filtered_stratified — Filter stenosis to vessel-interior only (stratified splits, all 25 syntax classes)
+  advisory GPU 5: S10b_vessel_filtered_original — Filter stenosis to vessel-interior only (original ARCADE splits, all 25 syntax classes)
+  advisory GPU 0: S11_stenosis_1024 — S8 recipe + stenosis model at 1024px (bigger objects → highest-priority gain)
+  advisory GPU 1: S12_stenosis_yolo11l — S8 recipe + yolo11l-seg (larger model) for stenosis; syntax stays yolo11m
+  advisory GPU 2: S13_mixup_mosaic_stack — S8 recipe + mixup=0.15 on stenosis (mixup + mosaic complementary regularisation)
+  advisory GPU 3: S15_s8_seed42 — S8 recipe with seed=42 (variance study)
+  advisory GPU 4: S15_s8_seed7 — S8 recipe with seed=7 (variance study)
+  advisory GPU 5: S15_s8_seed2024 — S8 recipe with seed=2024 (variance study)
+  advisory GPU 0: S16_mosaic_both — S8 + mosaic=0.5 on syntax too (stretch: test whether mosaic helps syntax too)
+  advisory GPU 1: S18_s12_seed42 — S12 (yolo11l-seg) recipe with seed=42 (Round 4 variance confirmation)
+  advisory GPU 2: S18_s12_seed7 — S12 (yolo11l-seg) recipe with seed=7 (Round 4 variance confirmation)
+  advisory GPU 3: S18_s12_seed2024 — S12 (yolo11l-seg) recipe with seed=2024 (Round 4 variance confirmation)
+  advisory GPU 4: S17_mosaic_crop_1024 — S8 mosaic + vessel-guided CROP + stenosis at 1024px (combines the two orthogonal Round 2 wins; highest-ceiling experiment)
+  advisory GPU 5: S19_syntax_yolo11l — yolo11l-seg on SYNTAX (capacity upgrade, the S12 move applied to syntax)
+  advisory GPU 0: S20_syntax_all25_eval12 — Train syntax on ALL 25 classes, evaluate mean only over kept-12 subset (exploits S9 per-class gains on classes 9/13/16)
+  advisory GPU 1: S21_syntax_max_capacity — Kitchen-sink syntax: yolo11l + imgsz 1024 + patience 50 + freeze 5 (max capacity & exposure)
+  advisory GPU 2: S22_syntax_yolo11l_all25 — S19 + S20 stack: yolo11l syntax trained on all 25 classes, eval on kept-12. Highest expected syntax gain this round.
+  advisory GPU 3: S23_syntax_1024 — Syntax at imgsz=1024 (more pixels for thin distal branches, yolo11m unchanged)
+  advisory GPU 4: S24_syntax_long — Longer syntax training: patience 50, freeze 5 (more unfrozen fine-tuning time)
+  advisory GPU 5: S25_cls_loss_2x — S8 recipe + cls loss weight 0.5 -> 2.0 on SYNTAX model. Targets class-confusion bottleneck on tail classes 9/13/16.
+  advisory GPU 0: S26_lesion_crops — S8 recipe + lesion-centric stenosis training. Train crops (256px, 3/lesion) blended with full images; val/test untouched. Attacks small-object bottleneck directly via effective-resolution upsampling.
+  advisory GPU 1: S27_sgd_optimizer — S8 recipe + SGD (lr=0.01, wd=0.0005) replacing AdamW. YOLO's native optimizer; ultralytics reports SGD +1-3pp over AdamW on segmentation.
+  advisory GPU 2: S28_sgd_cls075 — S27 SGD baseline + syntax cls=0.75
+  advisory GPU 3: S29_sgd_cls100 — S27 SGD baseline + syntax cls=1.0
+  advisory GPU 4: S30_sgd_cls125 — S27 SGD baseline + syntax cls=1.25
+  advisory GPU 5: S31_sgd_lr005 — S27 SGD + lr0=0.005 (half LR)
+  advisory GPU 0: S32_sgd_lr020 — S27 SGD + lr0=0.02 (double LR)
+  advisory GPU 1: S33_sgd_wd001 — S27 SGD + weight_decay=0.001 (2x default)
+  advisory GPU 2: S34_crops_sgd_long — S27 SGD + lesion crops (n=3, size=256) with longer training (epochs=250). Retries S26 on the hypothesis that crops were under-trained (4x more data, same epochs).
+  advisory GPU 3: S35_crops_sgd_tight — S27 SGD + lesion crops (n=2, size=320). Bigger crops, less duplication — keeps more anatomical context per sample.
+  advisory GPU 4: S36_sten_lr_half — S27 SGD, stenosis LR halved (0.005). Syntax stays at 0.01. Decoupled application of the Round 7 S31 finding.
+  advisory GPU 5: S37_sten_1024 — S27 SGD + stenosis imgsz=1024, batch=4. Never-run S11 idea on top of the proven SGD baseline — more pixels for the small-object head.
+  advisory GPU 0: S38_freeze_25 — S27 SGD + freeze_epochs=25 (vs 15 default). Longer head-only warmup before unfreezing the backbone. Untouched lever.
+  advisory GPU 1: S39_s27_seed42 — S27 SGD recipe, seed=42 (variance study)
+  advisory GPU 2: S40_s27_seed7 — S27 SGD recipe, seed=7 (variance study)
+  advisory GPU 3: S41_s27_seed2024 — S27 SGD recipe, seed=2024 (variance study)
+  advisory GPU 4: S42_sten_slow_1024 — S36 + S37 combined: S27 SGD base, stenosis at 1024px with halved LR (0.005). Stacks both Round 8 orthogonal bets if they win solo. Highest ceiling of Round 8.
+  advisory GPU 5: S43a_no_mosaic — S36 recipe minus mosaic (copy_paste stays 0.3). Ablation arm 1: does mosaic hurt stenosis?
+  advisory GPU 0: S43b_no_cp — S36 recipe minus copy_paste (mosaic stays 0.8). Ablation arm 2: does copy_paste hurt stenosis?
+  advisory GPU 1: S43c_no_both — S36 recipe minus BOTH mosaic and copy_paste (Medipixel-style conservative aug). Ablation arm 3 — the unified 'less-is-more' hypothesis.
+  advisory GPU 2: S44_ssass_port — Full port of Medipixel's SSASS supervised recipe (ARCADE 1st, F1=0.5699): stenosis at 640px, SGD lr=0.01, 300 epochs, no mosaic/cp, conservative geometric + HSV aug, patience=50. Target ≥0.52 stenosis F1. Overnight experiment.
+  advisory GPU 3: S45_clahe_both — S27 SGD + CLAHE preprocessing on BOTH syntax and stenosis datasets. Normalises local X-ray contrast so thin vessels in bright/dark regions become equally detectable. Used by YOLO-Angio (3rd place). Full training budget: 300 epochs, patience=50.
+  advisory GPU 4: S46_unsharp_stenosis — S27 SGD + unsharp mask aug on STENOSIS model only. Sharpens fine vessel-edge details (1-3px wide vessels at 512px) during training. Used explicitly by SSASS (1st) and the cross-task pseudo-label paper. Syntax stays unmodified. Full training: 300 epochs, patience=50.
+  advisory GPU 5: S47_clahe_unsharp_both — S27 SGD + CLAHE + unsharp mask stacked on BOTH models. Stacks the two orthogonal preprocessing gains: CLAHE fixes global contrast variation, unsharp sharpens local vessel edges. If both are additive this is the ceiling of preprocessing-only improvement. Full training: 300 epochs, patience=50.
+  advisory GPU 0: S48_clahe_ssass_aug — S27 SGD + CLAHE on both + full SSASS aug on stenosis: no mosaic/cp, SSASS geometric+HSV, 300 epochs. The most complete attempt to replicate Medipixel's winning recipe on our pipeline. CLAHE + SSASS aug is the stack nobody has tried. Highest-ceiling experiment of Round 10.
+  advisory GPU 1: S49_combined_sgd — Combined cross-task pipeline (run_pipeline.py) with S27 SGD best HPs: SGD lr=0.01, wd=0.0005, conservative aug (deg=20, scale=0.4, hsv_v=0.3, no mosaic/cp), 768px, 300 epochs, patience=50. First test of the combined anatomical-constraint pipeline with good HPs. Target: stenosis F1 > 0.46 (beat separate S27).
+  advisory GPU 2: S50_combined_sgd_clahe — S49 combined pipeline + CLAHE preprocessing on both syntax and stenosis image sets. Full stack: cross-task anatomical constraints + CLAHE vessel contrast enhancement + SGD best HPs. Highest-ceiling experiment: if combined > separate AND CLAHE helps, this is the path to 0.57 stenosis F1.
+  advisory GPU 3: S51_s31_clahe — S31 best recipe + CLAHE preprocessing on stenosis images. CLAHE (clip=2, tile=8) applied at dataset-prep time before training. NEVER tried in 50 experiments. ARCADE organizers showed +2pp Dice from CLAHE on their YOLOv8x baseline. Base: SGD lr=0.005, mosaic=0.8, cp=0.3, 768px, yolo11m.
+  advisory GPU 4: S52_s31_tophat_clahe — S31 best recipe + white top-hat + CLAHE (exact ARCADE organizer preprocessing: morphological top-hat on neg + CLAHE). The organizers' own best-performing preprocessing pipeline, never applied to our training. S31 base config.
+  advisory GPU 5: S53_ssass_768px — SSASS aug recipe at 768px (fixing S44 which used 640px and early-stopped after ~30 epochs). degrees=30, translate=0.3, perspective=0.001, HSV aug, no mosaic/cp. Plus SGD lr=0.005 (S31 finding). 768px gives stenoses 3-5px width vs 2-4px at 640px — aug survives better.
+  advisory GPU 0: S54_s43b_clahe — S43b aug (mosaic=0.8, no copy_paste) + CLAHE preprocessing + lr=0.005. Tests whether CLAHE can compensate for removing copy_paste. S43b alone = 0.4280; adding CLAHE targets 0.46+.
+  advisory GPU 1: S55_lr003 — Stenosis SGD lr=0.003 — next step below S31's best 0.005. LR trend: 0.02->0.41, 0.01->0.43, 0.005->0.46. If monotonic, 0.003 projects to 0.48+. Same aug as S31 (mosaic=0.8, cp=0.3).
+  advisory GPU 2: S56_yolo11x_stenosis — yolo11x-seg for stenosis + S31 best HPs. yolo11l gave same F1 as yolo11m within noise. yolo11x is 2x more params — may finally provide extra capacity benefit on this tiny-object detection task. batch=2 for 768px + x model.
+  advisory GPU 3: H1_fulldata_best_hps — HYPOTHESIS 1: Train on all 1200 images (ARCADE train+val merged), eval on official 300-image test. Replicates what competition winners did at final submission. S54 config: CLAHE on stenosis, mosaic=0.8, no cp, SGD lr=0.005 stenosis / lr=0.01 syntax, 300ep, patience=50. Expected: syntax ~0.78, stenosis ~0.50, mean F1 ~0.76+
+  advisory GPU 4: H2_fulldata_ssass_pseudolabels — HYPOTHESIS 2: H1 + SSASS reverse pseudo-labels. After 1200-image training, run stenosis model on syntax images (conf>=0.40) to find unlabeled stenoses. Retrain on expanded dataset (1200 GT + ~400 pseudo). This is the core SSASS (1st place) technique. Expected: stenosis F1 ~0.52-0.55
+  advisory GPU 5: H3_fulldata_ssass_clahe_ensemble — HYPOTHESIS 3: H2 + CLAHE on syntax + 2-seed ensemble. Full winner-replication stack: 1200 train + SSASS pseudo-labels + CLAHE on both syntax and stenosis + 2-seed ensemble (seeds 42, 7). Highest expected performance. Expected: syntax ~0.80+, stenosis ~0.54+
+
+  Initial GPU memory (nvidia-smi):
+    GPU 0: OK free=31463 MB
+    GPU 1: OK free=32092 MB
+    GPU 2: nvidia-smi unavailable (proceeding blind)
+    GPU 3: nvidia-smi unavailable (proceeding blind)
+    GPU 4: nvidia-smi unavailable (proceeding blind)
+    GPU 5: nvidia-smi unavailable (proceeding blind)
+
+  Startup orphan sweep (kill ON):
+    [GPU 0] PID 563640 (foreign, none): /usr/share/rustdesk/rustdesk --server
+
+Scheduling 66 experiments
+  GPU pool            : [0, 1, 2, 3, 4, 5]
+  per-GPU baseline    : {0: '31463MB', 1: '32092MB', 2: '-1MB', 3: '-1MB', 4: '-1MB', 5: '-1MB'}
+  max_concurrent      : 6
+  stagger_seconds     : 15
+  min_free_mb         : 2000
+  idle tolerance (MB) : 500
+  idle timeout (s)    : 600
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [563640] (waited 0s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [563640] (waited 5s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [563640] (waited 10s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [563640] (waited 15s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [563640] (waited 20s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [563640] (waited 25s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [563640] (waited 30s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [563640] (waited 35s / 600s)
+Traceback (most recent call last):
+  File "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/scripts/run_stenosis_strategies_v2.py", line 4804, in <module>
+    main()
+  File "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/scripts/run_stenosis_strategies_v2.py", line 4717, in main
+    results = launch_experiments_parallel(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/scripts/run_stenosis_strategies_v2.py", line 4243, in launch_experiments_parallel
+    job = _spawn(exp, gpu_id)
+          ^^^^^^^^^^^^^^^^^^^
+  File "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/scripts/run_stenosis_strategies_v2.py", line 4158, in _spawn
+    ok, reason = _wait_for_gpu_free(
+                 ^^^^^^^^^^^^^^^^^^^
+  File "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/scripts/run_stenosis_strategies_v2.py", line 3992, in _wait_for_gpu_free
+    time.sleep(poll_interval_s)
+KeyboardInterrupt

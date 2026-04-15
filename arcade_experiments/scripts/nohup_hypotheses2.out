@@ -1,0 +1,68 @@
+nohup: ignoring input
+[SKIP] Stratified splits (--skip-splits)
+
+############################################################
+# Running 1 experiments on 1 GPUs
+#   Output: /home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/stenosis_strategies
+############################################################
+  advisory GPU 1: H2_fulldata_ssass_pseudolabels — HYPOTHESIS 2: H1 + SSASS reverse pseudo-labels. After 1200-image training, run stenosis model on syntax images (conf>=0.40) to find unlabeled stenoses. Retrain on expanded dataset (1200 GT + ~400 pseudo). This is the core SSASS (1st place) technique. Expected: stenosis F1 ~0.52-0.55
+
+  Initial GPU memory (nvidia-smi):
+    GPU 1: OK free=32092 MB
+  Permanently excluding PIDs from idle check: {495827}
+
+Scheduling 1 experiments
+  GPU pool            : [1]
+  per-GPU baseline    : {1: '32092MB'}
+  max_concurrent      : 1
+  stagger_seconds     : 15
+  min_free_mb         : 0
+  idle tolerance (MB) : 500
+  idle timeout (s)    : 600
+  Launched H2_fulldata_ssass_pseudolabels on GPU 1 (PID 589678, free=32092MB, baseline=32092MB, log: /home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/stenosis_strategies/H2_fulldata_ssass_pseudolabels/worker.log)
+  [1/1] [GPU 1] H2_fulldata_ssass_pseudolabels: OK
+    [GPU 1] released: idle (free=32092MB)
+
+====================================================================================================
+STENOSIS IMPROVEMENT STRATEGIES — COMPARISON
+====================================================================================================
+
+Name                         Status    Hours    mAP50       F1   Syn mAP   Sten AP   Sten F1
+----------------------------------------------------------------------------------------------------
+H2_fulldata_ssass_pseudolabels FAIL        0.5        —        —         —         —         —
+
+====================================================================================================
+PER-CLASS F1 (Test)
+====================================================================================================
+
+  S15_multiseed_summary written (n=3):
+    syntax mAP50  : 0.7375 ± 0.0102
+    stenosis AP50 : 0.3466 ± 0.0306
+    stenosis F1   : 0.4177 ± 0.0265
+    overall F1    : 0.6999 ± 0.0083
+
+  S18_multiseed_summary written (n=2):
+    syntax mAP50  : 0.7414 ± 0.0109
+    stenosis AP50 : 0.3620 ± 0.0105
+    stenosis F1   : 0.4375 ± 0.0246
+    overall F1    : 0.7029 ± 0.0096
+
+  S27_multiseed_summary written (n=2):
+    syntax mAP50  : 0.7445 ± 0.0069
+    stenosis AP50 : 0.3775 ± 0.0081
+    stenosis F1   : 0.4422 ± 0.0115
+    overall F1    : 0.7004 ± 0.0027
+
+====================================================================================================
+ALL EXPERIMENTS COMPLETE (0.5h wall time)
+Results saved: /home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/stenosis_strategies/strategy_results.json
+  (merged with 55 existing entries, total 55 entries)
+  0 succeeded, 1 failed
+  Failed experiments:
+    H2_fulldata_ssass_pseudolabels: CUDA error: invalid device ordinal
+GPU device may be out of range, do you have enough GPUs?
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+====================================================================================================
