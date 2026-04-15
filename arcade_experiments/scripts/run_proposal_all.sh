@@ -119,14 +119,14 @@ wait_for_gpus_idle 3000 300
 
 # F-4: weighted F1 report over all existing runs
 run_step "F-4 compute_weighted_f1" \
-    python compute_weighted_f1.py \
+    python -u compute_weighted_f1.py \
         --results "$RESULTS_DIR/strategy_results.json" \
         --output "$RESULTS_DIR/weighted_f1_report.json"
 
 # F-2: label audit (class 9 / 9a contamination check)
 if [[ -d "$RESULTS_DIR/data/S54_s43b_clahe" ]]; then
     run_step "F-2 audit_labels" \
-        python audit_labels.py \
+        python -u audit_labels.py \
             --arcade-root "$ARCADE_ROOT" \
             --data-dir "$RESULTS_DIR/data/S54_s43b_clahe" \
             --output "$RESULTS_DIR/label_audit_S54.json"
@@ -139,7 +139,7 @@ wait_for_gpus_idle 5000 300
 # A-1: per-class confidence sweep (syntax + stenosis)
 if [[ -n "$S54_SYN" && -f "$S54_SYN_YAML" ]]; then
     run_step "A-1 conf sweep syntax" \
-        python sweep_confidence.py \
+        python -u sweep_confidence.py \
             --model "$S54_SYN" \
             --data-yaml "$S54_SYN_YAML" \
             --imgsz 768 --device 0 \
@@ -148,7 +148,7 @@ fi
 if [[ -n "$S54_STN" && -f "$S54_STN_YAML" ]]; then
     wait_for_gpus_idle 5000 300
     run_step "A-1 conf sweep stenosis" \
-        python sweep_confidence.py \
+        python -u sweep_confidence.py \
             --model "$S54_STN" \
             --data-yaml "$S54_STN_YAML" \
             --imgsz 768 --device 0 \
@@ -159,7 +159,7 @@ fi
 if [[ -n "$S54_STN" && -f "$S54_STN_YAML" ]]; then
     wait_for_gpus_idle 5000 300
     run_step "A-2 tile inference" \
-        python tile_inference_stenosis.py \
+        python -u tile_inference_stenosis.py \
             --model "$S54_STN" \
             --data-yaml "$S54_STN_YAML" \
             --split test \
@@ -172,7 +172,7 @@ fi
 if [[ -n "$S54_STN" && -f "$S54_STN_YAML" ]]; then
     wait_for_gpus_idle 5000 300
     run_step "A-4 small-CC post-processing" \
-        python -c "
+        python -u -c "
 import sys; sys.path.insert(0,'.')
 import json
 from small_cc_postprocess import evaluate_with_filter_cpu
@@ -191,7 +191,7 @@ fi
 if [[ -n "$S54_SYN" && -f "$S54_SYN_YAML" ]]; then
     wait_for_gpus_idle 5000 300
     run_step "A-5 isotonic calibration syntax" \
-        python calibrate_scores.py \
+        python -u calibrate_scores.py \
             --model "$S54_SYN" \
             --data-yaml "$S54_SYN_YAML" \
             --imgsz 768 --device 0 \
@@ -232,11 +232,27 @@ PHASE_2_3_EXPERIMENTS=(
 
 wait_for_gpus_idle 8000 600
 
+# Auto-detect foreign compute processes (rustdesk, X server, etc.) so
+# the scheduler doesn't block waiting for them. These PIDs are passed
+# to --exclude-pids so they never count as lingering workers.
+FOREIGN_PIDS=""
+if command -v nvidia-smi >/dev/null 2>&1; then
+    FOREIGN_PIDS=$(nvidia-smi --query-compute-apps=pid,process_name --format=csv,noheader 2>/dev/null \
+        | awk -F',' '{gsub(/ /, "", $1); print $1}' | paste -sd, -)
+fi
+EXCLUDE_PID_ARGS=()
+if [[ -n "$FOREIGN_PIDS" ]]; then
+    log "  Detected foreign GPU PIDs (will be excluded): $FOREIGN_PIDS"
+    EXCLUDE_PID_ARGS=(--exclude-pids "$FOREIGN_PIDS")
+fi
+
 run_step "PHASE 2/3 scheduler" \
-    python run_stenosis_strategies_v2.py \
+    python -u run_stenosis_strategies_v2.py \
         --experiments "${PHASE_2_3_EXPERIMENTS[@]}" \
         --arcade-root "$ARCADE_ROOT" \
         --gpus "$GPUS" \
+        --min-free-mb 1000 \
+        "${EXCLUDE_PID_ARGS[@]}" \
         --skip-splits
 
 # ══════════════════════════════════════════════════════════════════
@@ -252,11 +268,25 @@ PHASE_4_EXPERIMENTS=(
 
 wait_for_gpus_idle 8000 600
 
+# Re-detect foreign PIDs before Phase 4 in case new ones appeared.
+FOREIGN_PIDS=""
+if command -v nvidia-smi >/dev/null 2>&1; then
+    FOREIGN_PIDS=$(nvidia-smi --query-compute-apps=pid,process_name --format=csv,noheader 2>/dev/null \
+        | awk -F',' '{gsub(/ /, "", $1); print $1}' | paste -sd, -)
+fi
+EXCLUDE_PID_ARGS=()
+if [[ -n "$FOREIGN_PIDS" ]]; then
+    log "  Detected foreign GPU PIDs (will be excluded): $FOREIGN_PIDS"
+    EXCLUDE_PID_ARGS=(--exclude-pids "$FOREIGN_PIDS")
+fi
+
 run_step "PHASE 4 scheduler" \
-    python run_stenosis_strategies_v2.py \
+    python -u run_stenosis_strategies_v2.py \
         --experiments "${PHASE_4_EXPERIMENTS[@]}" \
         --arcade-root "$ARCADE_ROOT" \
         --gpus "$GPUS" \
+        --min-free-mb 1000 \
+        "${EXCLUDE_PID_ARGS[@]}" \
         --skip-splits
 
 log "PHASE 2/3/4 finished"
@@ -287,7 +317,7 @@ done
 if [[ ${#ENSEMBLE_SYNTAX[@]} -ge 2 && -f "$S54_SYN_YAML" ]]; then
     wait_for_gpus_idle 5000 300
     run_step "A-6 WBF syntax ensemble (${#ENSEMBLE_SYNTAX[@]} models)" \
-        python multiseed_wbf.py \
+        python -u multiseed_wbf.py \
             --models "${ENSEMBLE_SYNTAX[@]}" \
             --data-yaml "$S54_SYN_YAML" \
             --split test --imgsz 768 --device 0 \
@@ -298,7 +328,7 @@ fi
 if [[ ${#ENSEMBLE_STENOSIS[@]} -ge 2 && -f "$S54_STN_YAML" ]]; then
     wait_for_gpus_idle 5000 300
     run_step "A-6 WBF stenosis ensemble (${#ENSEMBLE_STENOSIS[@]} models)" \
-        python multiseed_wbf.py \
+        python -u multiseed_wbf.py \
             --models "${ENSEMBLE_STENOSIS[@]}" \
             --data-yaml "$S54_STN_YAML" \
             --split test --imgsz 768 --device 0 \
