@@ -11714,9 +11714,302 @@
     "name": "E4_cross_task_pl",
     "gpu": 1,
     "description": "Cross-Task Pseudo-Label (4th place syntax): Stage1 train syntax (1000) with CLAHE+median blur, Stage2 pseudo-label 1000 stenosis images, Stage3 train syntax on combined 2000 with unsharp mask aug. Eval on 300 syntax test. Original 1000/200 splits (NOT fulldata).",
-    "elapsed_hours": 0.43,
-    "status": "failed",
-    "error": "\u001b[34m\u001b[1mval: \u001b[0mError loading data from /home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/stenosis_strategies/E4_cross_task_pl/combined_syntax_pl/images/val\nSee https://docs.ultralytics.com/datasets for dataset formatting guidance.",
-    "traceback": "Traceback (most recent call last):\n  File \"/home/c504-5090-x2/Documents/repos/angiography_vqa/venv/lib/python3.12/site-packages/ultralytics/data/base.py\", line 179, in get_img_files\n    assert im_files, f\"{self.prefix}No images found in {img_path}. {FORMATS_HELP_MSG}\"\n           ^^^^^^^^\nAssertionError: \u001b[34m\u001b[1mval: \u001b[0mNo images found in /home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/stenosis_strategies/E4_cross_task_pl/combined_syntax_pl/images/val. Supported formats are:\nimages: {'mpo', 'heic', 'tiff', 'webp', 'tif', 'avif', 'jpg', 'heif', 'jpeg2000', 'dng', 'bmp', 'png', 'jp2', 'jpeg'}\nvideos: {'asf', 'mp4', 'ts', 'mpg', 'gif', 'webm', 'wmv', 'mkv', 'm4v', 'mov', 'mpeg', 'avi'}\n\nThe above exception was the direct cause of the following exception:\n\nTraceback (most recent call last):\n  File \"/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/scripts/run_stenosis_strategies_v2.py\", line 4508, in _run_single_worker_script\n    metrics = run_cross_task_pl(\n              ^^^^^^^^^^^^^^^^^^\n  File \"/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/scripts/run_stenosis_strategies_v2.py\", line 4398, in run_cross_task_pl\n    stage3_weights = train_two_stage(\n                     ^^^^^^^^^^^^^^^^\n  File \"/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/scripts/train.py\", line 119, in train_two_stage\n    model.train(**stage_a_args)\n  File \"/home/c504-5090-x2/Documents/repos/angiography_vqa/venv/lib/python3.12/site-packages/ultralytics/engine/model.py\", line 788, in train\n    self.trainer.train()\n  File \"/home/c504-5090-x2/Documents/repos/angiography_vqa/venv/lib/python3.12/site-packages/ultralytics/engine/trainer.py\", line 246, in train\n    self._do_train()\n  File \"/home/c504-5090-x2/Documents/repos/angiography_vqa/venv/lib/python3.12/site-packages/ultralytics/engine/trainer.py\", line 368, in _do_train\n    self._setup_train()\n  File \"/home/c504-5090-x2/Documents/repos/angiography_vqa/venv/lib/python3.12/site-packages/ultralytics/engine/trainer.py\", line 350, in _setup_train\n    self._build_train_pipeline()\n  File \"/home/c504-5090-x2/Documents/repos/angiography_vqa/venv/lib/python3.12/site-packages/ultralytics/engine/trainer.py\", line 275, in _build_train_pipeline\n    self.test_loader = self.get_dataloader(\n                       ^^^^^^^^^^^^^^^^^^^^\n  File \"/home/c504-5090-x2/Documents/repos/angiography_vqa/venv/lib/python3.12/site-packages/ultralytics/models/yolo/detect/train.py\", line 93, in get_dataloader\n    dataset = self.build_dataset(dataset_path, mode, batch_size)\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/c504-5090-x2/Documents/repos/angiography_vqa/venv/lib/python3.12/site-packages/ultralytics/models/yolo/detect/train.py\", line 77, in build_dataset\n    return build_yolo_dataset(self.args, img_path, batch, self.data, mode=mode, rect=mode == \"val\", stride=gs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/c504-5090-x2/Documents/repos/angiography_vqa/venv/lib/python3.12/site-packages/ultralytics/data/build.py\", line 236, in build_yolo_dataset\n    return dataset(\n           ^^^^^^^^\n  File \"/home/c504-5090-x2/Documents/repos/angiography_vqa/venv/lib/python3.12/site-packages/ultralytics/data/dataset.py\", line 88, in __init__\n    super().__init__(*args, channels=self.data.get(\"channels\", 3), **kwargs)\n  File \"/home/c504-5090-x2/Documents/repos/angiography_vqa/venv/lib/python3.12/site-packages/ultralytics/data/base.py\", line 117, in __init__\n    self.im_files = self.get_img_files(self.img_path)\n                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/c504-5090-x2/Documents/repos/angiography_vqa/venv/lib/python3.12/site-packages/ultralytics/data/base.py\", line 181, in get_img_files\n    raise FileNotFoundError(f\"{self.prefix}Error loading data from {img_path}\\n{HELP_URL}\") from e\nFileNotFoundError: \u001b[34m\u001b[1mval: \u001b[0mError loading data from /home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/stenosis_strategies/E4_cross_task_pl/combined_syntax_pl/images/val\nSee https://docs.ultralytics.com/datasets for dataset formatting guidance.\n"
+    "elapsed_hours": 1.19,
+    "status": "success",
+    "metrics": {
+      "stage1_syntax_test": {
+        "split": "test",
+        "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/stenosis_strategies/E4_cross_task_pl/stage1/syntax_stage1_best.pt",
+        "mAP50": 0.6311,
+        "mAP50_95": 0.2493,
+        "precision": 0.6378,
+        "recall": 0.6209,
+        "per_class": {
+          "1": {
+            "ap50": 0.7477,
+            "precision": 0.613,
+            "recall": 0.792,
+            "f1": 0.6911
+          },
+          "2": {
+            "ap50": 0.7283,
+            "precision": 0.6633,
+            "recall": 0.65,
+            "f1": 0.6566
+          },
+          "3": {
+            "ap50": 0.7037,
+            "precision": 0.7207,
+            "recall": 0.67,
+            "f1": 0.6944
+          },
+          "4": {
+            "ap50": 0.5628,
+            "precision": 0.7055,
+            "recall": 0.5,
+            "f1": 0.5852
+          },
+          "5": {
+            "ap50": 0.8918,
+            "precision": 0.9022,
+            "recall": 0.8046,
+            "f1": 0.8506
+          },
+          "6": {
+            "ap50": 0.735,
+            "precision": 0.7002,
+            "recall": 0.6755,
+            "f1": 0.6876
+          },
+          "7": {
+            "ap50": 0.6216,
+            "precision": 0.5891,
+            "recall": 0.6867,
+            "f1": 0.6342
+          },
+          "8": {
+            "ap50": 0.4999,
+            "precision": 0.5408,
+            "recall": 0.6,
+            "f1": 0.5689
+          },
+          "9": {
+            "ap50": 0.2057,
+            "precision": 0.3398,
+            "recall": 0.2727,
+            "f1": 0.3026
+          },
+          "11": {
+            "ap50": 0.8546,
+            "precision": 0.7428,
+            "recall": 0.8253,
+            "f1": 0.7819
+          },
+          "13": {
+            "ap50": 0.4357,
+            "precision": 0.5577,
+            "recall": 0.4273,
+            "f1": 0.4839
+          },
+          "16": {
+            "ap50": 0.5861,
+            "precision": 0.5788,
+            "recall": 0.5465,
+            "f1": 0.5622
+          }
+        },
+        "syntax_mAP50": 0.6311
+      },
+      "stage3_syntax_test": {
+        "split": "test",
+        "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/stenosis_strategies/E4_cross_task_pl/stage3/syntax_stage3_best.pt",
+        "mAP50": 0.5925,
+        "mAP50_95": 0.2342,
+        "precision": 0.6287,
+        "recall": 0.5416,
+        "per_class": {
+          "1": {
+            "ap50": 0.687,
+            "precision": 0.6197,
+            "recall": 0.7497,
+            "f1": 0.6785
+          },
+          "2": {
+            "ap50": 0.7289,
+            "precision": 0.7302,
+            "recall": 0.5683,
+            "f1": 0.6392
+          },
+          "3": {
+            "ap50": 0.681,
+            "precision": 0.5714,
+            "recall": 0.72,
+            "f1": 0.6372
+          },
+          "4": {
+            "ap50": 0.5464,
+            "precision": 0.6099,
+            "recall": 0.5543,
+            "f1": 0.5808
+          },
+          "5": {
+            "ap50": 0.8731,
+            "precision": 0.9131,
+            "recall": 0.7282,
+            "f1": 0.8102
+          },
+          "6": {
+            "ap50": 0.7069,
+            "precision": 0.7596,
+            "recall": 0.5266,
+            "f1": 0.622
+          },
+          "7": {
+            "ap50": 0.5774,
+            "precision": 0.6148,
+            "recall": 0.494,
+            "f1": 0.5478
+          },
+          "8": {
+            "ap50": 0.4128,
+            "precision": 0.3905,
+            "recall": 0.4565,
+            "f1": 0.4209
+          },
+          "9": {
+            "ap50": 0.1736,
+            "precision": 0.2663,
+            "recall": 0.2121,
+            "f1": 0.2361
+          },
+          "11": {
+            "ap50": 0.8111,
+            "precision": 0.8343,
+            "recall": 0.7195,
+            "f1": 0.7727
+          },
+          "13": {
+            "ap50": 0.3633,
+            "precision": 0.6728,
+            "recall": 0.2364,
+            "f1": 0.3499
+          },
+          "16": {
+            "ap50": 0.5491,
+            "precision": 0.562,
+            "recall": 0.5341,
+            "f1": 0.5477
+          }
+        },
+        "syntax_mAP50": 0.5926
+      },
+      "pseudo_stats": {
+        "images_processed": 1000,
+        "images_with_predictions": 947,
+        "total_pseudo_instances": 2895,
+        "conf_threshold": 0.5,
+        "per_class_counts": {
+          "9": 294,
+          "7": 230,
+          "5": 428,
+          "4": 486,
+          "8": 147,
+          "2": 182,
+          "11": 141,
+          "0": 280,
+          "6": 284,
+          "10": 79,
+          "1": 188,
+          "3": 156
+        }
+      },
+      "final_test": {
+        "split": "test",
+        "mAP50": 0.5926,
+        "mean_f1": 0.5703,
+        "per_class": {
+          "1": {
+            "ap50": 0.687,
+            "precision": 0.6197,
+            "recall": 0.7497,
+            "f1": 0.6785
+          },
+          "2": {
+            "ap50": 0.7289,
+            "precision": 0.7302,
+            "recall": 0.5683,
+            "f1": 0.6392
+          },
+          "3": {
+            "ap50": 0.681,
+            "precision": 0.5714,
+            "recall": 0.72,
+            "f1": 0.6372
+          },
+          "4": {
+            "ap50": 0.5464,
+            "precision": 0.6099,
+            "recall": 0.5543,
+            "f1": 0.5808
+          },
+          "5": {
+            "ap50": 0.8731,
+            "precision": 0.9131,
+            "recall": 0.7282,
+            "f1": 0.8102
+          },
+          "6": {
+            "ap50": 0.7069,
+            "precision": 0.7596,
+            "recall": 0.5266,
+            "f1": 0.622
+          },
+          "7": {
+            "ap50": 0.5774,
+            "precision": 0.6148,
+            "recall": 0.494,
+            "f1": 0.5478
+          },
+          "8": {
+            "ap50": 0.4128,
+            "precision": 0.3905,
+            "recall": 0.4565,
+            "f1": 0.4209
+          },
+          "9": {
+            "ap50": 0.1736,
+            "precision": 0.2663,
+            "recall": 0.2121,
+            "f1": 0.2361
+          },
+          "11": {
+            "ap50": 0.8111,
+            "precision": 0.8343,
+            "recall": 0.7195,
+            "f1": 0.7727
+          },
+          "13": {
+            "ap50": 0.3633,
+            "precision": 0.6728,
+            "recall": 0.2364,
+            "f1": 0.3499
+          },
+          "16": {
+            "ap50": 0.5491,
+            "precision": 0.562,
+            "recall": 0.5341,
+            "f1": 0.5477
+          }
+        },
+        "syntax_mAP50": 0.5926,
+        "stenosis_AP50": 0,
+        "precision": 0.6287,
+        "recall": 0.5416,
+        "mAP50_95": 0,
+        "training_note": "E4 Cross-Task PL: stage1 1000 syntax -> pseudo-label 1000 stenosis -> stage3 combined 2000 with unsharp",
+        "stage1_weights": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/stenosis_strategies/E4_cross_task_pl/stage1/syntax_stage1_best.pt",
+        "stage3_weights": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/stenosis_strategies/E4_cross_task_pl/stage3/syntax_stage3_best.pt",
+        "pseudo_stats": {
+          "images_processed": 1000,
+          "images_with_predictions": 947,
+          "total_pseudo_instances": 2895,
+          "conf_threshold": 0.5,
+          "per_class_counts": {
+            "9": 294,
+            "7": 230,
+            "5": 428,
+            "4": 486,
+            "8": 147,
+            "2": 182,
+            "11": 141,
+            "0": 280,
+            "6": 284,
+            "10": 79,
+            "1": 188,
+            "3": 156
+          }
+        }
+      }
+    }
   }
 ]
