@@ -4312,7 +4312,10 @@ def run_cross_task_pl(exp: dict, arcade_root: Path, splits_dir: Path,
     # NOTE: use original arcade_root (1000/200/300), NOT fulldata
     data_dir = output_dir / "data" / name
     data_prep(arcade_root, data_dir, min_count=300, splits_dir=None)
-    syntax_dir = data_dir / "syntax"
+    # data_prep writes filtered syntax under `syntax_filtered/` (this is
+    # what syntax_only.yaml points at). Do NOT use `data_dir/"syntax"` —
+    # that directory does not exist.
+    syntax_dir = data_dir / "syntax_filtered"
     stenosis_dir = data_dir / "stenosis"
 
     # ── Preprocessing: CLAHE + median blur on syntax splits ──────────
