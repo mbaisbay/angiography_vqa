@@ -11211,5 +11211,512 @@
         "clahe_tile_size": 8
       }
     }
+  },
+  {
+    "name": "E1_ssass_faithful",
+    "gpu": 0,
+    "description": "Faithful SSASS (1st place): yolov8m-seg, SGD, conservative augs (no mosaic/flips), Bezier synthetic vessel aug, pseudo-label iter at conf=0.5, retrain from scratch, small-CC post-processing. Expected: stenosis F1 ~0.55.",
+    "elapsed_hours": 1.23,
+    "status": "success",
+    "metrics": {
+      "stenosis_model_test": {
+        "split": "test",
+        "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/stenosis_strategies/E1_ssass_faithful/pass2/stenosis_pass2_best.pt",
+        "mAP50": 0.3393,
+        "mAP50_95": 0.1089,
+        "precision": 0.343,
+        "recall": 0.4845,
+        "per_class": {
+          "stenosis": {
+            "ap50": 0.3393,
+            "precision": 0.343,
+            "recall": 0.4845,
+            "f1": 0.4017
+          }
+        },
+        "stenosis_AP50": 0.3393
+      },
+      "final_test": {
+        "split": "test",
+        "mAP50": 0.3393,
+        "mean_f1": 0.4017,
+        "per_class": {
+          "stenosis": {
+            "ap50": 0.3393,
+            "precision": 0.343,
+            "recall": 0.4845,
+            "f1": 0.4017
+          }
+        },
+        "syntax_mAP50": 0,
+        "stenosis_AP50": 0.3393,
+        "precision": 0.343,
+        "recall": 0.4845,
+        "mAP50_95": 0,
+        "training_note": "E1 SSASS faithful: 1200 GT + pseudo-labeled syntax",
+        "stenosis_model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/stenosis_strategies/E1_ssass_faithful/pass2/stenosis_pass2_best.pt",
+        "pseudo_stats": {
+          "images_processed": 1000,
+          "images_with_predictions": 210,
+          "total_pseudo_instances": 255,
+          "conf_threshold": 0.5,
+          "imgsz": 768
+        },
+        "bezier_stats": {
+          "original": 1000,
+          "augmented": 408,
+          "total": 1408,
+          "fraction": 0.4
+        },
+        "small_cc_report": {
+          "error": "CUDA out of memory. Tried to allocate 7.91 GiB. GPU 0 has a total capacity of 31.33 GiB of which 7.48 GiB is free. Including non-PyTorch memory, this process has 22.80 GiB memory in use. Process 96064 has 557.95 MiB memory in use. Of the allocated memory 13.81 GiB is allocated by PyTorch, and 8.34 GiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://docs.pytorch.org/docs/stable/notes/cuda.html#optimizing-memory-usage-with-pytorch-cuda-alloc-conf)"
+        }
+      },
+      "pseudo_stats": {
+        "images_processed": 1000,
+        "images_with_predictions": 210,
+        "total_pseudo_instances": 255,
+        "conf_threshold": 0.5,
+        "imgsz": 768
+      },
+      "bezier_stats": {
+        "original": 1000,
+        "augmented": 408,
+        "total": 1408,
+        "fraction": 0.4
+      },
+      "small_cc_report": {
+        "error": "CUDA out of memory. Tried to allocate 7.91 GiB. GPU 0 has a total capacity of 31.33 GiB of which 7.48 GiB is free. Including non-PyTorch memory, this process has 22.80 GiB memory in use. Process 96064 has 557.95 MiB memory in use. Of the allocated memory 13.81 GiB is allocated by PyTorch, and 8.34 GiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://docs.pytorch.org/docs/stable/notes/cuda.html#optimizing-memory-usage-with-pytorch-cuda-alloc-conf)"
+      },
+      "pass1_weights": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/stenosis_strategies/E1_ssass_faithful/pass1/stenosis_pass1_best.pt",
+      "pass2_weights": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/stenosis_strategies/E1_ssass_faithful/pass2/stenosis_pass2_best.pt"
+    }
+  },
+  {
+    "name": "E3_stenunet_y",
+    "gpu": 0,
+    "description": "StenUNet-inspired YOLO port (3rd place stenosis): stack raw / CLAHE / Gabor-max into 3 channels, feed to yolov8m-seg, small-CC post-processing. Expected: stenosis F1 ~0.48.",
+    "elapsed_hours": 0.47,
+    "status": "success",
+    "metrics": {
+      "stenosis_model_test": {
+        "split": "test",
+        "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/stenosis_strategies/E3_stenunet_y/stenosis_model/stenosis_mc_best.pt",
+        "mAP50": 0.368,
+        "mAP50_95": 0.1117,
+        "precision": 0.4417,
+        "recall": 0.4585,
+        "per_class": {
+          "stenosis": {
+            "ap50": 0.368,
+            "precision": 0.4417,
+            "recall": 0.4585,
+            "f1": 0.4499
+          }
+        },
+        "stenosis_AP50": 0.368
+      },
+      "final_test": {
+        "split": "test",
+        "mAP50": 0.368,
+        "mean_f1": 0.4499,
+        "per_class": {
+          "stenosis": {
+            "ap50": 0.368,
+            "precision": 0.4417,
+            "recall": 0.4585,
+            "f1": 0.4499
+          }
+        },
+        "syntax_mAP50": 0,
+        "stenosis_AP50": 0.368,
+        "precision": 0.4417,
+        "recall": 0.4585,
+        "mAP50_95": 0,
+        "training_note": "E3 StenUNet-YOLO: 3-ch stack (raw/CLAHE/Gabor)",
+        "stenosis_model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/stenosis_strategies/E3_stenunet_y/stenosis_model/stenosis_mc_best.pt",
+        "small_cc_report": {
+          "error": "CUDA out of memory. Tried to allocate 7.91 GiB. GPU 0 has a total capacity of 31.33 GiB of which 214.75 MiB is free. Including non-PyTorch memory, this process has 30.71 GiB memory in use. Of the allocated memory 19.74 GiB is allocated by PyTorch, and 10.32 GiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://docs.pytorch.org/docs/stable/notes/cuda.html#optimizing-memory-usage-with-pytorch-cuda-alloc-conf)"
+        }
+      },
+      "small_cc_report": {
+        "error": "CUDA out of memory. Tried to allocate 7.91 GiB. GPU 0 has a total capacity of 31.33 GiB of which 214.75 MiB is free. Including non-PyTorch memory, this process has 30.71 GiB memory in use. Of the allocated memory 19.74 GiB is allocated by PyTorch, and 10.32 GiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://docs.pytorch.org/docs/stable/notes/cuda.html#optimizing-memory-usage-with-pytorch-cuda-alloc-conf)"
+      }
+    }
+  },
+  {
+    "name": "E2_yolo_angio",
+    "gpu": 1,
+    "description": "Faithful YOLO-Angio (3rd place syntax): white top-hat (50x50) + CLAHE preprocessing, yolov8l-seg, 3-seed ensemble, anatomy-graph post-processing. Expected: syntax F1 ~0.45.",
+    "elapsed_hours": 2.06,
+    "status": "success",
+    "metrics": {
+      "seed_metrics": [
+        {
+          "split": "test",
+          "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/stenosis_strategies/E2_yolo_angio/seed_42/syntax_seed42_best.pt",
+          "mAP50": 0.5775,
+          "mAP50_95": 0.2353,
+          "precision": 0.6314,
+          "recall": 0.5626,
+          "per_class": {
+            "1": {
+              "ap50": 0.6118,
+              "precision": 0.5854,
+              "recall": 0.68,
+              "f1": 0.6292
+            },
+            "2": {
+              "ap50": 0.7164,
+              "precision": 0.66,
+              "recall": 0.73,
+              "f1": 0.6932
+            },
+            "3": {
+              "ap50": 0.6281,
+              "precision": 0.6709,
+              "recall": 0.5709,
+              "f1": 0.6169
+            },
+            "4": {
+              "ap50": 0.5383,
+              "precision": 0.5921,
+              "recall": 0.5652,
+              "f1": 0.5783
+            },
+            "5": {
+              "ap50": 0.796,
+              "precision": 0.8564,
+              "recall": 0.7037,
+              "f1": 0.7726
+            },
+            "6": {
+              "ap50": 0.619,
+              "precision": 0.7186,
+              "recall": 0.5053,
+              "f1": 0.5934
+            },
+            "7": {
+              "ap50": 0.6324,
+              "precision": 0.6165,
+              "recall": 0.5783,
+              "f1": 0.5968
+            },
+            "8": {
+              "ap50": 0.4375,
+              "precision": 0.5634,
+              "recall": 0.525,
+              "f1": 0.5435
+            },
+            "9": {
+              "ap50": 0.1323,
+              "precision": 0.2518,
+              "recall": 0.197,
+              "f1": 0.2211
+            },
+            "11": {
+              "ap50": 0.7606,
+              "precision": 0.7177,
+              "recall": 0.7051,
+              "f1": 0.7113
+            },
+            "13": {
+              "ap50": 0.4347,
+              "precision": 0.6056,
+              "recall": 0.4455,
+              "f1": 0.5134
+            },
+            "16": {
+              "ap50": 0.6226,
+              "precision": 0.7383,
+              "recall": 0.5449,
+              "f1": 0.627
+            }
+          },
+          "syntax_mAP50": 0.5775
+        },
+        {
+          "split": "test",
+          "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/stenosis_strategies/E2_yolo_angio/seed_7/syntax_seed7_best.pt",
+          "mAP50": 0.583,
+          "mAP50_95": 0.2377,
+          "precision": 0.6119,
+          "recall": 0.5589,
+          "per_class": {
+            "1": {
+              "ap50": 0.6683,
+              "precision": 0.6411,
+              "recall": 0.63,
+              "f1": 0.6355
+            },
+            "2": {
+              "ap50": 0.6902,
+              "precision": 0.712,
+              "recall": 0.4697,
+              "f1": 0.566
+            },
+            "3": {
+              "ap50": 0.6703,
+              "precision": 0.6506,
+              "recall": 0.64,
+              "f1": 0.6453
+            },
+            "4": {
+              "ap50": 0.5515,
+              "precision": 0.651,
+              "recall": 0.5543,
+              "f1": 0.5988
+            },
+            "5": {
+              "ap50": 0.8158,
+              "precision": 0.8736,
+              "recall": 0.7086,
+              "f1": 0.7825
+            },
+            "6": {
+              "ap50": 0.6851,
+              "precision": 0.7379,
+              "recall": 0.5851,
+              "f1": 0.6527
+            },
+            "7": {
+              "ap50": 0.6002,
+              "precision": 0.6423,
+              "recall": 0.6058,
+              "f1": 0.6235
+            },
+            "8": {
+              "ap50": 0.4532,
+              "precision": 0.4282,
+              "recall": 0.5375,
+              "f1": 0.4767
+            },
+            "9": {
+              "ap50": 0.1431,
+              "precision": 0.2459,
+              "recall": 0.2717,
+              "f1": 0.2582
+            },
+            "11": {
+              "ap50": 0.7823,
+              "precision": 0.6747,
+              "recall": 0.7479,
+              "f1": 0.7094
+            },
+            "13": {
+              "ap50": 0.3285,
+              "precision": 0.4703,
+              "recall": 0.339,
+              "f1": 0.394
+            },
+            "16": {
+              "ap50": 0.6075,
+              "precision": 0.6148,
+              "recall": 0.6168,
+              "f1": 0.6158
+            }
+          },
+          "syntax_mAP50": 0.583
+        },
+        {
+          "split": "test",
+          "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/stenosis_strategies/E2_yolo_angio/seed_13/syntax_seed13_best.pt",
+          "mAP50": 0.5827,
+          "mAP50_95": 0.2396,
+          "precision": 0.6395,
+          "recall": 0.5558,
+          "per_class": {
+            "1": {
+              "ap50": 0.7149,
+              "precision": 0.5861,
+              "recall": 0.76,
+              "f1": 0.6618
+            },
+            "2": {
+              "ap50": 0.6756,
+              "precision": 0.7285,
+              "recall": 0.6171,
+              "f1": 0.6682
+            },
+            "3": {
+              "ap50": 0.6176,
+              "precision": 0.6716,
+              "recall": 0.5931,
+              "f1": 0.6299
+            },
+            "4": {
+              "ap50": 0.5184,
+              "precision": 0.5929,
+              "recall": 0.5435,
+              "f1": 0.5671
+            },
+            "5": {
+              "ap50": 0.8484,
+              "precision": 0.9083,
+              "recall": 0.7617,
+              "f1": 0.8286
+            },
+            "6": {
+              "ap50": 0.6494,
+              "precision": 0.7247,
+              "recall": 0.5106,
+              "f1": 0.5991
+            },
+            "7": {
+              "ap50": 0.5861,
+              "precision": 0.6313,
+              "recall": 0.5783,
+              "f1": 0.6036
+            },
+            "8": {
+              "ap50": 0.5037,
+              "precision": 0.6287,
+              "recall": 0.4875,
+              "f1": 0.5492
+            },
+            "9": {
+              "ap50": 0.0861,
+              "precision": 0.2207,
+              "recall": 0.1364,
+              "f1": 0.1686
+            },
+            "11": {
+              "ap50": 0.7717,
+              "precision": 0.6793,
+              "recall": 0.7475,
+              "f1": 0.7118
+            },
+            "13": {
+              "ap50": 0.4019,
+              "precision": 0.5555,
+              "recall": 0.4,
+              "f1": 0.4651
+            },
+            "16": {
+              "ap50": 0.6186,
+              "precision": 0.7462,
+              "recall": 0.5345,
+              "f1": 0.6229
+            }
+          },
+          "syntax_mAP50": 0.5827
+        }
+      ],
+      "final_test": {
+        "split": "test",
+        "mAP50": 0.5811,
+        "mean_f1": 0.587,
+        "per_class": {
+          "1": {
+            "f1": 0.6422,
+            "precision": 0.6042,
+            "recall": 0.69,
+            "ap50": 0.665
+          },
+          "2": {
+            "f1": 0.6425,
+            "precision": 0.7002,
+            "recall": 0.6056,
+            "ap50": 0.6941
+          },
+          "3": {
+            "f1": 0.6307,
+            "precision": 0.6644,
+            "recall": 0.6013,
+            "ap50": 0.6387
+          },
+          "4": {
+            "f1": 0.5814,
+            "precision": 0.612,
+            "recall": 0.5543,
+            "ap50": 0.5361
+          },
+          "5": {
+            "f1": 0.7946,
+            "precision": 0.8794,
+            "recall": 0.7247,
+            "ap50": 0.8201
+          },
+          "6": {
+            "f1": 0.6151,
+            "precision": 0.7271,
+            "recall": 0.5337,
+            "ap50": 0.6512
+          },
+          "7": {
+            "f1": 0.608,
+            "precision": 0.63,
+            "recall": 0.5875,
+            "ap50": 0.6062
+          },
+          "8": {
+            "f1": 0.5231,
+            "precision": 0.5401,
+            "recall": 0.5167,
+            "ap50": 0.4648
+          },
+          "9": {
+            "f1": 0.216,
+            "precision": 0.2395,
+            "recall": 0.2017,
+            "ap50": 0.1205
+          },
+          "11": {
+            "f1": 0.7108,
+            "precision": 0.6906,
+            "recall": 0.7335,
+            "ap50": 0.7715
+          },
+          "13": {
+            "f1": 0.4575,
+            "precision": 0.5438,
+            "recall": 0.3948,
+            "ap50": 0.3884
+          },
+          "16": {
+            "f1": 0.6219,
+            "precision": 0.6998,
+            "recall": 0.5654,
+            "ap50": 0.6162
+          }
+        },
+        "syntax_mAP50": 0.5811,
+        "stenosis_AP50": 0,
+        "precision": 0.6276,
+        "recall": 0.5591,
+        "mAP50_95": 0,
+        "training_note": "E2 YOLO-Angio faithful: 3 seeds, top-hat+CLAHE",
+        "seed_models": [
+          "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/stenosis_strategies/E2_yolo_angio/seed_42/syntax_seed42_best.pt",
+          "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/stenosis_strategies/E2_yolo_angio/seed_7/syntax_seed7_best.pt",
+          "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/stenosis_strategies/E2_yolo_angio/seed_13/syntax_seed13_best.pt"
+        ],
+        "ensemble_seeds": [
+          42,
+          7,
+          13
+        ],
+        "anatomy_report": {
+          "error": "need at least one array to stack"
+        }
+      },
+      "anatomy_report": {
+        "error": "need at least one array to stack"
+      },
+      "seed_models": [
+        "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/stenosis_strategies/E2_yolo_angio/seed_42/syntax_seed42_best.pt",
+        "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/stenosis_strategies/E2_yolo_angio/seed_7/syntax_seed7_best.pt",
+        "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/stenosis_strategies/E2_yolo_angio/seed_13/syntax_seed13_best.pt"
+      ]
+    }
+  },
+  {
+    "name": "E4_cross_task_pl",
+    "gpu": 1,
+    "description": "Cross-Task Pseudo-Label (4th place syntax): Stage1 train syntax (1000) with CLAHE+median blur, Stage2 pseudo-label 1000 stenosis images, Stage3 train syntax on combined 2000 with unsharp mask aug. Eval on 300 syntax test. Original 1000/200 splits (NOT fulldata).",
+    "elapsed_hours": 0.42,
+    "status": "failed",
+    "error": "CUDA error: invalid device ordinal\nGPU device may be out of range, do you have enough GPUs?\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+    "traceback": "Traceback (most recent call last):\n  File \"/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/scripts/run_stenosis_strategies_v2.py\", line 4508, in _run_single_worker_script\n    metrics = run_cross_task_pl(\n              ^^^^^^^^^^^^^^^^^^\n  File \"/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/scripts/run_stenosis_strategies_v2.py\", line 4359, in run_cross_task_pl\n    pseudo_stats = run_syntax_on_stenosis_images(\n                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/scripts/generate_syntax_pseudolabels.py\", line 38, in run_syntax_on_stenosis_images\n    model.to(f\"cuda:{device}\" if str(device).isdigit() else device)\n  File \"/home/c504-5090-x2/Documents/repos/angiography_vqa/venv/lib/python3.12/site-packages/torch/nn/modules/module.py\", line 1384, in to\n    return self._apply(convert)\n           ^^^^^^^^^^^^^^^^^^^^\n  File \"/home/c504-5090-x2/Documents/repos/angiography_vqa/venv/lib/python3.12/site-packages/ultralytics/engine/model.py\", line 867, in _apply\n    self = super()._apply(fn)\n           ^^^^^^^^^^^^^^^^^^\n  File \"/home/c504-5090-x2/Documents/repos/angiography_vqa/venv/lib/python3.12/site-packages/torch/nn/modules/module.py\", line 934, in _apply\n    module._apply(fn)\n  File \"/home/c504-5090-x2/Documents/repos/angiography_vqa/venv/lib/python3.12/site-packages/ultralytics/nn/tasks.py\", line 288, in _apply\n    self = super()._apply(fn)\n           ^^^^^^^^^^^^^^^^^^\n  File \"/home/c504-5090-x2/Documents/repos/angiography_vqa/venv/lib/python3.12/site-packages/torch/nn/modules/module.py\", line 934, in _apply\n    module._apply(fn)\n  File \"/home/c504-5090-x2/Documents/repos/angiography_vqa/venv/lib/python3.12/site-packages/torch/nn/modules/module.py\", line 934, in _apply\n    module._apply(fn)\n  File \"/home/c504-5090-x2/Documents/repos/angiography_vqa/venv/lib/python3.12/site-packages/torch/nn/modules/module.py\", line 934, in _apply\n    module._apply(fn)\n  File \"/home/c504-5090-x2/Documents/repos/angiography_vqa/venv/lib/python3.12/site-packages/torch/nn/modules/module.py\", line 965, in _apply\n    param_applied = fn(param)\n                    ^^^^^^^^^\n  File \"/home/c504-5090-x2/Documents/repos/angiography_vqa/venv/lib/python3.12/site-packages/torch/nn/modules/module.py\", line 1370, in convert\n    return t.to(\n           ^^^^^\ntorch.AcceleratorError: CUDA error: invalid device ordinal\nGPU device may be out of range, do you have enough GPUs?\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n\n"
   }
 ]
