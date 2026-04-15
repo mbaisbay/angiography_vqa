@@ -2262,6 +2262,38 @@ def get_experiments():
         },
     ]
 
+    # ══════════════════════════════════════════════════════════
+    # STRATIFIED VARIANTS (E1s / E2s / E3s / E4s)
+    # ══════════════════════════════════════════════════════════
+    #
+    # Reuse each faithful winner-reproduction config but train on the
+    # stratified 999/200/301 splits (same test set as every S-series
+    # experiment). This gives an apples-to-apples comparison against
+    # S54 / S31 / etc. and eliminates:
+    #   - the ARCADE val=test leak present in the fulldata protocol,
+    #   - the distribution mismatch between ARCADE val (small stenoses,
+    #     high density) and ARCADE test (large stenoses, low density).
+    #
+    # Scores reported by these runs are NOT comparable to the ARCADE
+    # leaderboard — they are only comparable to other stratified runs.
+    experiments_strat = []
+    for base_exp in experiments:
+        if not base_exp["name"].startswith(("E1_", "E2_", "E3_", "E4_")):
+            continue
+        strat = {k: v for k, v in base_exp.items() if k not in ("config",)}
+        # E1_ssass_faithful -> E1s_ssass_faithful, etc.
+        strat["name"]        = base_exp["name"][:2] + "s" + base_exp["name"][2:]
+        strat["description"] = f"[STRATIFIED 999/200/301] {base_exp['description']}"
+        strat["use_stratified"] = True
+        # Copy nested dicts so overrides are independent per entry
+        strat["overrides"]          = dict(base_exp.get("overrides", {}))
+        strat["pipeline_args"]      = dict(base_exp.get("pipeline_args", {}))
+        strat["syntax_overrides"]   = dict(base_exp.get("syntax_overrides", {}))
+        strat["stenosis_overrides"] = dict(base_exp.get("stenosis_overrides", {}))
+        strat["hypothesis_config"]  = dict(base_exp.get("hypothesis_config", {}))
+        experiments_strat.append(strat)
+    experiments.extend(experiments_strat)
+
         # Merge base config into each experiment
     for exp in experiments:
         cfg = dict(base)
@@ -3845,6 +3877,22 @@ def _ensure_fulldata_root(output_dir: Path, arcade_root: Path) -> Path:
     return fulldata_root
 
 
+def _resolve_data_source(exp: dict, output_dir: Path, arcade_root: Path,
+                          splits_dir: Path) -> tuple:
+    """Return (source_root, source_splits_dir) for an E-series runner.
+
+    When `exp["use_stratified"]` is truthy, we train on the stratified
+    1000/200/300 splits that the scheduler already created (no val=test
+    leak, balanced distribution). Otherwise we use the fulldata root
+    (ARCADE train+val merged, eval on official test — has the val=test
+    checkpoint-selection bias noted in the analysis, preserved for
+    backward compatibility with the original E1–E4 numbers).
+    """
+    if exp.get("use_stratified"):
+        return arcade_root, splits_dir
+    return _ensure_fulldata_root(output_dir, arcade_root), None
+
+
 def _combine_syntax_stenosis_metrics(syntax_metrics: dict,
                                       stenosis_metrics: dict,
                                       training_note: str = "") -> dict:
@@ -3909,12 +3957,14 @@ def run_ssass_faithful(exp: dict, arcade_root: Path, splits_dir: Path,
     min_area_px   = int(h_cfg.get("min_cc_area_px", 30))
     stenosis_ov   = exp.get("stenosis_overrides", {})
 
-    fulldata_root = _ensure_fulldata_root(output_dir, arcade_root)
+    source_root, source_splits = _resolve_data_source(
+        exp, output_dir, arcade_root, splits_dir)
+    mode_tag = "stratified 999/200/301" if exp.get("use_stratified") else "fulldata 1200/-/300"
 
-    # ── Step 1: data prep (train=1200, test=300) ─────────────────────
-    print(f"\n{'#'*60}\n# {name} — data_prep (1200 train)\n{'#'*60}")
+    # ── Step 1: data prep ────────────────────────────────────────────
+    print(f"\n{'#'*60}\n# {name} — data_prep ({mode_tag})\n{'#'*60}")
     data_dir = output_dir / "data" / name
-    data_prep(fulldata_root, data_dir, min_count=300, splits_dir=None)
+    data_prep(source_root, data_dir, min_count=300, splits_dir=source_splits)
     stenosis_dir = data_dir / "stenosis"
 
     # ── Step 2: Bezier-augmented shadow train set ────────────────────
@@ -4092,12 +4142,16 @@ def run_yolo_angio(exp: dict, arcade_root: Path, splits_dir: Path,
     seeds: list = list(h_cfg.get("ensemble_seeds", [42, 7, 13]))
     syntax_ov = exp.get("syntax_overrides", {})
 
-    fulldata_root = _ensure_fulldata_root(output_dir, arcade_root)
+    source_root, source_splits = _resolve_data_source(
+        exp, output_dir, arcade_root, splits_dir)
+    mode_tag = "stratified 999/200/301" if exp.get("use_stratified") else "fulldata 1200/-/300"
 
     # ── Step 1: data prep ────────────────────────────────────────────
+    print(f"\n{'#'*60}\n# {name} — data_prep ({mode_tag})\n{'#'*60}")
     data_dir = output_dir / "data" / name
-    data_prep(fulldata_root, data_dir, min_count=300, splits_dir=None)
-    syntax_dir = data_dir / "syntax"
+    data_prep(source_root, data_dir, min_count=300, splits_dir=source_splits)
+    # NOTE: data_prep writes under syntax_filtered/, NOT syntax/.
+    syntax_dir = data_dir / "syntax_filtered"
 
     # ── Step 2: Preprocessing (train + val + test) ───────────────────
     print(f"\n{'#'*60}\n# {name} — Top-hat + CLAHE preprocessing\n{'#'*60}")
@@ -4221,10 +4275,13 @@ def run_stenunet_y(exp: dict, arcade_root: Path, splits_dir: Path,
     min_area_px = int(h_cfg.get("min_cc_area_px", 30))
     stenosis_ov = exp.get("stenosis_overrides", {})
 
-    fulldata_root = _ensure_fulldata_root(output_dir, arcade_root)
+    source_root, source_splits = _resolve_data_source(
+        exp, output_dir, arcade_root, splits_dir)
+    mode_tag = "stratified 999/200/301" if exp.get("use_stratified") else "fulldata 1200/-/300"
 
+    print(f"\n{'#'*60}\n# {name} — data_prep ({mode_tag})\n{'#'*60}")
     data_dir = output_dir / "data" / name
-    data_prep(fulldata_root, data_dir, min_count=300, splits_dir=None)
+    data_prep(source_root, data_dir, min_count=300, splits_dir=source_splits)
     stenosis_dir = data_dir / "stenosis"
 
     print(f"\n{'#'*60}\n# {name} — Multi-channel stack (raw/CLAHE/Gabor)\n{'#'*60}")
@@ -4309,9 +4366,14 @@ def run_cross_task_pl(exp: dict, arcade_root: Path, splits_dir: Path,
     pseudo_conf = float(h_cfg.get("pseudo_conf", 0.5))
     syntax_ov   = exp.get("syntax_overrides", {})
 
-    # NOTE: use original arcade_root (1000/200/300), NOT fulldata
+    # Use original arcade_root (1000/200/300) by default, or stratified
+    # splits if the experiment opts in. Never fulldata — E4 needs the
+    # 1000 syntax + 1000 stenosis structure to work.
+    source_splits = splits_dir if exp.get("use_stratified") else None
+    mode_tag = "stratified 999/200/301" if exp.get("use_stratified") else "original 1000/200/300"
+    print(f"\n{'#'*60}\n# {name} — data_prep ({mode_tag})\n{'#'*60}")
     data_dir = output_dir / "data" / name
-    data_prep(arcade_root, data_dir, min_count=300, splits_dir=None)
+    data_prep(arcade_root, data_dir, min_count=300, splits_dir=source_splits)
     # data_prep writes filtered syntax under `syntax_filtered/` (this is
     # what syntax_only.yaml points at). Do NOT use `data_dir/"syntax"` —
     # that directory does not exist.
