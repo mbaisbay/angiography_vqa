@@ -109,6 +109,35 @@ def get_best_stenosis_model() -> str:
     return "yolo11m-seg.pt"
 
 
+def fix_dataset_yaml_paths():
+    """Rewrite dataset YAML 'path' fields to match the current machine.
+
+    The YAML files written by prepare_data.py embed absolute paths from
+    the machine that ran data-prep. When the repo is cloned onto a
+    different machine the paths are stale. This function rewrites them
+    so that 'path' always points to the real directory next to the YAML.
+    """
+    configs_dir = DATA_DIR / "dataset_configs"
+    if not configs_dir.exists():
+        return
+
+    mapping = {
+        "syntax_only.yaml": str((DATA_DIR / "syntax_filtered").resolve()),
+        "stenosis_only.yaml": str((DATA_DIR / "stenosis").resolve()),
+    }
+    for fname, correct_path in mapping.items():
+        p = configs_dir / fname
+        if not p.exists():
+            continue
+        with open(p) as f:
+            cfg = yaml.safe_load(f)
+        if cfg.get("path") != correct_path:
+            cfg["path"] = correct_path
+            with open(p, "w") as f:
+                yaml.dump(cfg, f, default_flow_style=False, sort_keys=False)
+            log(f"  Fixed path in {fname} -> {correct_path}")
+
+
 def get_syntax_yaml() -> str:
     return str(DATA_DIR / "dataset_configs" / "syntax_only.yaml")
 
@@ -1548,6 +1577,9 @@ def main():
 
     devices = [d.strip() for d in args.devices.split(",")]
 
+    # Fix dataset YAML paths for the current machine
+    fix_dataset_yaml_paths()
+
     if args.phase == "all":
         phases = [0, 1, 2, 3, 4, 5]
     else:
@@ -1560,11 +1592,13 @@ def main():
     log(f"Phases:      {phases}")
     log("")
 
-    # Verify data exists
+    # Verify data exists — run data prep if needed
     if not (DATA_DIR / "dataset_configs" / "syntax_only.yaml").exists():
-        log("WARNING: dataset configs not found — running data prep first")
+        log("Dataset configs not found — running data prep from ARCADE root...")
         from run_pipeline import data_prep
         data_prep(ARCADE_ROOT, DATA_DIR, min_count=300)
+        # Fix paths after fresh data prep (they'll be correct but let's be sure)
+        fix_dataset_yaml_paths()
 
     t0 = time.time()
 
