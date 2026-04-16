@@ -1,5 +1,5 @@
 {
-  "total_experiments": 30,
+  "total_experiments": 34,
   "best_syntax": {
     "name": "",
     "mAP50": 0
@@ -1386,6 +1386,563 @@
       "error": "Cannot re-initialize CUDA in forked subprocess. To use CUDA with multiprocessing, you must use the 'spawn' start method",
       "name": "run_F3_error_analysis",
       "timestamp": "2026-04-16T15:57:31"
+    },
+    {
+      "status": "failed",
+      "error": "division by zero",
+      "name": "run_C5_multi_scale",
+      "timestamp": "2026-04-16T16:35:37"
+    },
+    {
+      "mild": {
+        "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/D3_shear_mild/D3_shear_mild_best.pt",
+        "metrics": {
+          "split": "test",
+          "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/D3_shear_mild/D3_shear_mild_best.pt",
+          "mAP50": 0.6559,
+          "mAP50_95": 0.2396,
+          "precision": 0.6784,
+          "recall": 0.645,
+          "per_class": {
+            "1": {
+              "ap50": 0.7946,
+              "precision": 0.7319,
+              "recall": 0.86,
+              "f1": 0.7908
+            },
+            "2": {
+              "ap50": 0.6858,
+              "precision": 0.6664,
+              "recall": 0.7192,
+              "f1": 0.6918
+            },
+            "3": {
+              "ap50": 0.7497,
+              "precision": 0.7363,
+              "recall": 0.75,
+              "f1": 0.7431
+            },
+            "4": {
+              "ap50": 0.5505,
+              "precision": 0.5874,
+              "recall": 0.5326,
+              "f1": 0.5587
+            },
+            "5": {
+              "ap50": 0.8854,
+              "precision": 0.8869,
+              "recall": 0.7846,
+              "f1": 0.8326
+            },
+            "6": {
+              "ap50": 0.7389,
+              "precision": 0.7738,
+              "recall": 0.6649,
+              "f1": 0.7152
+            },
+            "7": {
+              "ap50": 0.7093,
+              "precision": 0.656,
+              "recall": 0.7229,
+              "f1": 0.6878
+            },
+            "8": {
+              "ap50": 0.5708,
+              "precision": 0.6751,
+              "recall": 0.5975,
+              "f1": 0.6339
+            },
+            "9": {
+              "ap50": 0.1921,
+              "precision": 0.3215,
+              "recall": 0.2727,
+              "f1": 0.2951
+            },
+            "11": {
+              "ap50": 0.8623,
+              "precision": 0.7844,
+              "recall": 0.8235,
+              "f1": 0.8035
+            },
+            "13": {
+              "ap50": 0.4295,
+              "precision": 0.5663,
+              "recall": 0.4154,
+              "f1": 0.4793
+            },
+            "16": {
+              "ap50": 0.7015,
+              "precision": 0.7554,
+              "recall": 0.5967,
+              "f1": 0.6667
+            }
+          },
+          "syntax_mAP50": 0.6559
+        }
+      },
+      "moderate": {
+        "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/D3_shear_moderate/D3_shear_moderate_best.pt",
+        "metrics": {
+          "split": "test",
+          "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/D3_shear_moderate/D3_shear_moderate_best.pt",
+          "mAP50": 0.6499,
+          "mAP50_95": 0.2532,
+          "precision": 0.6884,
+          "recall": 0.6162,
+          "per_class": {
+            "1": {
+              "ap50": 0.6829,
+              "precision": 0.7003,
+              "recall": 0.7,
+              "f1": 0.7001
+            },
+            "2": {
+              "ap50": 0.7622,
+              "precision": 0.7267,
+              "recall": 0.77,
+              "f1": 0.7477
+            },
+            "3": {
+              "ap50": 0.7991,
+              "precision": 0.768,
+              "recall": 0.75,
+              "f1": 0.7589
+            },
+            "4": {
+              "ap50": 0.5475,
+              "precision": 0.6199,
+              "recall": 0.514,
+              "f1": 0.562
+            },
+            "5": {
+              "ap50": 0.8779,
+              "precision": 0.888,
+              "recall": 0.7726,
+              "f1": 0.8263
+            },
+            "6": {
+              "ap50": 0.7618,
+              "precision": 0.809,
+              "recall": 0.6596,
+              "f1": 0.7267
+            },
+            "7": {
+              "ap50": 0.674,
+              "precision": 0.6391,
+              "recall": 0.6613,
+              "f1": 0.65
+            },
+            "8": {
+              "ap50": 0.6315,
+              "precision": 0.8036,
+              "recall": 0.525,
+              "f1": 0.6351
+            },
+            "9": {
+              "ap50": 0.0975,
+              "precision": 0.2159,
+              "recall": 0.197,
+              "f1": 0.206
+            },
+            "11": {
+              "ap50": 0.8407,
+              "precision": 0.8043,
+              "recall": 0.8151,
+              "f1": 0.8097
+            },
+            "13": {
+              "ap50": 0.4059,
+              "precision": 0.5424,
+              "recall": 0.3818,
+              "f1": 0.4481
+            },
+            "16": {
+              "ap50": 0.7178,
+              "precision": 0.7438,
+              "recall": 0.6477,
+              "f1": 0.6924
+            }
+          },
+          "syntax_mAP50": 0.6499
+        }
+      },
+      "name": "D3_shear_translate",
+      "timestamp": "2026-04-16T16:56:05"
+    },
+    {
+      "seed_42": {
+        "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/combined_seed42/combined_seed42_best.pt",
+        "metrics": {
+          "split": "test",
+          "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/combined_seed42/combined_seed42_best.pt",
+          "mAP50": 0.6217,
+          "mAP50_95": 0.2386,
+          "precision": 0.6482,
+          "recall": 0.6227,
+          "per_class": {
+            "1": {
+              "ap50": 0.8096,
+              "precision": 0.775,
+              "recall": 0.82,
+              "f1": 0.7969
+            },
+            "2": {
+              "ap50": 0.6559,
+              "precision": 0.7083,
+              "recall": 0.5342,
+              "f1": 0.6091
+            },
+            "3": {
+              "ap50": 0.7749,
+              "precision": 0.7975,
+              "recall": 0.71,
+              "f1": 0.7512
+            },
+            "4": {
+              "ap50": 0.5052,
+              "precision": 0.613,
+              "recall": 0.5326,
+              "f1": 0.57
+            },
+            "5": {
+              "ap50": 0.8979,
+              "precision": 0.8108,
+              "recall": 0.8569,
+              "f1": 0.8332
+            },
+            "6": {
+              "ap50": 0.7492,
+              "precision": 0.7382,
+              "recall": 0.6598,
+              "f1": 0.6968
+            },
+            "7": {
+              "ap50": 0.585,
+              "precision": 0.5593,
+              "recall": 0.6265,
+              "f1": 0.591
+            },
+            "8": {
+              "ap50": 0.5518,
+              "precision": 0.6672,
+              "recall": 0.6125,
+              "f1": 0.6387
+            },
+            "9": {
+              "ap50": 0.2064,
+              "precision": 0.3484,
+              "recall": 0.2879,
+              "f1": 0.3153
+            },
+            "11": {
+              "ap50": 0.839,
+              "precision": 0.6792,
+              "recall": 0.8824,
+              "f1": 0.7676
+            },
+            "13": {
+              "ap50": 0.2993,
+              "precision": 0.4717,
+              "recall": 0.3815,
+              "f1": 0.4218
+            },
+            "16": {
+              "ap50": 0.5859,
+              "precision": 0.6101,
+              "recall": 0.5682,
+              "f1": 0.5884
+            }
+          },
+          "syntax_mAP50": 0.6217
+        }
+      },
+      "seed_7": {
+        "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/combined_seed7/combined_seed7_best.pt",
+        "metrics": {
+          "split": "test",
+          "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/combined_seed7/combined_seed7_best.pt",
+          "mAP50": 0.6281,
+          "mAP50_95": 0.2435,
+          "precision": 0.6461,
+          "recall": 0.6116,
+          "per_class": {
+            "1": {
+              "ap50": 0.7599,
+              "precision": 0.7417,
+              "recall": 0.81,
+              "f1": 0.7743
+            },
+            "2": {
+              "ap50": 0.5905,
+              "precision": 0.6684,
+              "recall": 0.55,
+              "f1": 0.6034
+            },
+            "3": {
+              "ap50": 0.7385,
+              "precision": 0.6584,
+              "recall": 0.67,
+              "f1": 0.6641
+            },
+            "4": {
+              "ap50": 0.5443,
+              "precision": 0.5736,
+              "recall": 0.5435,
+              "f1": 0.5581
+            },
+            "5": {
+              "ap50": 0.8733,
+              "precision": 0.8676,
+              "recall": 0.7393,
+              "f1": 0.7983
+            },
+            "6": {
+              "ap50": 0.7325,
+              "precision": 0.6994,
+              "recall": 0.6862,
+              "f1": 0.6927
+            },
+            "7": {
+              "ap50": 0.733,
+              "precision": 0.6562,
+              "recall": 0.7229,
+              "f1": 0.6879
+            },
+            "8": {
+              "ap50": 0.5762,
+              "precision": 0.6775,
+              "recall": 0.55,
+              "f1": 0.6071
+            },
+            "9": {
+              "ap50": 0.2038,
+              "precision": 0.3199,
+              "recall": 0.3182,
+              "f1": 0.319
+            },
+            "11": {
+              "ap50": 0.8017,
+              "precision": 0.701,
+              "recall": 0.7815,
+              "f1": 0.7391
+            },
+            "13": {
+              "ap50": 0.389,
+              "precision": 0.5836,
+              "recall": 0.3545,
+              "f1": 0.4411
+            },
+            "16": {
+              "ap50": 0.5951,
+              "precision": 0.6053,
+              "recall": 0.6136,
+              "f1": 0.6094
+            }
+          },
+          "syntax_mAP50": 0.6281
+        }
+      },
+      "seed_2024": {
+        "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/combined_seed2024/combined_seed2024_best.pt",
+        "metrics": {
+          "split": "test",
+          "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/combined_seed2024/combined_seed2024_best.pt",
+          "mAP50": 0.6173,
+          "mAP50_95": 0.2389,
+          "precision": 0.6392,
+          "recall": 0.5923,
+          "per_class": {
+            "1": {
+              "ap50": 0.734,
+              "precision": 0.7217,
+              "recall": 0.8,
+              "f1": 0.7588
+            },
+            "2": {
+              "ap50": 0.6629,
+              "precision": 0.8399,
+              "recall": 0.34,
+              "f1": 0.4841
+            },
+            "3": {
+              "ap50": 0.693,
+              "precision": 0.544,
+              "recall": 0.72,
+              "f1": 0.6197
+            },
+            "4": {
+              "ap50": 0.5558,
+              "precision": 0.5935,
+              "recall": 0.6304,
+              "f1": 0.6114
+            },
+            "5": {
+              "ap50": 0.8917,
+              "precision": 0.8543,
+              "recall": 0.8154,
+              "f1": 0.8344
+            },
+            "6": {
+              "ap50": 0.7339,
+              "precision": 0.763,
+              "recall": 0.6543,
+              "f1": 0.7045
+            },
+            "7": {
+              "ap50": 0.637,
+              "precision": 0.6092,
+              "recall": 0.6747,
+              "f1": 0.6403
+            },
+            "8": {
+              "ap50": 0.6182,
+              "precision": 0.7497,
+              "recall": 0.625,
+              "f1": 0.6817
+            },
+            "9": {
+              "ap50": 0.0856,
+              "precision": 0.1613,
+              "recall": 0.197,
+              "f1": 0.1774
+            },
+            "11": {
+              "ap50": 0.7872,
+              "precision": 0.6033,
+              "recall": 0.7899,
+              "f1": 0.6841
+            },
+            "13": {
+              "ap50": 0.4217,
+              "precision": 0.6381,
+              "recall": 0.2818,
+              "f1": 0.3909
+            },
+            "16": {
+              "ap50": 0.5862,
+              "precision": 0.5921,
+              "recall": 0.5795,
+              "f1": 0.5857
+            }
+          },
+          "syntax_mAP50": 0.6173
+        }
+      },
+      "name": "combined_recipe_3seeds",
+      "timestamp": "2026-04-16T17:25:45"
+    },
+    {
+      "models": [
+        "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/combined_seed42/combined_seed42_best.pt",
+        "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/combined_seed7/combined_seed7_best.pt",
+        "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/combined_seed2024/combined_seed2024_best.pt"
+      ],
+      "iou_thr": 0.55,
+      "conf": 0.05,
+      "n_images": 300,
+      "metrics": {
+        "per_class": {
+          "0": {
+            "p": 0.2563,
+            "r": 0.61,
+            "f1": 0.3609,
+            "tp": 61,
+            "fp": 177,
+            "fn": 39
+          },
+          "1": {
+            "p": 0.2797,
+            "r": 0.87,
+            "f1": 0.4234,
+            "tp": 87,
+            "fp": 224,
+            "fn": 13
+          },
+          "2": {
+            "p": 0.1577,
+            "r": 0.44,
+            "f1": 0.2322,
+            "tp": 44,
+            "fp": 235,
+            "fn": 56
+          },
+          "3": {
+            "p": 0.176,
+            "r": 0.4783,
+            "f1": 0.2573,
+            "tp": 44,
+            "fp": 206,
+            "fn": 48
+          },
+          "4": {
+            "p": 0.4658,
+            "r": 0.7692,
+            "f1": 0.5803,
+            "tp": 150,
+            "fp": 172,
+            "fn": 45
+          },
+          "5": {
+            "p": 0.3,
+            "r": 0.6064,
+            "f1": 0.4014,
+            "tp": 114,
+            "fp": 266,
+            "fn": 74
+          },
+          "6": {
+            "p": 0.2464,
+            "r": 0.8193,
+            "f1": 0.3788,
+            "tp": 68,
+            "fp": 208,
+            "fn": 15
+          },
+          "7": {
+            "p": 0.2911,
+            "r": 0.575,
+            "f1": 0.3866,
+            "tp": 46,
+            "fp": 112,
+            "fn": 34
+          },
+          "8": {
+            "p": 0.067,
+            "r": 0.2273,
+            "f1": 0.1034,
+            "tp": 15,
+            "fp": 209,
+            "fn": 51
+          },
+          "9": {
+            "p": 0.2601,
+            "r": 0.6471,
+            "f1": 0.3711,
+            "tp": 77,
+            "fp": 219,
+            "fn": 42
+          },
+          "10": {
+            "p": 0.0967,
+            "r": 0.4273,
+            "f1": 0.1577,
+            "tp": 47,
+            "fp": 439,
+            "fn": 63
+          },
+          "11": {
+            "p": 0.166,
+            "r": 0.4659,
+            "f1": 0.2448,
+            "tp": 41,
+            "fp": 206,
+            "fn": 47
+          }
+        },
+        "mean_f1": 0.3248
+      },
+      "name": "A6_wbf_ensemble",
+      "timestamp": "2026-04-16T17:25:56"
     }
   ]
 }

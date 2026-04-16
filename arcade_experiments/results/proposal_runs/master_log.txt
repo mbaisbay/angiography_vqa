@@ -1,0 +1,288 @@
+[2026-04-16 14:41:51] ARCADE root: /home/c504-5090-x2/Documents/repos/angiography_vqa/arcade/submission
+[2026-04-16 14:41:51] Data dir:    /home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/data
+[2026-04-16 14:41:51] Results dir: /home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs
+[2026-04-16 14:41:51] Devices:     ['0', '1']
+[2026-04-16 14:41:51] Phases:      [0, 1, 2, 3, 4, 5]
+[2026-04-16 14:41:51] 
+[2026-04-16 14:41:51] WARNING: dataset configs not found — running data prep first
+[2026-04-16 14:42:06] ============================================================
+[2026-04-16 14:42:06] PHASE 0: DIAGNOSTICS
+[2026-04-16 14:42:06] ============================================================
+[2026-04-16 14:42:06] F-4: Computing weighted F1 on best existing models...
+[2026-04-16 14:42:06]   S54_s43b_clahe: macro=0.7181 weighted=0.7456
+[2026-04-16 14:42:06]   E2s_yolo_angio: macro=0.7108 weighted=0.7455
+[2026-04-16 14:42:06]   S16_mosaic_both: macro=0.7098 weighted=0.7450
+[2026-04-16 14:42:06]   S51_s31_clahe: macro=0.7173 weighted=0.7447
+[2026-04-16 14:42:06]   C1a_label_smooth_05: macro=0.7173 weighted=0.7447
+[2026-04-16 14:42:06] F-2: Running label audit for class 9/9a contamination...
+[2026-04-16 14:42:06]   Label audit saved to /home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/F2_label_audit.json
+[2026-04-16 14:42:06]   Labels appear clean — no 9/9a contamination detected.
+[2026-04-16 14:42:06] F-1: Training S54 recipe on official ARCADE split...
+[2026-04-16 14:42:20]   Official split data prepared at /home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/data/official_split
+[2026-04-16 15:01:48]   Official split syntax test: {'split': 'test', 'model': '/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/F1_official_syntax/F1_official_syntax_best.pt', 'mAP50': 0.6682, 'mAP50_95': 0.264, 'precision': 0.7148, 'recall': 0.6358, 'per_class': {'1': {'ap50': 0.6985, 'precision': 0.716, 'recall': 0.7058, 'f1': 0.7109}, '2': {'ap50': 0.6885, 'precision': 0.7152, 'recall': 0.6277, 'f1': 0.6686}, '3': {'ap50': 0.7049, 'precision': 0.6744, 'recall': 0.7, 'f1': 0.687}, '4': {'ap50': 0.5302, 'precision': 0.5798, 'recall': 0.6196, 'f1': 0.599}, '5': {'ap50': 0.8758, 'precision': 0.8212, 'recall': 0.8103, 'f1': 0.8157}, '6': {'ap50': 0.7171, 'precision': 0.7953, 'recall': 0.5993, 'f1': 0.6835}, '7': {'ap50': 0.6505, 'precision': 0.7152, 'recall': 0.575, 'f1': 0.6375}, '8': {'ap50': 0.5806, 'precision': 0.6964, 'recall': 0.6, 'f1': 0.6446}, '11': {'ap50': 0.8708, 'precision': 0.7974, 'recall': 0.8571, 'f1': 0.8262}, '13': {'ap50': 0.3652, 'precision': 0.6376, 'recall': 0.2636, 'f1': 0.373}}, 'syntax_mAP50': 0.6682}
+[2026-04-16 15:01:48]   Official split stenosis test: {'split': 'test', 'model': '/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/F1_official_stenosis/F1_official_stenosis_best.pt', 'mAP50': 0.2498, 'mAP50_95': 0.0754, 'precision': 0.3106, 'recall': 0.3964, 'per_class': {'stenosis': {'ap50': 0.2498, 'precision': 0.3106, 'recall': 0.3964, 'f1': 0.3483}}, 'stenosis_AP50': 0.2498}
+[2026-04-16 15:01:48] ============================================================
+[2026-04-16 15:01:48] PHASE 1: ZERO-RETRAINING INTERVENTIONS
+[2026-04-16 15:01:48] ============================================================
+[2026-04-16 15:01:48] A-1: Per-class confidence threshold sweep...
+[2026-04-16 15:01:50]   Sweeping syntax model thresholds...
+[2026-04-16 15:02:37]   Syntax: default=0.2079 tuned=0.2151 delta=+0.0072
+[2026-04-16 15:02:37]   Sweeping stenosis model thresholds...
+[2026-04-16 15:02:43]   Stenosis: default=0.7334 tuned=0.7334 delta=+0.0000
+[2026-04-16 15:02:43] A-4: CC post-processing sweep...
+[2026-04-16 15:02:45]   Stenosis CC filter min_area=20...
+[2026-04-16 15:02:48]     raw F1=0.7334  filtered F1=0.7334
+[2026-04-16 15:02:48]   Stenosis CC filter min_area=50...
+[2026-04-16 15:02:51]     raw F1=0.7334  filtered F1=0.7334
+[2026-04-16 15:02:51]   Stenosis CC filter min_area=100...
+[2026-04-16 15:02:55]     raw F1=0.7334  filtered F1=0.7334
+[2026-04-16 15:02:55]   Stenosis CC filter min_area=200...
+[2026-04-16 15:02:58]     raw F1=0.7334  filtered F1=0.7334
+[2026-04-16 15:02:58]   Syntax CC filter min_area=20...
+[2026-04-16 15:03:04]     raw F1=0.6031  filtered F1=0.6031
+[2026-04-16 15:03:04]   Syntax CC filter min_area=50...
+[2026-04-16 15:03:10]     raw F1=0.6031  filtered F1=0.6031
+[2026-04-16 15:03:10]   Syntax CC filter min_area=100...
+[2026-04-16 15:03:15]     raw F1=0.6031  filtered F1=0.6031
+[2026-04-16 15:03:15] A-5: Score calibration...
+[2026-04-16 15:03:16]   Collecting val scores...
+[2026-04-16 15:03:19]     class 5: n=591 pos=129
+[2026-04-16 15:03:19]     class 6: n=832 pos=122
+[2026-04-16 15:03:19]     class 12: n=215 pos=0
+[2026-04-16 15:03:19]     class 17: n=78 pos=0
+[2026-04-16 15:03:19]     class 16: n=93 pos=0
+[2026-04-16 15:03:19]     class 15: n=600 pos=0
+[2026-04-16 15:03:19]     class 24: n=483 pos=0
+[2026-04-16 15:03:19]     class 23: n=83 pos=0
+[2026-04-16 15:03:19]     class 14: n=176 pos=0
+[2026-04-16 15:03:19]     class 7: n=323 pos=73
+[2026-04-16 15:03:19]     class 8: n=367 pos=57
+[2026-04-16 15:03:19]     class 9: n=219 pos=32
+[2026-04-16 15:03:19]     class 11: n=137 pos=0
+[2026-04-16 15:03:19]     class 2: n=396 pos=64
+[2026-04-16 15:03:19]     class 1: n=325 pos=66
+[2026-04-16 15:03:19]     class 3: n=376 pos=65
+[2026-04-16 15:03:19]     class 4: n=273 pos=48
+[2026-04-16 15:03:19]     class 19: n=214 pos=0
+[2026-04-16 15:03:19]     class 20: n=38 pos=0
+[2026-04-16 15:03:19]     class 22: n=67 pos=0
+[2026-04-16 15:03:19]     class 21: n=66 pos=0
+[2026-04-16 15:03:19]     class 13: n=57 pos=0
+[2026-04-16 15:03:19]     class 18: n=27 pos=0
+[2026-04-16 15:03:19]     class 13: n=31 pos=0
+[2026-04-16 15:03:19]     class 16: n=7 pos=0
+[2026-04-16 15:03:19]   Fitting isotonic regressions...
+[2026-04-16 15:03:19]   Calibrators saved to /home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/A5_calibrators
+[2026-04-16 15:03:19] A-3: TTA clean A/B test...
+[2026-04-16 15:03:20]   syntax: evaluating without TTA...
+[2026-04-16 15:03:30]   syntax: evaluating with TTA...
+[2026-04-16 15:03:40]   syntax: no_tta=0.4795 tta=0.4795 delta=+0.0000
+[2026-04-16 15:03:40]   stenosis: evaluating without TTA...
+[2026-04-16 15:03:44]   stenosis: evaluating with TTA...
+[2026-04-16 15:03:48]   stenosis: no_tta=0.8137 tta=0.8137 delta=+0.0000
+[2026-04-16 15:03:48] A-2: Tile inference for stenosis...
+[2026-04-16 15:03:49]   Tile inference upscale=2x...
+[2026-04-16 15:04:04]     F1=0.4497 P=0.3274 R=0.7176
+[2026-04-16 15:04:04]   Tile inference upscale=3x...
+[2026-04-16 15:04:28]     F1=0.3290 P=0.2694 R=0.4223
+[2026-04-16 15:04:28] ============================================================
+[2026-04-16 15:04:28] PHASE 2: HIGH-IMPACT RETRAINING
+[2026-04-16 15:04:28] ============================================================
+[2026-04-16 15:04:28] B-1/B-2: Tail-class oversampling + loss weighting...
+[2026-04-16 15:04:28]   Copying syntax data for oversampling...
+[2026-04-16 15:04:28] B-4: Warm-starting stenosis from best syntax backbone...
+[2026-04-16 15:04:28]   Current counts: {10: 305, 9: 320, 7: 310, 6: 340, 8: 198, 5: 537, 0: 374, 1: 375, 2: 369, 11: 232, 3: 303, 4: 525}
+[2026-04-16 15:04:28]   Tail classes: [8, 11, 3], target count: 340
+[2026-04-16 15:04:28]   Oversampling done: 198 duplicates
+[2026-04-16 15:04:30] ERROR in run_B1_B2_tail_sampling_loss: Cannot re-initialize CUDA in forked subprocess. To use CUDA with multiprocessing, you must use the 'spawn' start method
+[2026-04-16 15:04:31] ERROR in run_B4_warmstart_stenosis: Cannot re-initialize CUDA in forked subprocess. To use CUDA with multiprocessing, you must use the 'spawn' start method
+[2026-04-16 15:04:31] C-1: Label smoothing sweep...
+[2026-04-16 15:04:31]   Training with label_smoothing=0.05...
+[2026-04-16 15:04:31] C-3: DFL weight sweep for stenosis...
+[2026-04-16 15:04:31]   Training stenosis with dfl=2.0...
+[2026-04-16 15:04:32] ERROR in run_C3_dfl_sweep: Cannot re-initialize CUDA in forked subprocess. To use CUDA with multiprocessing, you must use the 'spawn' start method
+[2026-04-16 15:04:33] ERROR in run_C1_label_smoothing: Cannot re-initialize CUDA in forked subprocess. To use CUDA with multiprocessing, you must use the 'spawn' start method
+[2026-04-16 15:04:33] C-5: Multi-scale training for stenosis...
+[2026-04-16 15:04:45] ERROR in run_C5_multi_scale: division by zero
+[2026-04-16 15:04:45] ============================================================
+[2026-04-16 15:04:45] PHASE 3: MEDIUM-IMPACT RETRAINING
+[2026-04-16 15:04:45] ============================================================
+[2026-04-16 15:04:46] B-3: Building background stenosis dataset...
+[2026-04-16 15:04:46] B-6: Copy-paste augmentation for tail classes...
+[2026-04-16 15:04:46]   Tail classes: 8,11,3
+[2026-04-16 15:04:46] ERROR in run_B3_background_images: Cannot re-initialize CUDA in forked subprocess. To use CUDA with multiprocessing, you must use the 'spawn' start method
+[2026-04-16 15:05:04] ERROR in run_B6_copy_paste: Cannot re-initialize CUDA in forked subprocess. To use CUDA with multiprocessing, you must use the 'spawn' start method
+[2026-04-16 15:05:05] C-2: Dropout sweep...
+[2026-04-16 15:05:05]   Training with dropout=0.05...
+[2026-04-16 15:05:05] C-4: Mask loss weight sweep...
+[2026-04-16 15:05:05]   Training with mask=5.0...
+[2026-04-16 15:05:05] ERROR in run_C2_dropout: Cannot re-initialize CUDA in forked subprocess. To use CUDA with multiprocessing, you must use the 'spawn' start method
+[2026-04-16 15:05:05] ERROR in run_C4_mask_weight: '[31m[1mmask[0m' is not a valid YOLO argument. Similar arguments are i.e. ['task=detect'].
+
+    Arguments received: ['yolo', '--arcade-root', '/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/scripts/../../arcade/submission', '--phase', 'all', '--devices', '0,1']. Ultralytics 'yolo' commands use the following syntax:
+
+        yolo TASK MODE ARGS
+
+        Where   TASK (optional) is one of ['segment', 'pose', 'classify', 'obb', 'detect']
+                MODE (required) is one of ['export', 'track', 'predict', 'val', 'train', 'benchmark']
+                ARGS (optional) are any number of custom 'arg=value' pairs like 'imgsz=320' that override defaults.
+                    See all ARGS at https://docs.ultralytics.com/usage/cfg or with 'yolo cfg'
+
+    1. Train a detection model for 10 epochs with an initial learning_rate of 0.01
+        yolo train data=coco8.yaml model=yolo26n.pt epochs=10 lr0=0.01
+
+    2. Predict a YouTube video using a pretrained segmentation model at image size 320:
+        yolo predict model=yolo26n-seg.pt source='https://youtu.be/LNwODJXcvt4' imgsz=320
+
+    3. Validate a pretrained detection model at batch-size 1 and image size 640:
+        yolo val model=yolo26n.pt data=coco8.yaml batch=1 imgsz=640
+
+    4. Export a YOLO26n classification model to ONNX format at image size 224 by 128 (no TASK required)
+        yolo export model=yolo26n-cls.pt format=onnx imgsz=224,128
+
+    5. Ultralytics solutions usage
+        yolo solutions count or any of ['crop', 'blur', 'workout', 'heatmap', 'isegment', 'visioneye', 'speed', 'queue', 'analytics', 'inference', 'trackzone'] source="path/to/video.mp4"
+
+    6. Run special commands:
+        yolo help
+        yolo checks
+        yolo version
+        yolo settings
+        yolo copy-cfg
+        yolo cfg
+        yolo solutions help
+
+    Docs: https://docs.ultralytics.com
+    Solutions: https://docs.ultralytics.com/solutions/
+    Community: https://community.ultralytics.com
+    GitHub: https://github.com/ultralytics/ultralytics
+    
+[2026-04-16 15:05:06] D-1: Random erasing sweep...
+[2026-04-16 15:05:06]   Training with erasing=0.2...
+[2026-04-16 15:05:06] D-2: Vertical flip (flipud=0.5)...
+[2026-04-16 15:05:06] ERROR in run_D2_flipud: Cannot re-initialize CUDA in forked subprocess. To use CUDA with multiprocessing, you must use the 'spawn' start method
+[2026-04-16 15:05:07] ERROR in run_D1_erasing: Cannot re-initialize CUDA in forked subprocess. To use CUDA with multiprocessing, you must use the 'spawn' start method
+[2026-04-16 15:05:07] D-3: Shear + translate sweep...
+[2026-04-16 15:05:07]   Training with shear=2.0, translate=0.1...
+[2026-04-16 15:16:36]     mAP50: 0.6559
+[2026-04-16 15:16:36]   Training with shear=5.0, translate=0.2...
+[2026-04-16 15:25:58]     mAP50: 0.6499
+[2026-04-16 15:25:58] ============================================================
+[2026-04-16 15:25:58] PHASE 4: COMPOUND INTERVENTIONS
+[2026-04-16 15:25:58] ============================================================
+[2026-04-16 15:25:58] COMBINED: Building best-of recipe from Phase 1-3 winners...
+[2026-04-16 15:25:58]   Combined overrides: {'label_smoothing': 0.05, 'flipud': 0.5, 'erasing': 0.2}
+[2026-04-16 15:25:59]   Training combined recipe seed=42...
+[2026-04-16 15:37:20]     seed=42 mAP50: 0.6217
+[2026-04-16 15:37:20]   Training combined recipe seed=7...
+[2026-04-16 15:47:56]     seed=7 mAP50: 0.6281
+[2026-04-16 15:47:56]   Training combined recipe seed=2024...
+[2026-04-16 15:57:14]     seed=2024 mAP50: 0.6173
+[2026-04-16 15:57:14] A-6: Multi-seed WBF ensemble...
+[2026-04-16 15:57:14]   Ensembling 3 models...
+[2026-04-16 15:57:25]   WBF ensemble mean F1: 0.3248
+[2026-04-16 15:57:25] B-5: Iterative pseudo-labeling (3 rounds)...
+[2026-04-16 15:57:25] E-1: P2 head for stenosis...
+[2026-04-16 15:57:26]   Round 1: conf=0.5...
+[2026-04-16 15:57:26] ERROR in run_B5_pseudo_labeling: Cannot re-initialize CUDA in forked subprocess. To use CUDA with multiprocessing, you must use the 'spawn' start method
+[2026-04-16 15:57:26] ERROR in run_E1_p2_head: Cannot re-initialize CUDA in forked subprocess. To use CUDA with multiprocessing, you must use the 'spawn' start method
+[2026-04-16 15:57:26] ============================================================
+[2026-04-16 15:57:26] PHASE 5: ADVANCED EXPERIMENTS
+[2026-04-16 15:57:26] ============================================================
+[2026-04-16 15:57:26] E-2: Knowledge distillation...
+[2026-04-16 15:57:26]   Training yolo11x teacher...
+[2026-04-16 15:57:26] D-4: Mosaic annealing schedule...
+[2026-04-16 15:57:27] ERROR in run_D4_mosaic_annealing: Cannot re-initialize CUDA in forked subprocess. To use CUDA with multiprocessing, you must use the 'spawn' start method
+[2026-04-16 15:57:28] ERROR in run_E2_distillation: Cannot re-initialize CUDA in forked subprocess. To use CUDA with multiprocessing, you must use the 'spawn' start method
+[2026-04-16 15:57:28] C-6: nbs=16 + lr sweep...
+[2026-04-16 15:57:28]   Training with nbs=16, lr0=0.00025...
+[2026-04-16 15:57:28] C-7: lrf sweep...
+[2026-04-16 15:57:28]   Training with lrf=0.001...
+[2026-04-16 15:57:29] ERROR in run_C7_lrf_sweep: Cannot re-initialize CUDA in forked subprocess. To use CUDA with multiprocessing, you must use the 'spawn' start method
+[2026-04-16 15:57:29] ERROR in run_C6_nbs_lr: Cannot re-initialize CUDA in forked subprocess. To use CUDA with multiprocessing, you must use the 'spawn' start method
+[2026-04-16 15:57:30] F-3: Error analysis...
+[2026-04-16 15:57:30] C-8: Warmup epochs sweep...
+[2026-04-16 15:57:30]   Training with warmup_epochs=3...
+[2026-04-16 15:57:31] ERROR in run_C8_warmup: Cannot re-initialize CUDA in forked subprocess. To use CUDA with multiprocessing, you must use the 'spawn' start method
+[2026-04-16 15:57:31] ERROR in run_F3_error_analysis: Cannot re-initialize CUDA in forked subprocess. To use CUDA with multiprocessing, you must use the 'spawn' start method
+[2026-04-16 15:57:31] ============================================================
+[2026-04-16 15:57:31] FINAL REPORT
+[2026-04-16 15:57:31] ============================================================
+[2026-04-16 15:57:31]   Total experiments: 30
+[2026-04-16 15:57:31] 
+  Best syntax model:  (mAP50=0.0000)
+[2026-04-16 15:57:31]   Best stenosis model:  (mAP50=0.0000)
+[2026-04-16 15:57:31] 
+  Full report: /home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/final_report.json
+[2026-04-16 15:57:31] 
+Total time: 1.3 hours
+[2026-04-16 15:57:31] DONE.
+[2026-04-16 16:35:22] ARCADE root: /home/c504-5090-x2/Documents/repos/angiography_vqa/arcade/submission
+[2026-04-16 16:35:22] Data dir:    /home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/data
+[2026-04-16 16:35:22] Results dir: /home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs
+[2026-04-16 16:35:22] Devices:     ['0', '1']
+[2026-04-16 16:35:22] Phases:      [2, 3, 4, 5]
+[2026-04-16 16:35:22] 
+[2026-04-16 16:35:22] Data integrity check passed.
+[2026-04-16 16:35:22]   Best syntax model: /home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/F1_official_syntax/F1_official_syntax_best.pt
+[2026-04-16 16:35:22]   Best stenosis model: /home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/F1_official_stenosis/F1_official_stenosis_best.pt
+[2026-04-16 16:35:22] ============================================================
+[2026-04-16 16:35:22] PHASE 2: HIGH-IMPACT RETRAINING
+[2026-04-16 16:35:22] ============================================================
+[2026-04-16 16:35:22]   subprocess run_B1_B2_tail_sampling_loss exited with code 1
+[2026-04-16 16:35:22]   subprocess run_B4_warmstart_stenosis exited with code 1
+[2026-04-16 16:35:23]   subprocess run_C1_label_smoothing exited with code 1
+[2026-04-16 16:35:23]   subprocess run_C3_dfl_sweep exited with code 1
+[2026-04-16 16:35:23] C-5: Multi-scale training for stenosis...
+[2026-04-16 16:35:37] ERROR in run_C5_multi_scale: division by zero
+[2026-04-16 16:35:37] ============================================================
+[2026-04-16 16:35:37] PHASE 3: MEDIUM-IMPACT RETRAINING
+[2026-04-16 16:35:37] ============================================================
+[2026-04-16 16:35:37]   subprocess run_B3_background_images exited with code 1
+[2026-04-16 16:35:37]   subprocess run_B6_copy_paste exited with code 1
+[2026-04-16 16:35:37]   subprocess run_C2_dropout exited with code 1
+[2026-04-16 16:35:37]   subprocess run_C4_mask_weight exited with code 1
+[2026-04-16 16:35:37]   subprocess run_D1_erasing exited with code 1
+[2026-04-16 16:35:37]   subprocess run_D2_flipud exited with code 1
+[2026-04-16 16:35:37] D-3: Shear + translate sweep...
+[2026-04-16 16:35:37]   Training with shear=2.0, translate=0.1...
+[2026-04-16 16:46:58]     mAP50: 0.6559
+[2026-04-16 16:46:58]   Training with shear=5.0, translate=0.2...
+[2026-04-16 16:56:05]     mAP50: 0.6499
+[2026-04-16 16:56:05] ============================================================
+[2026-04-16 16:56:05] PHASE 4: COMPOUND INTERVENTIONS
+[2026-04-16 16:56:05] ============================================================
+[2026-04-16 16:56:05] COMBINED: Building best-of recipe from Phase 1-3 winners...
+[2026-04-16 16:56:05]   Combined overrides: {'label_smoothing': 0.05, 'flipud': 0.5, 'erasing': 0.2}
+[2026-04-16 16:56:06]   Training combined recipe seed=42...
+[2026-04-16 17:06:54]     seed=42 mAP50: 0.6217
+[2026-04-16 17:06:54]   Training combined recipe seed=7...
+[2026-04-16 17:16:57]     seed=7 mAP50: 0.6281
+[2026-04-16 17:16:57]   Training combined recipe seed=2024...
+[2026-04-16 17:25:45]     seed=2024 mAP50: 0.6173
+[2026-04-16 17:25:45] A-6: Multi-seed WBF ensemble...
+[2026-04-16 17:25:45]   Ensembling 3 models...
+[2026-04-16 17:25:56]   WBF ensemble mean F1: 0.3248
+[2026-04-16 17:25:56]   subprocess run_B5_pseudo_labeling exited with code 1
+[2026-04-16 17:25:56]   subprocess run_E1_p2_head exited with code 1
+[2026-04-16 17:25:56] ============================================================
+[2026-04-16 17:25:56] PHASE 5: ADVANCED EXPERIMENTS
+[2026-04-16 17:25:56] ============================================================
+[2026-04-16 17:25:56]   subprocess run_E2_distillation exited with code 1
+[2026-04-16 17:25:56]   subprocess run_D4_mosaic_annealing exited with code 1
+[2026-04-16 17:25:56]   subprocess run_C6_nbs_lr exited with code 1
+[2026-04-16 17:25:56]   subprocess run_C7_lrf_sweep exited with code 1
+[2026-04-16 17:25:56]   subprocess run_C8_warmup exited with code 1
+[2026-04-16 17:25:56]   subprocess run_F3_error_analysis exited with code 1
+[2026-04-16 17:25:56] ============================================================
+[2026-04-16 17:25:56] FINAL REPORT
+[2026-04-16 17:25:56] ============================================================
+[2026-04-16 17:25:56]   Total experiments: 34
+[2026-04-16 17:25:56] 
+  Best syntax model:  (mAP50=0.0000)
+[2026-04-16 17:25:56]   Best stenosis model:  (mAP50=0.0000)
+[2026-04-16 17:25:56] 
+  Full report: /home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/final_report.json
+[2026-04-16 17:25:56] 
+Total time: 0.8 hours
+[2026-04-16 17:25:56] DONE.
