@@ -16308,5 +16308,231 @@
         ]
       }
     }
+  },
+  {
+    "name": "G1_train25_eval12",
+    "gpu": 0,
+    "description": "G-1: Train syntax on ALL 25 classes (min_count=0), evaluate F1 only on the 12 classes with \u2265300 instances. S54 recipe otherwise. Tests whether explicit rare-class training improves tail-class discrimination.",
+    "elapsed_hours": 0.59,
+    "status": "success",
+    "metrics": {
+      "syntax_model_test": {
+        "split": "test",
+        "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/stenosis_strategies/G1_train25_eval12/syntax_model/syntax_768_best.pt",
+        "mAP50": 0.7394,
+        "mAP50_95": 0.0,
+        "precision": 0.7257,
+        "recall": 0.7304,
+        "per_class": {
+          "1": {
+            "ap50": 0.8446,
+            "precision": 0.8118,
+            "recall": 0.8182,
+            "f1": 0.815
+          },
+          "2": {
+            "ap50": 0.7871,
+            "precision": 0.7239,
+            "recall": 0.7867,
+            "f1": 0.754
+          },
+          "3": {
+            "ap50": 0.874,
+            "precision": 0.8427,
+            "recall": 0.8349,
+            "f1": 0.8388
+          },
+          "4": {
+            "ap50": 0.8195,
+            "precision": 0.7578,
+            "recall": 0.8,
+            "f1": 0.7783
+          },
+          "5": {
+            "ap50": 0.9001,
+            "precision": 0.8604,
+            "recall": 0.8304,
+            "f1": 0.8451
+          },
+          "6": {
+            "ap50": 0.7916,
+            "precision": 0.7281,
+            "recall": 0.7929,
+            "f1": 0.7591
+          },
+          "7": {
+            "ap50": 0.7362,
+            "precision": 0.7593,
+            "recall": 0.7385,
+            "f1": 0.7488
+          },
+          "8": {
+            "ap50": 0.73,
+            "precision": 0.6797,
+            "recall": 0.7471,
+            "f1": 0.7118
+          },
+          "9": {
+            "ap50": 0.4411,
+            "precision": 0.4917,
+            "recall": 0.4655,
+            "f1": 0.4782
+          },
+          "11": {
+            "ap50": 0.883,
+            "precision": 0.8583,
+            "recall": 0.8468,
+            "f1": 0.8525
+          },
+          "13": {
+            "ap50": 0.4835,
+            "precision": 0.5638,
+            "recall": 0.4634,
+            "f1": 0.5087
+          },
+          "16": {
+            "ap50": 0.5823,
+            "precision": 0.6314,
+            "recall": 0.641,
+            "f1": 0.6362
+          }
+        },
+        "syntax_mAP50": 0.7394,
+        "kept_class_ids": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          11,
+          13,
+          16
+        ],
+        "filtered_from_n_classes": 25
+      },
+      "stenosis_model_test": {
+        "split": "test",
+        "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/stenosis_strategies/G1_train25_eval12/stenosis_model/stenosis_768_best.pt",
+        "mAP50": 0.3951,
+        "mAP50_95": 0.1367,
+        "precision": 0.4587,
+        "recall": 0.4351,
+        "per_class": {
+          "stenosis": {
+            "ap50": 0.3951,
+            "precision": 0.4587,
+            "recall": 0.4351,
+            "f1": 0.4466
+          }
+        },
+        "stenosis_AP50": 0.3951
+      },
+      "final_test": {
+        "split": "test",
+        "mAP50": 0.7129,
+        "per_class": {
+          "1": {
+            "ap50": 0.8446,
+            "precision": 0.8118,
+            "recall": 0.8182,
+            "f1": 0.815
+          },
+          "2": {
+            "ap50": 0.7871,
+            "precision": 0.7239,
+            "recall": 0.7867,
+            "f1": 0.754
+          },
+          "3": {
+            "ap50": 0.874,
+            "precision": 0.8427,
+            "recall": 0.8349,
+            "f1": 0.8388
+          },
+          "4": {
+            "ap50": 0.8195,
+            "precision": 0.7578,
+            "recall": 0.8,
+            "f1": 0.7783
+          },
+          "5": {
+            "ap50": 0.9001,
+            "precision": 0.8604,
+            "recall": 0.8304,
+            "f1": 0.8451
+          },
+          "6": {
+            "ap50": 0.7916,
+            "precision": 0.7281,
+            "recall": 0.7929,
+            "f1": 0.7591
+          },
+          "7": {
+            "ap50": 0.7362,
+            "precision": 0.7593,
+            "recall": 0.7385,
+            "f1": 0.7488
+          },
+          "8": {
+            "ap50": 0.73,
+            "precision": 0.6797,
+            "recall": 0.7471,
+            "f1": 0.7118
+          },
+          "9": {
+            "ap50": 0.4411,
+            "precision": 0.4917,
+            "recall": 0.4655,
+            "f1": 0.4782
+          },
+          "11": {
+            "ap50": 0.883,
+            "precision": 0.8583,
+            "recall": 0.8468,
+            "f1": 0.8525
+          },
+          "13": {
+            "ap50": 0.4835,
+            "precision": 0.5638,
+            "recall": 0.4634,
+            "f1": 0.5087
+          },
+          "16": {
+            "ap50": 0.5823,
+            "precision": 0.6314,
+            "recall": 0.641,
+            "f1": 0.6362
+          },
+          "stenosis": {
+            "ap50": 0.3951,
+            "precision": 0.4587,
+            "recall": 0.4351,
+            "f1": 0.4466
+          }
+        },
+        "syntax_mAP50": 0.7394,
+        "stenosis_AP50": 0.3951,
+        "syntax_model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/stenosis_strategies/G1_train25_eval12/syntax_model/syntax_768_best.pt",
+        "stenosis_model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/stenosis_strategies/G1_train25_eval12/stenosis_model/stenosis_768_best.pt",
+        "precision": 0.7052,
+        "recall": 0.7077,
+        "mAP50_95": 0
+      },
+      "stenosis_overrides": {
+        "copy_paste": 0.3,
+        "scale": 0.5,
+        "mosaic": 0.8,
+        "close_mosaic": 15,
+        "stenosis_lr0": 0.005,
+        "stenosis_epochs": 300,
+        "clahe_preprocess": true,
+        "clahe_clip_limit": 2.0,
+        "clahe_tile_size": 8
+      }
+    }
   }
 ]
