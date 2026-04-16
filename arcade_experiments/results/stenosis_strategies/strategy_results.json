@@ -17256,5 +17256,452 @@
         "clahe_tile_size": 8
       }
     }
+  },
+  {
+    "name": "H5_best_single_stage",
+    "gpu": 1,
+    "description": "H-5: S54 best recipe with single-stage training (no lr/10 split). All 25 syntax classes. SGD, mosaic=0.8 on stenosis, CLAHE on stenosis. Tests whether the freeze/unfreeze LR step was helping or hurting our best config.",
+    "elapsed_hours": 0.48,
+    "status": "success",
+    "metrics": {
+      "syntax_model_test": {
+        "split": "test",
+        "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/stenosis_strategies/H5_best_single_stage/syntax_model/syntax_768_best.pt",
+        "mAP50": 0.4313,
+        "mAP50_95": 0.1714,
+        "precision": 0.4902,
+        "recall": 0.4804,
+        "per_class": {
+          "1": {
+            "ap50": 0.7997,
+            "precision": 0.7365,
+            "recall": 0.7909,
+            "f1": 0.7627
+          },
+          "2": {
+            "ap50": 0.7562,
+            "precision": 0.7172,
+            "recall": 0.7182,
+            "f1": 0.7177
+          },
+          "3": {
+            "ap50": 0.8483,
+            "precision": 0.7818,
+            "recall": 0.7982,
+            "f1": 0.7899
+          },
+          "4": {
+            "ap50": 0.6613,
+            "precision": 0.5694,
+            "recall": 0.7579,
+            "f1": 0.6503
+          },
+          "5": {
+            "ap50": 0.8567,
+            "precision": 0.8509,
+            "recall": 0.801,
+            "f1": 0.8252
+          },
+          "6": {
+            "ap50": 0.6984,
+            "precision": 0.6328,
+            "recall": 0.7646,
+            "f1": 0.6925
+          },
+          "7": {
+            "ap50": 0.6746,
+            "precision": 0.6379,
+            "recall": 0.7021,
+            "f1": 0.6685
+          },
+          "8": {
+            "ap50": 0.7166,
+            "precision": 0.7102,
+            "recall": 0.7356,
+            "f1": 0.7227
+          },
+          "9": {
+            "ap50": 0.3335,
+            "precision": 0.3476,
+            "recall": 0.3103,
+            "f1": 0.3279
+          },
+          "9a": {
+            "ap50": 0.3038,
+            "precision": 0.2614,
+            "recall": 0.4737,
+            "f1": 0.3369
+          },
+          "10": {
+            "ap50": 0.3233,
+            "precision": 0.3863,
+            "recall": 0.7143,
+            "f1": 0.5014
+          },
+          "10a": {
+            "ap50": 0.0255,
+            "precision": 1.0,
+            "recall": 0.0,
+            "f1": 0.0
+          },
+          "11": {
+            "ap50": 0.8701,
+            "precision": 0.8589,
+            "recall": 0.8378,
+            "f1": 0.8482
+          },
+          "12": {
+            "ap50": 0.1026,
+            "precision": 0.2081,
+            "recall": 0.2,
+            "f1": 0.204
+          },
+          "12a": {
+            "ap50": 0.2411,
+            "precision": 0.4553,
+            "recall": 0.2786,
+            "f1": 0.3457
+          },
+          "13": {
+            "ap50": 0.481,
+            "precision": 0.5356,
+            "recall": 0.5657,
+            "f1": 0.5502
+          },
+          "14": {
+            "ap50": 0.3854,
+            "precision": 0.4107,
+            "recall": 0.46,
+            "f1": 0.434
+          },
+          "14a": {
+            "ap50": 0.2229,
+            "precision": 0.3254,
+            "recall": 0.266,
+            "f1": 0.2927
+          },
+          "15": {
+            "ap50": 0.0369,
+            "precision": 0.0761,
+            "recall": 0.125,
+            "f1": 0.0946
+          },
+          "16": {
+            "ap50": 0.5273,
+            "precision": 0.5618,
+            "recall": 0.6026,
+            "f1": 0.5815
+          },
+          "16a": {
+            "ap50": 0.2029,
+            "precision": 0.2999,
+            "recall": 0.1364,
+            "f1": 0.1875
+          },
+          "16b": {
+            "ap50": 0.2635,
+            "precision": 0.3705,
+            "recall": 0.5,
+            "f1": 0.4256
+          },
+          "16c": {
+            "ap50": 0.0691,
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0
+          },
+          "12b": {
+            "ap50": 0.2325,
+            "precision": 0.255,
+            "recall": 0.3704,
+            "f1": 0.3021
+          },
+          "14b": {
+            "ap50": 0.149,
+            "precision": 0.2663,
+            "recall": 0.1007,
+            "f1": 0.1461
+          }
+        },
+        "syntax_mAP50": 0.4313
+      },
+      "stenosis_model_test": {
+        "split": "test",
+        "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/stenosis_strategies/H5_best_single_stage/stenosis_model/stenosis_768_best.pt",
+        "mAP50": 0.2747,
+        "mAP50_95": 0.0849,
+        "precision": 0.336,
+        "recall": 0.3766,
+        "per_class": {
+          "stenosis": {
+            "ap50": 0.2747,
+            "precision": 0.336,
+            "recall": 0.3766,
+            "f1": 0.3551
+          }
+        },
+        "stenosis_AP50": 0.2747
+      },
+      "final_test": {
+        "split": "test",
+        "mAP50": 0.4253,
+        "per_class": {
+          "1": {
+            "ap50": 0.7997,
+            "precision": 0.7365,
+            "recall": 0.7909,
+            "f1": 0.7627
+          },
+          "2": {
+            "ap50": 0.7562,
+            "precision": 0.7172,
+            "recall": 0.7182,
+            "f1": 0.7177
+          },
+          "3": {
+            "ap50": 0.8483,
+            "precision": 0.7818,
+            "recall": 0.7982,
+            "f1": 0.7899
+          },
+          "4": {
+            "ap50": 0.6613,
+            "precision": 0.5694,
+            "recall": 0.7579,
+            "f1": 0.6503
+          },
+          "5": {
+            "ap50": 0.8567,
+            "precision": 0.8509,
+            "recall": 0.801,
+            "f1": 0.8252
+          },
+          "6": {
+            "ap50": 0.6984,
+            "precision": 0.6328,
+            "recall": 0.7646,
+            "f1": 0.6925
+          },
+          "7": {
+            "ap50": 0.6746,
+            "precision": 0.6379,
+            "recall": 0.7021,
+            "f1": 0.6685
+          },
+          "8": {
+            "ap50": 0.7166,
+            "precision": 0.7102,
+            "recall": 0.7356,
+            "f1": 0.7227
+          },
+          "9": {
+            "ap50": 0.3335,
+            "precision": 0.3476,
+            "recall": 0.3103,
+            "f1": 0.3279
+          },
+          "9a": {
+            "ap50": 0.3038,
+            "precision": 0.2614,
+            "recall": 0.4737,
+            "f1": 0.3369
+          },
+          "10": {
+            "ap50": 0.3233,
+            "precision": 0.3863,
+            "recall": 0.7143,
+            "f1": 0.5014
+          },
+          "10a": {
+            "ap50": 0.0255,
+            "precision": 1.0,
+            "recall": 0.0,
+            "f1": 0.0
+          },
+          "11": {
+            "ap50": 0.8701,
+            "precision": 0.8589,
+            "recall": 0.8378,
+            "f1": 0.8482
+          },
+          "12": {
+            "ap50": 0.1026,
+            "precision": 0.2081,
+            "recall": 0.2,
+            "f1": 0.204
+          },
+          "12a": {
+            "ap50": 0.2411,
+            "precision": 0.4553,
+            "recall": 0.2786,
+            "f1": 0.3457
+          },
+          "13": {
+            "ap50": 0.481,
+            "precision": 0.5356,
+            "recall": 0.5657,
+            "f1": 0.5502
+          },
+          "14": {
+            "ap50": 0.3854,
+            "precision": 0.4107,
+            "recall": 0.46,
+            "f1": 0.434
+          },
+          "14a": {
+            "ap50": 0.2229,
+            "precision": 0.3254,
+            "recall": 0.266,
+            "f1": 0.2927
+          },
+          "15": {
+            "ap50": 0.0369,
+            "precision": 0.0761,
+            "recall": 0.125,
+            "f1": 0.0946
+          },
+          "16": {
+            "ap50": 0.5273,
+            "precision": 0.5618,
+            "recall": 0.6026,
+            "f1": 0.5815
+          },
+          "16a": {
+            "ap50": 0.2029,
+            "precision": 0.2999,
+            "recall": 0.1364,
+            "f1": 0.1875
+          },
+          "16b": {
+            "ap50": 0.2635,
+            "precision": 0.3705,
+            "recall": 0.5,
+            "f1": 0.4256
+          },
+          "16c": {
+            "ap50": 0.0691,
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0
+          },
+          "12b": {
+            "ap50": 0.2325,
+            "precision": 0.255,
+            "recall": 0.3704,
+            "f1": 0.3021
+          },
+          "14b": {
+            "ap50": 0.149,
+            "precision": 0.2663,
+            "recall": 0.1007,
+            "f1": 0.1461
+          },
+          "stenosis": {
+            "ap50": 0.2747,
+            "precision": 0.336,
+            "recall": 0.3766,
+            "f1": 0.3551
+          }
+        },
+        "syntax_mAP50": 0.4313,
+        "stenosis_AP50": 0.2747,
+        "syntax_model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/stenosis_strategies/H5_best_single_stage/syntax_model/syntax_768_best.pt",
+        "stenosis_model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/stenosis_strategies/H5_best_single_stage/stenosis_model/stenosis_768_best.pt",
+        "precision": 0.4843,
+        "recall": 0.4764,
+        "mAP50_95": 0
+      },
+      "stenosis_overrides": {
+        "copy_paste": 0.0,
+        "scale": 0.5,
+        "mosaic": 0.8,
+        "close_mosaic": 15,
+        "stenosis_lr0": 0.005,
+        "stenosis_epochs": 300,
+        "clahe_preprocess": true,
+        "clahe_clip_limit": 2.0,
+        "clahe_tile_size": 8
+      }
+    }
+  },
+  {
+    "name": "H4_ssass_single_stage",
+    "gpu": 0,
+    "description": "H-4: True SSASS (single-stage, lr=0.01 continuous, no freeze, yolov8m-seg). Fixes the lr/10 bug in all prior SSASS attempts. Conservative augs, then pseudo-label syntax images at conf=0.5 and retrain.",
+    "elapsed_hours": 1.12,
+    "status": "success",
+    "metrics": {
+      "stenosis_model_test": {
+        "split": "test",
+        "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/stenosis_strategies/H4_ssass_single_stage/pass2/stenosis_pass2_best.pt",
+        "mAP50": 0.3518,
+        "mAP50_95": 0.1151,
+        "precision": 0.4077,
+        "recall": 0.4306,
+        "per_class": {
+          "stenosis": {
+            "ap50": 0.3518,
+            "precision": 0.4077,
+            "recall": 0.4306,
+            "f1": 0.4188
+          }
+        },
+        "stenosis_AP50": 0.3518
+      },
+      "final_test": {
+        "split": "test",
+        "mAP50": 0.3518,
+        "mean_f1": 0.4188,
+        "per_class": {
+          "stenosis": {
+            "ap50": 0.3518,
+            "precision": 0.4077,
+            "recall": 0.4306,
+            "f1": 0.4188
+          }
+        },
+        "syntax_mAP50": 0,
+        "stenosis_AP50": 0.3518,
+        "precision": 0.4077,
+        "recall": 0.4306,
+        "mAP50_95": 0,
+        "training_note": "E1 SSASS faithful: 1200 GT + pseudo-labeled syntax",
+        "stenosis_model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/stenosis_strategies/H4_ssass_single_stage/pass2/stenosis_pass2_best.pt",
+        "pseudo_stats": {
+          "images_processed": 999,
+          "images_with_predictions": 400,
+          "total_pseudo_instances": 527,
+          "conf_threshold": 0.5,
+          "imgsz": 768
+        },
+        "bezier_stats": {
+          "original": 998,
+          "augmented": 408,
+          "total": 1406,
+          "fraction": 0.4
+        },
+        "small_cc_report": {
+          "error": "CUDA out of memory. Tried to allocate 7.94 GiB. GPU 0 has a total capacity of 31.33 GiB of which 7.54 GiB is free. Including non-PyTorch memory, this process has 22.77 GiB memory in use. Process 1281563 has 557.95 MiB memory in use. Of the allocated memory 13.75 GiB is allocated by PyTorch, and 8.36 GiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://docs.pytorch.org/docs/stable/notes/cuda.html#optimizing-memory-usage-with-pytorch-cuda-alloc-conf)"
+        }
+      },
+      "pseudo_stats": {
+        "images_processed": 999,
+        "images_with_predictions": 400,
+        "total_pseudo_instances": 527,
+        "conf_threshold": 0.5,
+        "imgsz": 768
+      },
+      "bezier_stats": {
+        "original": 998,
+        "augmented": 408,
+        "total": 1406,
+        "fraction": 0.4
+      },
+      "small_cc_report": {
+        "error": "CUDA out of memory. Tried to allocate 7.94 GiB. GPU 0 has a total capacity of 31.33 GiB of which 7.54 GiB is free. Including non-PyTorch memory, this process has 22.77 GiB memory in use. Process 1281563 has 557.95 MiB memory in use. Of the allocated memory 13.75 GiB is allocated by PyTorch, and 8.36 GiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://docs.pytorch.org/docs/stable/notes/cuda.html#optimizing-memory-usage-with-pytorch-cuda-alloc-conf)"
+      },
+      "pass1_weights": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/stenosis_strategies/H4_ssass_single_stage/pass1/stenosis_pass1_best.pt",
+      "pass2_weights": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/stenosis_strategies/H4_ssass_single_stage/pass2/stenosis_pass2_best.pt"
+    }
   }
 ]
