@@ -23,6 +23,19 @@ data_final.yaml
 *.json
 !config.yaml
 
+# Preprocessed / generated data
+ARCADE_preprocessed/
+arcade_experiments/data/
+arcade_experiments/results/
+
+# Submission variants
+arcade/submission/syntax_clahe/
+arcade/submission/syntax_hec/
+
 # Python
 __pycache__/
 *.pyc
+
+# Logs
+*.log
+nohup*.out
