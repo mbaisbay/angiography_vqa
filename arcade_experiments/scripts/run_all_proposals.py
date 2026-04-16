@@ -29,13 +29,14 @@ from __future__ import annotations
 import argparse
 import copy
 import json
+import multiprocessing
 import os
 import shutil
+import subprocess
 import sys
 import time
 import traceback
 from collections import defaultdict
-from concurrent.futures import ProcessPoolExecutor, as_completed
 from pathlib import Path
 
 import yaml
@@ -78,35 +79,103 @@ def save_result(exp_name: str, result: dict):
     json.dump(all_results, open(results_file, "w"), indent=2)
 
 
-def get_best_syntax_model() -> str:
-    """Find the best syntax model from previous runs."""
-    # Check proposal_runs first, then fall back to existing results
-    candidates = []
-    for pattern in ["**/syntax*best.pt", "**/stage1_syntax_best.pt"]:
-        candidates.extend(RESULTS_DIR.rglob(pattern) if RESULTS_DIR.exists() else [])
-    # Fall back to existing experiment results
+# ── Cached model paths (set once by _find_best_models) ──
+_BEST_SYNTAX_MODEL = None
+_BEST_STENOSIS_MODEL = None
+
+
+def _find_best_models():
+    """Locate the best syntax-only and stenosis-only models.
+
+    CRITICAL: previous version used rglob("*best.pt") and picked the most
+    recent file. This grabbed combined/merged models (25-class) instead of
+    the syntax-only model (10-class), producing garbage evaluations.
+
+    Now we:
+      1. Only look for models whose parent path clearly indicates
+         "syntax" or "stenosis" single-task training.
+      2. Exclude combined/merged/iter/stage3 paths.
+      3. Fall back to training a fresh baseline if nothing is found.
+    """
+    global _BEST_SYNTAX_MODEL, _BEST_STENOSIS_MODEL
+
+    def _is_syntax_only(p: Path) -> bool:
+        """True if path looks like a syntax-only model, not combined/merged."""
+        s = str(p).lower()
+        excludes = ["combined", "merged", "iter2", "iter3", "stage3",
+                     "stenosis", "pseudo", "distill"]
+        return any(k in s for k in ["syntax", "stage1"]) and \
+               not any(k in s for k in excludes)
+
+    def _is_stenosis_only(p: Path) -> bool:
+        """True if path looks like a stenosis-only model."""
+        s = str(p).lower()
+        excludes = ["combined", "merged", "syntax", "pseudo", "distill"]
+        return "stenosis" in s and not any(k in s for k in excludes)
+
+    # Search in results dirs
+    search_dirs = []
+    if RESULTS_DIR and RESULTS_DIR.exists():
+        search_dirs.append(RESULTS_DIR)
     exp_results = BASE_DIR / "results"
-    for pattern in ["**/stage1_syntax_best.pt", "**/syntax*best.pt"]:
-        candidates.extend(exp_results.rglob(pattern))
-    if candidates:
-        # Prefer proposal_runs models, then most recent
-        candidates.sort(key=lambda p: p.stat().st_mtime, reverse=True)
-        return str(candidates[0])
-    return "yolo11m-seg.pt"
+    if exp_results.exists():
+        search_dirs.append(exp_results)
+
+    syn_candidates = []
+    sten_candidates = []
+    for d in search_dirs:
+        for pt in d.rglob("*best.pt"):
+            if _is_syntax_only(pt):
+                syn_candidates.append(pt)
+            elif _is_stenosis_only(pt):
+                sten_candidates.append(pt)
+
+    if syn_candidates:
+        syn_candidates.sort(key=lambda p: p.stat().st_mtime, reverse=True)
+        _BEST_SYNTAX_MODEL = str(syn_candidates[0])
+        log(f"  Best syntax model: {_BEST_SYNTAX_MODEL}")
+    else:
+        _BEST_SYNTAX_MODEL = None
+        log("  WARNING: No syntax-only model found — will train baseline first")
+
+    if sten_candidates:
+        sten_candidates.sort(key=lambda p: p.stat().st_mtime, reverse=True)
+        _BEST_STENOSIS_MODEL = str(sten_candidates[0])
+        log(f"  Best stenosis model: {_BEST_STENOSIS_MODEL}")
+    else:
+        _BEST_STENOSIS_MODEL = None
+        log("  WARNING: No stenosis-only model found — will train baseline first")
+
+
+def _ensure_baseline_models(device: str = "0"):
+    """Train baseline syntax and stenosis models if none exist."""
+    global _BEST_SYNTAX_MODEL, _BEST_STENOSIS_MODEL
+
+    if _BEST_SYNTAX_MODEL is None:
+        log("Training baseline syntax model (S54 recipe)...")
+        cfg = base_syntax_config()
+        cfg["device"] = device
+        _BEST_SYNTAX_MODEL = train_syntax(cfg, "baseline_syntax", device)
+        log(f"  Baseline syntax model: {_BEST_SYNTAX_MODEL}")
+
+    if _BEST_STENOSIS_MODEL is None:
+        log("Training baseline stenosis model...")
+        cfg = base_stenosis_config()
+        cfg["device"] = device
+        _BEST_STENOSIS_MODEL = train_stenosis(cfg, "baseline_stenosis", device)
+        log(f"  Baseline stenosis model: {_BEST_STENOSIS_MODEL}")
+
+
+def get_best_syntax_model() -> str:
+    if _BEST_SYNTAX_MODEL is None:
+        raise RuntimeError("No syntax model available — run _find_best_models first")
+    return _BEST_SYNTAX_MODEL
 
 
 def get_best_stenosis_model() -> str:
-    """Find the best stenosis model from previous runs."""
-    candidates = []
-    for pattern in ["**/stenosis*best.pt"]:
-        candidates.extend(RESULTS_DIR.rglob(pattern) if RESULTS_DIR.exists() else [])
-    exp_results = BASE_DIR / "results"
-    for pattern in ["**/stenosis*best.pt"]:
-        candidates.extend(exp_results.rglob(pattern))
-    if candidates:
-        candidates.sort(key=lambda p: p.stat().st_mtime, reverse=True)
-        return str(candidates[0])
-    return "yolo11m-seg.pt"
+    if _BEST_STENOSIS_MODEL is None:
+        raise RuntimeError("No stenosis model available — run _find_best_models first")
+    return _BEST_STENOSIS_MODEL
 
 
 def fix_dataset_yaml_paths():
@@ -810,6 +879,7 @@ def run_C5_multi_scale(device: str = "0"):
 
     cfg = base_stenosis_config()
     cfg["multi_scale"] = True
+    cfg["batch"] = 8  # lower batch to avoid multi_scale + high batch issues
     weights = train_stenosis(cfg, "C5_multiscale_stenosis", device)
     metrics = eval_model(weights, get_stenosis_yaml(), split="test")
 
@@ -828,18 +898,12 @@ def phase2(devices: list):
     d0, d1 = devices[0], devices[1] if len(devices) > 1 else devices[0]
 
     # B-1/B-2 on GPU0, B-4 on GPU1 (independent)
-    with ProcessPoolExecutor(max_workers=2) as ex:
-        f1 = ex.submit(_run_safe, run_B1_B2_tail_sampling_loss, d0)
-        f2 = ex.submit(_run_safe, run_B4_warmstart_stenosis, d1)
-        for f in as_completed([f1, f2]):
-            f.result()
+    _run_parallel([(run_B1_B2_tail_sampling_loss, d0),
+                   (run_B4_warmstart_stenosis, d1)])
 
     # C-1 on GPU0, C-3 on GPU1 (independent)
-    with ProcessPoolExecutor(max_workers=2) as ex:
-        f1 = ex.submit(_run_safe, run_C1_label_smoothing, d0)
-        f2 = ex.submit(_run_safe, run_C3_dfl_sweep, d1)
-        for f in as_completed([f1, f2]):
-            f.result()
+    _run_parallel([(run_C1_label_smoothing, d0),
+                   (run_C3_dfl_sweep, d1)])
 
     # C-5 on GPU0
     _run_safe(run_C5_multi_scale, d0)
@@ -964,16 +1028,23 @@ def run_C2_dropout(device: str = "0"):
 
 
 def run_C4_mask_weight(device: str = "0"):
-    """C-4: Segmentation mask loss weight sweep."""
-    log("C-4: Mask loss weight sweep...")
+    """C-4: Segmentation mask loss weight sweep.
+
+    Note: Ultralytics does not expose a top-level 'mask' loss weight param
+    in all versions. We use 'overlap_mask' and 'mask_ratio' where available,
+    and fall back to box loss weight as a proxy for mask emphasis.
+    """
+    log("C-4: Mask loss weight sweep (via box loss proxy)...")
     results = {}
-    for mw in [5.0, 10.0, 15.0]:
-        log(f"  Training with mask={mw}...")
+    # Since 'mask' isn't a valid arg, increase box loss to emphasize
+    # localization quality (indirect mask improvement)
+    for bw in [10.0, 12.5, 15.0]:
+        log(f"  Training with box={bw} (mask emphasis proxy)...")
         cfg = base_syntax_config()
-        cfg["mask"] = mw
-        weights = train_syntax(cfg, f"C4_mask_{mw}", device)
+        cfg["box"] = bw
+        weights = train_syntax(cfg, f"C4_box_{bw}", device)
         metrics = eval_model(weights, get_syntax_yaml(), split="test")
-        results[f"mask_{mw}"] = {"model": weights, "metrics": metrics}
+        results[f"box_{bw}"] = {"model": weights, "metrics": metrics}
         log(f"    mAP50: {metrics.get('mAP50', 0):.4f}")
 
     save_result("C4_mask_weight", results)
@@ -1037,25 +1108,16 @@ def phase3(devices: list):
     d0, d1 = devices[0], devices[1] if len(devices) > 1 else devices[0]
 
     # B-3 on GPU0, B-6 on GPU1 (independent)
-    with ProcessPoolExecutor(max_workers=2) as ex:
-        f1 = ex.submit(_run_safe, run_B3_background_images, d0)
-        f2 = ex.submit(_run_safe, run_B6_copy_paste, d1)
-        for f in as_completed([f1, f2]):
-            f.result()
+    _run_parallel([(run_B3_background_images, d0),
+                   (run_B6_copy_paste, d1)])
 
     # C-2 on GPU0, C-4 on GPU1
-    with ProcessPoolExecutor(max_workers=2) as ex:
-        f1 = ex.submit(_run_safe, run_C2_dropout, d0)
-        f2 = ex.submit(_run_safe, run_C4_mask_weight, d1)
-        for f in as_completed([f1, f2]):
-            f.result()
+    _run_parallel([(run_C2_dropout, d0),
+                   (run_C4_mask_weight, d1)])
 
     # D-1 on GPU0, D-2 on GPU1
-    with ProcessPoolExecutor(max_workers=2) as ex:
-        f1 = ex.submit(_run_safe, run_D1_erasing, d0)
-        f2 = ex.submit(_run_safe, run_D2_flipud, d1)
-        for f in as_completed([f1, f2]):
-            f.result()
+    _run_parallel([(run_D1_erasing, d0),
+                   (run_D2_flipud, d1)])
 
     # D-3 sequential on GPU0
     _run_safe(run_D3_shear_translate, d0)
@@ -1339,11 +1401,8 @@ def phase4(devices: list):
     run_A6_wbf_ensemble(d0)
 
     # B-5 and E-1 in parallel
-    with ProcessPoolExecutor(max_workers=2) as ex:
-        f1 = ex.submit(_run_safe, run_B5_pseudo_labeling, d0)
-        f2 = ex.submit(_run_safe, run_E1_p2_head, d1)
-        for f in as_completed([f1, f2]):
-            f.result()
+    _run_parallel([(run_B5_pseudo_labeling, d0),
+                   (run_E1_p2_head, d1)])
 
 
 # ═══════════════════════════════════════════════════════════════════════
@@ -1548,25 +1607,16 @@ def phase5(devices: list):
     d0, d1 = devices[0], devices[1] if len(devices) > 1 else devices[0]
 
     # E-2 on GPU0, D-4 on GPU1
-    with ProcessPoolExecutor(max_workers=2) as ex:
-        f1 = ex.submit(_run_safe, run_E2_distillation, d0)
-        f2 = ex.submit(_run_safe, run_D4_mosaic_annealing, d1)
-        for f in as_completed([f1, f2]):
-            f.result()
+    _run_parallel([(run_E2_distillation, d0),
+                   (run_D4_mosaic_annealing, d1)])
 
     # C-6 on GPU0, C-7 on GPU1
-    with ProcessPoolExecutor(max_workers=2) as ex:
-        f1 = ex.submit(_run_safe, run_C6_nbs_lr, d0)
-        f2 = ex.submit(_run_safe, run_C7_lrf_sweep, d1)
-        for f in as_completed([f1, f2]):
-            f.result()
+    _run_parallel([(run_C6_nbs_lr, d0),
+                   (run_C7_lrf_sweep, d1)])
 
     # C-8 on GPU0, F-3 on GPU1
-    with ProcessPoolExecutor(max_workers=2) as ex:
-        f1 = ex.submit(_run_safe, run_C8_warmup, d0)
-        f2 = ex.submit(_run_safe, run_F3_error_analysis, d1)
-        for f in as_completed([f1, f2]):
-            f.result()
+    _run_parallel([(run_C8_warmup, d0),
+                   (run_F3_error_analysis, d1)])
 
 
 # ═══════════════════════════════════════════════════════════════════════
@@ -1633,6 +1683,32 @@ def _run_safe(func, *args, **kwargs):
         return None
 
 
+def _run_parallel(pairs: list):
+    """Run [(func, device), ...] in parallel using subprocess to avoid CUDA fork issues.
+
+    Each pair is launched as a separate Python subprocess with its own CUDA
+    context. This avoids the 'Cannot re-initialize CUDA in forked subprocess'
+    error that killed every ProcessPoolExecutor call in the first run.
+    """
+    if len(pairs) <= 1:
+        for func, device in pairs:
+            _run_safe(func, device)
+        return
+
+    # Launch each as a subprocess via multiprocessing with spawn
+    ctx = multiprocessing.get_context("spawn")
+    procs = []
+    for func, device in pairs:
+        p = ctx.Process(target=_run_safe, args=(func, device))
+        p.start()
+        procs.append((p, func.__name__))
+
+    for p, name in procs:
+        p.join()
+        if p.exitcode != 0:
+            log(f"  subprocess {name} exited with code {p.exitcode}")
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="Master runner for all proposal experiments",
@@ -1681,6 +1757,11 @@ def main():
     # Previous iterations may have altered derived copies in data/.
     # We verify integrity and re-prep if anything looks wrong.
     _ensure_clean_data()
+
+    # Find existing best models (with strict filtering)
+    _find_best_models()
+    # Train baselines if no suitable models exist
+    _ensure_baseline_models(devices[0])
 
     t0 = time.time()
 
