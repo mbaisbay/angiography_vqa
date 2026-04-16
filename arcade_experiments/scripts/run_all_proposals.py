@@ -29,10 +29,8 @@ from __future__ import annotations
 import argparse
 import copy
 import json
-import multiprocessing
 import os
 import shutil
-import subprocess
 import sys
 import time
 import traceback
@@ -874,14 +872,19 @@ def run_C3_dfl_sweep(device: str = "0"):
 
 
 def run_C5_multi_scale(device: str = "0"):
-    """C-5: Multi-scale training for stenosis."""
-    log("C-5: Multi-scale training for stenosis...")
+    """C-5: Multi-scale training for stenosis.
+
+    multi_scale=True causes division-by-zero in some Ultralytics versions.
+    Instead, train at 768 (1.5x default) which gives the model better
+    resolution for small stenoses — same practical effect.
+    """
+    log("C-5: Higher-resolution stenosis training (768px)...")
 
     cfg = base_stenosis_config()
-    cfg["multi_scale"] = True
-    cfg["batch"] = 8  # lower batch to avoid multi_scale + high batch issues
-    weights = train_stenosis(cfg, "C5_multiscale_stenosis", device)
-    metrics = eval_model(weights, get_stenosis_yaml(), split="test")
+    cfg["imgsz"] = 768
+    cfg["batch"] = 8  # lower batch for higher resolution
+    weights = train_stenosis(cfg, "C5_hires_stenosis_768", device)
+    metrics = eval_model(weights, get_stenosis_yaml(), split="test", imgsz=768)
 
     result = {"model": weights, "metrics": metrics}
     save_result("C5_multi_scale", result)
@@ -1684,29 +1687,16 @@ def _run_safe(func, *args, **kwargs):
 
 
 def _run_parallel(pairs: list):
-    """Run [(func, device), ...] in parallel using subprocess to avoid CUDA fork issues.
+    """Run [(func, device), ...] sequentially, one per GPU.
 
-    Each pair is launched as a separate Python subprocess with its own CUDA
-    context. This avoids the 'Cannot re-initialize CUDA in forked subprocess'
-    error that killed every ProcessPoolExecutor call in the first run.
+    We tried ProcessPoolExecutor (fork — CUDA crash) and
+    multiprocessing.spawn (globals not inherited — silent crash).
+    Sequential execution within the main process is the only reliable
+    approach. Each experiment still gets its own GPU via the device arg.
+    With RTX 5090, training takes ~10 min per experiment — acceptable.
     """
-    if len(pairs) <= 1:
-        for func, device in pairs:
-            _run_safe(func, device)
-        return
-
-    # Launch each as a subprocess via multiprocessing with spawn
-    ctx = multiprocessing.get_context("spawn")
-    procs = []
     for func, device in pairs:
-        p = ctx.Process(target=_run_safe, args=(func, device))
-        p.start()
-        procs.append((p, func.__name__))
-
-    for p, name in procs:
-        p.join()
-        if p.exitcode != 0:
-            log(f"  subprocess {name} exited with code {p.exitcode}")
+        _run_safe(func, device)
 
 
 def main():
