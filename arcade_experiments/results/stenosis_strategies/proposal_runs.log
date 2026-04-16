@@ -1,0 +1,721 @@
+
+[2026-04-16 03:42:08] Using S54 syntax weights:   ../results/stenosis_strategies/S54_s43b_clahe/syntax_model/syntax_768_best.pt
+
+[2026-04-16 03:42:08] Using S54 stenosis weights: ../results/stenosis_strategies/S54_s43b_clahe/stenosis_model/stenosis_768_best.pt
+
+[2026-04-16 03:42:08] Using S54 syntax yaml:      ../results/stenosis_strategies/data/S54_s43b_clahe/dataset_configs/syntax_only.yaml
+
+[2026-04-16 03:42:08] Using S54 stenosis yaml:    ../results/stenosis_strategies/data/S54_s43b_clahe/dataset_configs/stenosis_only.yaml
+
+========================================================
+  PHASE 0/1 — diagnostics + zero-retraining
+========================================================
+
+[2026-04-16 03:42:08]   GPUs [0,1] idle (>= 3000MB free)
+
+[2026-04-16 03:42:08] STEP: F-4 compute_weighted_f1
+
+[2026-04-16 03:42:08]   cmd: python compute_weighted_f1.py --results ../results/stenosis_strategies/strategy_results.json --output ../results/stenosis_strategies/weighted_f1_report.json
+
+Support source: stratified prior estimate
+name                                macro   weighted    delta
+--------------------------------------------------------------
+S54_s43b_clahe                     0.7181     0.7456  +0.0275
+E2s_yolo_angio                     0.7108     0.7455  +0.0347
+S16_mosaic_both                    0.7098     0.7450  +0.0352
+S51_s31_clahe                      0.7173     0.7447  +0.0274
+S55_lr003                          0.7167     0.7441  +0.0274
+S56_yolo11x_stenosis               0.7165     0.7439  +0.0274
+S53_ssass_768px                    0.7163     0.7436  +0.0273
+S52_s31_tophat_clahe               0.7158     0.7430  +0.0272
+S25_cls_loss_2x                    0.7016     0.7403  +0.0387
+S10a_vessel_filtered_stratified    0.4916     0.7399  +0.2483
+S12_stenosis_yolo11l               0.7042     0.7350  +0.0308
+S18_s12_seed42                     0.7042     0.7350  +0.0308
+S15_s8_seed42                      0.7036     0.7344  +0.0308
+S30_sgd_cls125                     0.7040     0.7340  +0.0300
+S8_mosaic_stenosis                 0.7060     0.7328  +0.0268
+S33_sgd_wd001                      0.7020     0.7318  +0.0298
+S13_mixup_mosaic_stack             0.7011     0.7316  +0.0305
+S11_stenosis_1024                  0.6997     0.7300  +0.0303
+S19_syntax_yolo11l                 0.7022     0.7299  +0.0277
+S26_lesion_crops                   0.6995     0.7298  +0.0303
+S27_sgd_optimizer                  0.6948     0.7295  +0.0347
+S39_s27_seed42                     0.6948     0.7295  +0.0347
+S44_ssass_port                     0.6948     0.7295  +0.0347
+S43b_no_cp                         0.6943     0.7290  +0.0347
+S37_sten_1024                      0.6942     0.7289  +0.0347
+S42_sten_slow_1024                 0.6942     0.7288  +0.0346
+E4s_cross_task_pl                  0.6950     0.7283  +0.0333
+S43a_no_mosaic                     0.6929     0.7275  +0.0346
+S29_sgd_cls100                     0.6961     0.7272  +0.0311
+S43c_no_both                       0.6921     0.7265  +0.0344
+S35_crops_sgd_tight                0.6909     0.7252  +0.0343
+S31_sgd_lr005                      0.6990     0.7250  +0.0260
+S18_s12_seed2024                   0.6943     0.7240  +0.0297
+S41_s27_seed2024                   0.6976     0.7238  +0.0262
+S15_s8_seed2024                    0.6936     0.7232  +0.0296
+S15_s8_seed7                       0.6929     0.7177  +0.0248
+S20_syntax_all25_eval12            0.6871     0.7162  +0.0291
+S23_syntax_1024                    0.6878     0.7155  +0.0277
+S17_mosaic_crop_1024               0.4678     0.7118  +0.2440
+S38_freeze_25                      0.6802     0.7105  +0.0303
+S9_vessel_guided_all25             0.4736     0.7089  +0.2353
+S28_sgd_cls075                     0.6795     0.7089  +0.0294
+S24_syntax_long                    0.6729     0.7081  +0.0352
+S32_sgd_lr020                      0.6773     0.7067  +0.0294
+S22_syntax_yolo11l_all25           0.6701     0.7002  +0.0301
+S21_syntax_max_capacity            0.6311     0.6638  +0.0327
+S1_resolution_768                  0.6122     0.6373  +0.0251
+E2_yolo_angio                      0.5870     0.6200  +0.0330
+E4_cross_task_pl                   0.5703     0.6124  +0.0421
+H1_fulldata_best_hps               0.5572     0.5870  +0.0298
+S7_reproduce_old_s5                0.5476     0.5750  +0.0274
+S10b_vessel_filtered_original      0.4113     0.5581  +0.1468
+E3_stenunet_y                      0.4499     0.4499  +0.0000
+S27_multiseed_summary              0.4422     0.4422  +0.0000
+S18_multiseed_summary              0.4375     0.4375  +0.0000
+E3s_stenunet_y                     0.4367     0.4367  +0.0000
+E1s_ssass_faithful                 0.4300     0.4300  +0.0000
+S15_multiseed_summary              0.4177     0.4177  +0.0000
+E1_ssass_faithful                  0.4017     0.4017  +0.0000
+
+Wrote ../results/stenosis_strategies/weighted_f1_report.json
+
+[2026-04-16 03:42:08]   ✓ F-4 compute_weighted_f1
+
+[2026-04-16 03:42:08] STEP: F-2 audit_labels
+
+[2026-04-16 03:42:08]   cmd: python audit_labels.py --arcade-root ../../arcade/submission --data-dir ../results/stenosis_strategies/data/S54_s43b_clahe --output ../results/stenosis_strategies/label_audit_S54.json
+
+=== Class mapping on disk ===
+  Kept classes (12): {'0': '1', '1': '2', '2': '3', '3': '4', '4': '5', '5': '6', '6': '7', '7': '8', '8': '9', '9': '11', '10': '13', '11': '16'}
+  COCO->YOLO map (0): {}
+
+  [train] COCO total=4976  YOLO total=4268
+    kept-class COCO counts: {'6': 537, '5': 525, '2': 375, '1': 374, '3': 369, '7': 340, '11': 320, '8': 310, '13': 305, '4': 303, '16': 232, '9': 198}
+    kept-class YOLO counts: {'5': 567, '6': 565, '2': 358, '1': 357, '3': 354, '7': 342, '11': 329, '8': 320, '13': 311, '4': 298, '16': 246, '9': 221}
+    dropped classes (present in COCO, not in YOLO): {'12a': 129, '14b': 127, '14': 107, '9a': 70, '12b': 63, '12': 61, '14a': 49, '16b': 48, '16a': 43, '15': 38, '16c': 31, '10': 21, '10a': 1}
+    *** COUNT MISMATCH per class: {'6': {'coco': 537, 'yolo': 565, 'diff': 28}, '9': {'coco': 198, 'yolo': 221, 'diff': 23}, '8': {'coco': 310, 'yolo': 320, 'diff': 10}, '7': {'coco': 340, 'yolo': 342, 'diff': 2}, '5': {'coco': 525, 'yolo': 567, 'diff': 42}, '11': {'coco': 320, 'yolo': 329, 'diff': 9}, '13': {'coco': 305, 'yolo': 311, 'diff': 6}, '4': {'coco': 303, 'yolo': 298, 'diff': -5}, '2': {'coco': 375, 'yolo': 358, 'diff': -17}, '3': {'coco': 369, 'yolo': 354, 'diff': -15}, '16': {'coco': 232, 'yolo': 246, 'diff': 14}, '1': {'coco': 374, 'yolo': 357, 'diff': -17}}
+
+  [val] COCO total=1168  YOLO total=847
+    kept-class COCO counts: {'5': 130, '6': 125, '7': 77, '8': 74, '11': 70, '13': 70, '3': 66, '2': 66, '1': 66, '4': 56, '16': 55, '9': 50}
+    kept-class YOLO counts: {'6': 116, '5': 112, '1': 73, '2': 73, '3': 72, '11': 69, '13': 67, '7': 64, '4': 58, '8': 57, '16': 51, '9': 35}
+    dropped classes (present in COCO, not in YOLO): {'14b': 58, '12a': 27, '9a': 25, '14a': 24, '10': 21, '14': 20, '12b': 18, '12': 17, '16c': 16, '16b': 15, '16a': 13, '10a': 6, '15': 3}
+    *** COUNT MISMATCH per class: {'6': {'coco': 125, 'yolo': 116, 'diff': -9}, '5': {'coco': 130, 'yolo': 112, 'diff': -18}, '11': {'coco': 70, 'yolo': 69, 'diff': -1}, '13': {'coco': 70, 'yolo': 67, 'diff': -3}, '1': {'coco': 66, 'yolo': 73, 'diff': 7}, '16': {'coco': 55, 'yolo': 51, 'diff': -4}, '3': {'coco': 66, 'yolo': 72, 'diff': 6}, '2': {'coco': 66, 'yolo': 73, 'diff': 7}, '4': {'coco': 56, 'yolo': 58, 'diff': 2}, '7': {'coco': 77, 'yolo': 64, 'diff': -13}, '8': {'coco': 74, 'yolo': 57, 'diff': -17}, '9': {'coco': 50, 'yolo': 35, 'diff': -15}}
+
+  [test] COCO total=1672  YOLO total=1299
+    kept-class COCO counts: {'5': 195, '6': 188, '11': 119, '13': 110, '1': 100, '3': 100, '2': 100, '4': 92, '16': 88, '7': 83, '8': 80, '9': 66}
+    kept-class YOLO counts: {'5': 171, '6': 169, '11': 111, '1': 110, '2': 110, '3': 109, '13': 107, '4': 95, '7': 94, '8': 87, '16': 78, '9': 58}
+    dropped classes (present in COCO, not in YOLO): {'14': 67, '12b': 49, '14b': 37, '9a': 35, '14a': 27, '16c': 25, '16b': 24, '16a': 24, '12a': 23, '12': 15, '10': 14, '15': 11}
+    *** COUNT MISMATCH per class: {'1': {'coco': 100, 'yolo': 110, 'diff': 10}, '2': {'coco': 100, 'yolo': 110, 'diff': 10}, '3': {'coco': 100, 'yolo': 109, 'diff': 9}, '6': {'coco': 188, 'yolo': 169, 'diff': -19}, '5': {'coco': 195, 'yolo': 171, 'diff': -24}, '7': {'coco': 83, 'yolo': 94, 'diff': 11}, '8': {'coco': 80, 'yolo': 87, 'diff': 7}, '13': {'coco': 110, 'yolo': 107, 'diff': -3}, '11': {'coco': 119, 'yolo': 111, 'diff': -8}, '9': {'coco': 66, 'yolo': 58, 'diff': -8}, '4': {'coco': 92, 'yolo': 95, 'diff': 3}, '16': {'coco': 88, 'yolo': 78, 'diff': -10}}
+
+=== Class 9 vs 9a focus ===
+  [train] COCO: class 9 = 198, class 9a = 70  |  YOLO class 9 = 221
+    *** WARNING: YOLO class 9 count (221) != COCO class 9 count (198)
+        diff = 23; if equal to class 9a count (70), contamination confirmed
+  [val] COCO: class 9 = 50, class 9a = 25  |  YOLO class 9 = 35
+    *** WARNING: YOLO class 9 count (35) != COCO class 9 count (50)
+        diff = -15; if equal to class 9a count (25), contamination confirmed
+  [test] COCO: class 9 = 66, class 9a = 35  |  YOLO class 9 = 58
+    *** WARNING: YOLO class 9 count (58) != COCO class 9 count (66)
+        diff = -8; if equal to class 9a count (35), contamination confirmed
+
+Wrote ../results/stenosis_strategies/label_audit_S54.json
+
+[2026-04-16 03:42:08]   ✓ F-2 audit_labels
+
+[2026-04-16 03:42:08]   GPUs [0,1] idle (>= 5000MB free)
+
+[2026-04-16 03:42:08] STEP: A-1 conf sweep syntax
+
+[2026-04-16 03:42:08]   cmd: python sweep_confidence.py --model ../results/stenosis_strategies/S54_s43b_clahe/syntax_model/syntax_768_best.pt --data-yaml ../results/stenosis_strategies/data/S54_s43b_clahe/dataset_configs/syntax_only.yaml --imgsz 768 --device 0 --output ../results/stenosis_strategies/A1_conf_sweep_syntax.json
+Collecting VAL predictions...
+  200 val images
+Sweeping per-class thresholds on val...
+  Best thresholds (val-F1 max): {'1': np.float64(0.55), '2': np.float64(0.4), '3': np.float64(0.5), '4': np.float64(0.2), '5': np.float64(0.35), '6': np.float64(0.3), '7': np.float64(0.4), '8': np.float64(0.4), '9': np.float64(0.4), '11': np.float64(0.45), '13': np.float64(0.15), '16': np.float64(0.6)}
+
+Collecting TEST predictions...
+  301 test images
+
+=== RESULTS ===
+Val  mean F1: default 0.7563  tuned 0.7781
+Test mean F1: default 0.7311  tuned 0.7221
+Delta test:   -0.0090
+
+Wrote ../results/stenosis_strategies/A1_conf_sweep_syntax.json
+
+[2026-04-16 03:42:43]   ✓ A-1 conf sweep syntax
+
+[2026-04-16 03:42:43]   GPUs [0,1] idle (>= 5000MB free)
+
+[2026-04-16 03:42:43] STEP: A-1 conf sweep stenosis
+
+[2026-04-16 03:42:43]   cmd: python sweep_confidence.py --model ../results/stenosis_strategies/S54_s43b_clahe/stenosis_model/stenosis_768_best.pt --data-yaml ../results/stenosis_strategies/data/S54_s43b_clahe/dataset_configs/stenosis_only.yaml --imgsz 768 --device 0 --output ../results/stenosis_strategies/A1_conf_sweep_stenosis.json
+Collecting VAL predictions...
+  201 val images
+Sweeping per-class thresholds on val...
+  Best thresholds (val-F1 max): {'stenosis': np.float64(0.15)}
+
+Collecting TEST predictions...
+  301 test images
+
+=== RESULTS ===
+Val  mean F1: default 0.4754  tuned 0.4763
+Test mean F1: default 0.4653  tuned 0.4348
+Delta test:   -0.0305
+
+Wrote ../results/stenosis_strategies/A1_conf_sweep_stenosis.json
+
+[2026-04-16 03:42:53]   ✓ A-1 conf sweep stenosis
+
+[2026-04-16 03:42:53]   GPUs [0,1] idle (>= 5000MB free)
+
+[2026-04-16 03:42:53] STEP: A-2 tile inference
+
+[2026-04-16 03:42:53]   cmd: python tile_inference_stenosis.py --model ../results/stenosis_strategies/S54_s43b_clahe/stenosis_model/stenosis_768_best.pt --data-yaml ../results/stenosis_strategies/data/S54_s43b_clahe/dataset_configs/stenosis_only.yaml --split test --upscale 3 --tile 512 --overlap 128 --imgsz 512 --device 0 --output ../results/stenosis_strategies/A2_tile_inference_stenosis.json
+
+=== TILE INFERENCE RESULTS ===
+  Images: 301
+  tp: 108
+  fp: 412
+  fn: 370
+  precision: 0.2077
+  recall: 0.2259
+  f1: 0.2164
+
+Wrote ../results/stenosis_strategies/A2_tile_inference_stenosis.json
+
+[2026-04-16 03:43:17]   ✓ A-2 tile inference
+
+[2026-04-16 03:43:17]   GPUs [0,1] idle (>= 5000MB free)
+
+[2026-04-16 03:43:17] STEP: A-4 small-CC post-processing
+
+[2026-04-16 03:43:17]   cmd: python -c 
+import sys; sys.path.insert(0,'.')
+import json
+from small_cc_postprocess import evaluate_with_filter_cpu
+out = evaluate_with_filter_cpu(
+    '../results/stenosis_strategies/S54_s43b_clahe/stenosis_model/stenosis_768_best.pt',
+    '../results/stenosis_strategies/data/S54_s43b_clahe/dataset_configs/stenosis_only.yaml',
+    split='test', imgsz=768,
+    min_area_px=30, device='0', conf=0.25,
+)
+print(json.dumps(out, indent=2))
+json.dump(out, open('../results/stenosis_strategies/A4_small_cc_S54.json','w'), indent=2)
+
+{
+  "raw": {
+    "precision": 0.5,
+    "recall": 0.4351,
+    "f1": 0.4653,
+    "tp": 208,
+    "fp": 208,
+    "fn": 270
+  },
+  "filtered": {
+    "precision": 0.5,
+    "recall": 0.4351,
+    "f1": 0.4653,
+    "tp": 208,
+    "fp": 208,
+    "fn": 270
+  },
+  "min_area_px": 30
+}
+
+[2026-04-16 03:43:23]   ✓ A-4 small-CC post-processing
+
+[2026-04-16 03:43:23]   GPUs [0,1] idle (>= 5000MB free)
+
+[2026-04-16 03:43:23] STEP: A-5 isotonic calibration syntax
+
+[2026-04-16 03:43:23]   cmd: python calibrate_scores.py --model ../results/stenosis_strategies/S54_s43b_clahe/syntax_model/syntax_768_best.pt --data-yaml ../results/stenosis_strategies/data/S54_s43b_clahe/dataset_configs/syntax_only.yaml --imgsz 768 --device 0 --output ../results/stenosis_strategies/A5_calibrators_syntax/
+Collecting val (score, correct) pairs...
+  class 1: n=116 pos=70
+  class 2: n=179 pos=70
+  class 3: n=148 pos=68
+  class 4: n=102 pos=54
+  class 16: n=123 pos=46
+  class 8: n=146 pos=50
+  class 9: n=139 pos=28
+  class 7: n=156 pos=56
+  class 6: n=250 pos=111
+  class 5: n=189 pos=101
+  class 11: n=156 pos=66
+  class 13: n=147 pos=55
+
+Fitting per-class isotonic regressions...
+
+Wrote 12 calibrators to ../results/stenosis_strategies/A5_calibrators_syntax
+Apply at inference: calibrated_conf = iso.predict([orig_conf])[0]
+
+[2026-04-16 03:43:28]   ✓ A-5 isotonic calibration syntax
+
+[2026-04-16 03:43:28] PHASE 0/1 finished
+
+========================================================
+  PHASE 2/3 — parallel retraining experiments (gpus=0,1)
+========================================================
+
+[2026-04-16 03:43:28]   GPUs [0,1] idle (>= 8000MB free)
+
+[2026-04-16 03:43:28] STEP: PHASE 2/3 scheduler
+
+[2026-04-16 03:43:28]   cmd: python run_stenosis_strategies_v2.py --experiments F1_official_split B1_class_balanced B4_warm_start_stenosis B6_tail_copy_paste C1a_label_smooth_05 C1b_label_smooth_10 C2a_dropout_05 C2b_dropout_10 C3a_dfl_2 C3b_dfl_25 C3c_dfl_30 C4a_mask_10 C4b_mask_15 C5_multiscale_stenosis D1_erasing_4 D2_flipud_5 --arcade-root ../../arcade/submission --gpus 0,1 --skip-splits
+[SKIP] Stratified splits (--skip-splits)
+
+############################################################
+# Running 16 experiments on 2 GPUs
+#   Output: /home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/stenosis_strategies
+############################################################
+  advisory GPU 0: F1_official_split — F-1: S54 recipe but with raw ARCADE train(1000)/val(200)/test(300) split, train_only_filter. Produces leaderboard-comparable numbers.
+  advisory GPU 1: B1_class_balanced — B-1: S54 + oversample tail classes (9, 13, 16) via image duplication on train split. Targets the class-floor bottleneck.
+  advisory GPU 0: B4_warm_start_stenosis — B-4: S54 + stenosis model warm-started from the best syntax model's weights (transfer of coronary-vessel features) rather than COCO.
+  advisory GPU 1: B6_tail_copy_paste — B-6: S54 + offline synthetic copy-paste of classes 9/13/16 instances onto other training images (with rotation/scale jitter). 2 composites per source instance.
+  advisory GPU 0: C1a_label_smooth_05 — C-1a: S54 + label_smoothing=0.05
+  advisory GPU 1: C1b_label_smooth_10 — C-1b: S54 + label_smoothing=0.1
+  advisory GPU 0: C2a_dropout_05 — C-2a: S54 + dropout=0.05
+  advisory GPU 1: C2b_dropout_10 — C-2b: S54 + dropout=0.1
+  advisory GPU 0: C3a_dfl_2 — C-3a: S54 + stenosis dfl=2.0
+  advisory GPU 1: C3b_dfl_25 — C-3b: S54 + stenosis dfl=2.5
+  advisory GPU 0: C3c_dfl_30 — C-3c: S54 + stenosis dfl=3.0
+  advisory GPU 1: C4a_mask_10 — C-4a: S54 + mask loss weight=10 (default 7.5)
+  advisory GPU 0: C4b_mask_15 — C-4b: S54 + mask loss weight=15
+  advisory GPU 1: C5_multiscale_stenosis — C-5: S54 + multi_scale=True for stenosis model
+  advisory GPU 0: D1_erasing_4 — D-1: S54 + erasing=0.4
+  advisory GPU 1: D2_flipud_5 — D-2: S54 + flipud=0.5
+
+  Initial GPU memory (nvidia-smi):
+    GPU 0: OK free=31076 MB
+    GPU 1: OK free=32092 MB
+
+  Startup orphan sweep (kill ON):
+    [GPU 0] PID 762057 (foreign, none): /usr/share/rustdesk/rustdesk --server
+
+Scheduling 16 experiments
+  GPU pool            : [0, 1]
+  per-GPU baseline    : {0: '31076MB', 1: '32092MB'}
+  max_concurrent      : 2
+  stagger_seconds     : 15
+  min_free_mb         : 2000
+  idle tolerance (MB) : 500
+  idle timeout (s)    : 600
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [762057] (waited 0s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [762057] (waited 5s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [762057] (waited 10s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [762057] (waited 15s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [762057] (waited 20s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [762057] (waited 25s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [762057] (waited 30s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [762057] (waited 35s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [762057] (waited 40s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [762057] (waited 45s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [762057] (waited 50s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [762057] (waited 55s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [762057] (waited 60s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [762057] (waited 65s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [762057] (waited 70s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [762057] (waited 75s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [762057] (waited 80s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [762057] (waited 85s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [762057] (waited 90s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [762057] (waited 95s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [762057] (waited 100s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [762057] (waited 105s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [762057] (waited 110s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [762057] (waited 115s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [762057] (waited 120s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [762057] (waited 125s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [762057] (waited 130s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [762057] (waited 135s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [762057] (waited 140s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [762057] (waited 145s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [762057] (waited 150s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [762057] (waited 155s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [762057] (waited 160s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [762057] (waited 165s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [762057] (waited 170s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [762057] (waited 175s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [762057] (waited 180s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [762057] (waited 185s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [762057] (waited 190s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [762057] (waited 195s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [762057] (waited 200s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [762057] (waited 205s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [762057] (waited 210s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [762057] (waited 215s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [762057] (waited 220s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [762057] (waited 225s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [762057] (waited 230s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [762057] (waited 235s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [762057] (waited 240s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [762057] (waited 245s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [762057] (waited 250s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [762057] (waited 255s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [762057] (waited 260s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [762057] (waited 265s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [762057] (waited 270s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [762057] (waited 275s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [762057] (waited 280s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [762057] (waited 285s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [762057] (waited 290s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [762057] (waited 295s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [762057] (waited 300s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [762057] (waited 305s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [762057] (waited 310s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [762057] (waited 315s / 600s)
+    [GPU 0] waiting for idle — 1 lingering compute PID(s): [762057] (waited 320s / 600s)
+
+[2026-04-16 03:53:28] Using S54 syntax weights:   ../results/stenosis_strategies/S54_s43b_clahe/syntax_model/syntax_768_best.pt
+
+[2026-04-16 03:53:28] Using S54 stenosis weights: ../results/stenosis_strategies/S54_s43b_clahe/stenosis_model/stenosis_768_best.pt
+
+[2026-04-16 03:53:28] Using S54 syntax yaml:      ../results/stenosis_strategies/data/S54_s43b_clahe/dataset_configs/syntax_only.yaml
+
+[2026-04-16 03:53:28] Using S54 stenosis yaml:    ../results/stenosis_strategies/data/S54_s43b_clahe/dataset_configs/stenosis_only.yaml
+
+[2026-04-16 03:53:28] SKIP_STANDALONES set — skipping Phase 0/1
+
+========================================================
+  PHASE 2/3 — parallel retraining experiments (gpus=0,1)
+========================================================
+
+[2026-04-16 03:53:28]   GPUs [0,1] idle (>= 8000MB free)
+
+[2026-04-16 03:53:29]   Detected foreign GPU PIDs (will be excluded): 762057
+
+[2026-04-16 03:53:29] STEP: PHASE 2/3 scheduler
+
+[2026-04-16 03:53:29]   cmd: python -u run_stenosis_strategies_v2.py --experiments F1_official_split B1_class_balanced B4_warm_start_stenosis B6_tail_copy_paste C1a_label_smooth_05 C1b_label_smooth_10 C2a_dropout_05 C2b_dropout_10 C3a_dfl_2 C3b_dfl_25 C3c_dfl_30 C4a_mask_10 C4b_mask_15 C5_multiscale_stenosis D1_erasing_4 D2_flipud_5 --arcade-root ../../arcade/submission --gpus 0,1 --min-free-mb 1000 --exclude-pids 762057 --skip-splits
+[SKIP] Stratified splits (--skip-splits)
+
+############################################################
+# Running 16 experiments on 2 GPUs
+#   Output: /home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/stenosis_strategies
+############################################################
+  advisory GPU 0: F1_official_split — F-1: S54 recipe but with raw ARCADE train(1000)/val(200)/test(300) split, train_only_filter. Produces leaderboard-comparable numbers.
+  advisory GPU 1: B1_class_balanced — B-1: S54 + oversample tail classes (9, 13, 16) via image duplication on train split. Targets the class-floor bottleneck.
+  advisory GPU 0: B4_warm_start_stenosis — B-4: S54 + stenosis model warm-started from the best syntax model's weights (transfer of coronary-vessel features) rather than COCO.
+  advisory GPU 1: B6_tail_copy_paste — B-6: S54 + offline synthetic copy-paste of classes 9/13/16 instances onto other training images (with rotation/scale jitter). 2 composites per source instance.
+  advisory GPU 0: C1a_label_smooth_05 — C-1a: S54 + label_smoothing=0.05
+  advisory GPU 1: C1b_label_smooth_10 — C-1b: S54 + label_smoothing=0.1
+  advisory GPU 0: C2a_dropout_05 — C-2a: S54 + dropout=0.05
+  advisory GPU 1: C2b_dropout_10 — C-2b: S54 + dropout=0.1
+  advisory GPU 0: C3a_dfl_2 — C-3a: S54 + stenosis dfl=2.0
+  advisory GPU 1: C3b_dfl_25 — C-3b: S54 + stenosis dfl=2.5
+  advisory GPU 0: C3c_dfl_30 — C-3c: S54 + stenosis dfl=3.0
+  advisory GPU 1: C4a_mask_10 — C-4a: S54 + mask loss weight=10 (default 7.5)
+  advisory GPU 0: C4b_mask_15 — C-4b: S54 + mask loss weight=15
+  advisory GPU 1: C5_multiscale_stenosis — C-5: S54 + multi_scale=True for stenosis model
+  advisory GPU 0: D1_erasing_4 — D-1: S54 + erasing=0.4
+  advisory GPU 1: D2_flipud_5 — D-2: S54 + flipud=0.5
+
+  Initial GPU memory (nvidia-smi):
+    GPU 0: OK free=31141 MB
+    GPU 1: OK free=32092 MB
+  Permanently excluding PIDs from idle check: {762057}
+
+Scheduling 16 experiments
+  GPU pool            : [0, 1]
+  per-GPU baseline    : {0: '31141MB', 1: '32092MB'}
+  max_concurrent      : 2
+  stagger_seconds     : 15
+  min_free_mb         : 1000
+  idle tolerance (MB) : 500
+  idle timeout (s)    : 600
+  Launched F1_official_split on GPU 0 (PID 785278, free=31141MB, baseline=31141MB, log: /home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/stenosis_strategies/F1_official_split/worker.log)
+  (staggering 15s before next launch)
+  Launched B1_class_balanced on GPU 1 (PID 785674, free=32092MB, baseline=32092MB, log: /home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/stenosis_strategies/B1_class_balanced/worker.log)
+  [1/16] [GPU 0] F1_official_split: OK
+    [GPU 0] released: idle (free=31759MB)
+  Launched B4_warm_start_stenosis on GPU 0 (PID 812532, free=31759MB, baseline=31141MB, log: /home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/stenosis_strategies/B4_warm_start_stenosis/worker.log)
+  [2/16] [GPU 1] B1_class_balanced: OK
+    [GPU 1] released: idle (free=32095MB)
+  Launched B6_tail_copy_paste on GPU 1 (PID 816580, free=32095MB, baseline=32092MB, log: /home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/stenosis_strategies/B6_tail_copy_paste/worker.log)
+  [3/16] [GPU 0] B4_warm_start_stenosis: OK
+    [GPU 0] released: idle (free=31759MB)
+  Launched C1a_label_smooth_05 on GPU 0 (PID 850224, free=31759MB, baseline=31141MB, log: /home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/stenosis_strategies/C1a_label_smooth_05/worker.log)
+  [4/16] [GPU 1] B6_tail_copy_paste: OK
+    [GPU 1] released: idle (free=32095MB)
+  Launched C1b_label_smooth_10 on GPU 1 (PID 858120, free=32095MB, baseline=32092MB, log: /home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/stenosis_strategies/C1b_label_smooth_10/worker.log)
+  [5/16] [GPU 0] C1a_label_smooth_05: OK
+    [GPU 0] released: idle (free=31787MB)
+  Launched C2a_dropout_05 on GPU 0 (PID 881553, free=31787MB, baseline=31141MB, log: /home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/stenosis_strategies/C2a_dropout_05/worker.log)
+  [6/16] [GPU 1] C1b_label_smooth_10: OK
+    [GPU 1] released: idle (free=32095MB)
+  Launched C2b_dropout_10 on GPU 1 (PID 889275, free=32095MB, baseline=32092MB, log: /home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/stenosis_strategies/C2b_dropout_10/worker.log)
+  [7/16] [GPU 0] C2a_dropout_05: OK
+    [GPU 0] released: idle (free=31787MB)
+  Launched C3a_dfl_2 on GPU 0 (PID 912810, free=31787MB, baseline=31141MB, log: /home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/stenosis_strategies/C3a_dfl_2/worker.log)
+  [8/16] [GPU 1] C2b_dropout_10: OK
+    [GPU 1] released: idle (free=32095MB)
+  Launched C3b_dfl_25 on GPU 1 (PID 920471, free=32095MB, baseline=32092MB, log: /home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/stenosis_strategies/C3b_dfl_25/worker.log)
+  [9/16] [GPU 0] C3a_dfl_2: OK
+    [GPU 0] released: idle (free=31758MB)
+  Launched C3c_dfl_30 on GPU 0 (PID 944050, free=31758MB, baseline=31141MB, log: /home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/stenosis_strategies/C3c_dfl_30/worker.log)
+  [10/16] [GPU 1] C3b_dfl_25: OK
+    [GPU 1] released: idle (free=32095MB)
+  Launched C4a_mask_10 on GPU 1 (PID 951371, free=32095MB, baseline=32092MB, log: /home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/stenosis_strategies/C4a_mask_10/worker.log)
+  [11/16] [GPU 1] C4a_mask_10: OK
+    [GPU 1] released: idle (free=32095MB)
+  Launched C4b_mask_15 on GPU 1 (PID 951664, free=32095MB, baseline=32092MB, log: /home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/stenosis_strategies/C4b_mask_15/worker.log)
+  [12/16] [GPU 1] C4b_mask_15: OK
+    [GPU 1] released: idle (free=32095MB)
+  Launched C5_multiscale_stenosis on GPU 1 (PID 951949, free=32095MB, baseline=32092MB, log: /home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/stenosis_strategies/C5_multiscale_stenosis/worker.log)
+  [13/16] [GPU 1] C5_multiscale_stenosis: OK
+    [GPU 1] released: idle (free=32095MB)
+  Launched D1_erasing_4 on GPU 1 (PID 971766, free=32095MB, baseline=32092MB, log: /home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/stenosis_strategies/D1_erasing_4/worker.log)
+  [14/16] [GPU 0] C3c_dfl_30: OK
+    [GPU 0] released: idle (free=31758MB)
+  Launched D2_flipud_5 on GPU 0 (PID 976053, free=31758MB, baseline=31141MB, log: /home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/stenosis_strategies/D2_flipud_5/worker.log)
+  [15/16] [GPU 1] D1_erasing_4: OK
+    [GPU 1] released: idle (free=32095MB)
+  [16/16] [GPU 0] D2_flipud_5: OK
+    [GPU 0] released: idle (free=31759MB)
+
+====================================================================================================
+STENOSIS IMPROVEMENT STRATEGIES — COMPARISON
+====================================================================================================
+
+Name                         Status    Hours    mAP50       F1   Syn mAP   Sten AP   Sten F1
+----------------------------------------------------------------------------------------------------
+F1_official_split            OK          0.6   0.6439   0.6516    0.6771    0.3118    0.4042
+B1_class_balanced            OK          0.7   0.7007   0.6870    0.7262    0.3951    0.4466
+B4_warm_start_stenosis       OK          0.9   0.7221   0.7163    0.7568    0.3052    0.4000
+B6_tail_copy_paste           OK          1.0   0.6988   0.6979    0.7241    0.3951    0.4466
+C1a_label_smooth_05          OK          0.7   0.7290   0.7196    0.7568    0.3951    0.4466
+C1b_label_smooth_10          OK          0.7   0.7290   0.7196    0.7568    0.3951    0.4466
+C2a_dropout_05               OK          0.7   0.7290   0.7196    0.7568    0.3951    0.4466
+C2b_dropout_10               OK          0.7   0.7290   0.7196    0.7568    0.3951    0.4466
+C3a_dfl_2                    OK          0.7   0.7267   0.7179    0.7568    0.3655    0.4230
+C3b_dfl_25                   OK          0.7   0.7280   0.7186    0.7568    0.3815    0.4316
+C4a_mask_10                  FAIL        0.0        —        —         —         —         —
+C4b_mask_15                  FAIL        0.0        —        —         —         —         —
+C5_multiscale_stenosis       FAIL        0.5        —        —         —         —         —
+C3c_dfl_30                   OK          0.7   0.7255   0.7183    0.7568    0.3500    0.4277
+D1_erasing_4                 OK          0.7   0.7290   0.7196    0.7568    0.3951    0.4466
+D2_flipud_5                  OK          0.8   0.7165   0.7057    0.7432    0.3951    0.4648
+
+====================================================================================================
+PER-CLASS F1 (Test)
+====================================================================================================
+Name                                1       11       13       16        2        3        4        5        6        7        8        9 stenosis
+-------------------------------------------------------------------------------------------------------------------------------------------------
+F1_official_split              0.7639   0.7787   0.3765   0.0000   0.7364   0.6480   0.6215   0.8309   0.6863   0.6830   0.5987   0.0000   0.4042
+B1_class_balanced              0.8104   0.8091   0.5517   0.5690   0.7240   0.8285   0.7313   0.8344   0.7364   0.6755   0.6892   0.4937   0.4466
+B4_warm_start_stenosis         0.8778   0.8430   0.5215   0.6704   0.7949   0.8162   0.7833   0.8473   0.7427   0.7281   0.7476   0.5053   0.4000
+B6_tail_copy_paste             0.8442   0.7948   0.5709   0.6119   0.7796   0.7688   0.7663   0.8562   0.7279   0.7064   0.7268   0.4313   0.4466
+C1a_label_smooth_05            0.8778   0.8430   0.5215   0.6704   0.7949   0.8162   0.7833   0.8473   0.7427   0.7281   0.7476   0.5053   0.4466
+C1b_label_smooth_10            0.8778   0.8430   0.5215   0.6704   0.7949   0.8162   0.7833   0.8473   0.7427   0.7281   0.7476   0.5053   0.4466
+C2a_dropout_05                 0.8778   0.8430   0.5215   0.6704   0.7949   0.8162   0.7833   0.8473   0.7427   0.7281   0.7476   0.5053   0.4466
+C2b_dropout_10                 0.8778   0.8430   0.5215   0.6704   0.7949   0.8162   0.7833   0.8473   0.7427   0.7281   0.7476   0.5053   0.4466
+C3a_dfl_2                      0.8778   0.8430   0.5215   0.6704   0.7949   0.8162   0.7833   0.8473   0.7427   0.7281   0.7476   0.5053   0.4230
+C3b_dfl_25                     0.8778   0.8430   0.5215   0.6704   0.7949   0.8162   0.7833   0.8473   0.7427   0.7281   0.7476   0.5053   0.4316
+C3c_dfl_30                     0.8778   0.8430   0.5215   0.6704   0.7949   0.8162   0.7833   0.8473   0.7427   0.7281   0.7476   0.5053   0.4277
+D1_erasing_4                   0.8778   0.8430   0.5215   0.6704   0.7949   0.8162   0.7833   0.8473   0.7427   0.7281   0.7476   0.5053   0.4466
+D2_flipud_5                    0.8391   0.8133   0.5123   0.6028   0.7533   0.8231   0.7453   0.8338   0.7714   0.7492   0.7833   0.4557   0.4648
+
+  S15_multiseed_summary written (n=3):
+    syntax mAP50  : 0.7375 ± 0.0102
+    stenosis AP50 : 0.3466 ± 0.0306
+    stenosis F1   : 0.4177 ± 0.0265
+    overall F1    : 0.6999 ± 0.0083
+
+  S18_multiseed_summary written (n=2):
+    syntax mAP50  : 0.7414 ± 0.0109
+    stenosis AP50 : 0.3620 ± 0.0105
+    stenosis F1   : 0.4375 ± 0.0246
+    overall F1    : 0.7029 ± 0.0096
+
+  S27_multiseed_summary written (n=2):
+    syntax mAP50  : 0.7445 ± 0.0069
+    stenosis AP50 : 0.3775 ± 0.0081
+    stenosis F1   : 0.4422 ± 0.0115
+    overall F1    : 0.7004 ± 0.0027
+
+====================================================================================================
+ALL EXPERIMENTS COMPLETE (5.2h wall time)
+Results saved: /home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/stenosis_strategies/strategy_results.json
+  (merged with 63 existing entries, total 79 entries)
+  13 succeeded, 3 failed
+  Failed experiments:
+    C4a_mask_10: '[31m[1mmask[0m' is not a valid YOLO argument. Similar arguments are i.e. ['task=detect'].
+
+    Arguments received: ['yolo', '--worker', '/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/stenosis_strategies/_worker_jobs/C4a_mask_10_job.json']. Ultralytics 'yolo' commands use the following syntax:
+
+        yolo TASK MODE ARGS
+
+        Where   TASK (optional) is one of ['segment', 'classify', 'obb', 'detect', 'pose']
+                MODE (required) is one of ['train', 'benchmark', 'val', 'export', 'predict', 'track']
+                ARGS (optional) are any number of custom 'arg=value' pairs like 'imgsz=320' that override defaults.
+                    See all ARGS at https://docs.ultralytics.com/usage/cfg or with 'yolo cfg'
+
+    1. Train a detection model for 10 epochs with an initial learning_rate of 0.01
+        yolo train data=coco8.yaml model=yolo26n.pt epochs=10 lr0=0.01
+
+    2. Predict a YouTube video using a pretrained segmentation model at image size 320:
+        yolo predict model=yolo26n-seg.pt source='https://youtu.be/LNwODJXcvt4' imgsz=320
+
+    3. Validate a pretrained detection model at batch-size 1 and image size 640:
+        yolo val model=yolo26n.pt data=coco8.yaml batch=1 imgsz=640
+
+    4. Export a YOLO26n classification model to ONNX format at image size 224 by 128 (no TASK required)
+        yolo export model=yolo26n-cls.pt format=onnx imgsz=224,128
+
+    5. Ultralytics solutions usage
+        yolo solutions count or any of ['crop', 'blur', 'workout', 'heatmap', 'isegment', 'visioneye', 'speed', 'queue', 'analytics', 'inference', 'trackzone'] source="path/to/video.mp4"
+
+    6. Run special commands:
+        yolo help
+        yolo checks
+        yolo version
+        yolo settings
+        yolo copy-cfg
+        yolo cfg
+        yolo solutions help
+
+    Docs: https://docs.ultralytics.com
+    Solutions: https://docs.ultralytics.com/solutions/
+    Community: https://community.ultralytics.com
+    GitHub: https://github.com/ultralytics/ultralytics
+    
+    C4b_mask_15: '[31m[1mmask[0m' is not a valid YOLO argument. Similar arguments are i.e. ['task=detect'].
+
+    Arguments received: ['yolo', '--worker', '/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/stenosis_strategies/_worker_jobs/C4b_mask_15_job.json']. Ultralytics 'yolo' commands use the following syntax:
+
+        yolo TASK MODE ARGS
+
+        Where   TASK (optional) is one of ['pose', 'classify', 'detect', 'segment', 'obb']
+                MODE (required) is one of ['predict', 'export', 'benchmark', 'val', 'train', 'track']
+                ARGS (optional) are any number of custom 'arg=value' pairs like 'imgsz=320' that override defaults.
+                    See all ARGS at https://docs.ultralytics.com/usage/cfg or with 'yolo cfg'
+
+    1. Train a detection model for 10 epochs with an initial learning_rate of 0.01
+        yolo train data=coco8.yaml model=yolo26n.pt epochs=10 lr0=0.01
+
+    2. Predict a YouTube video using a pretrained segmentation model at image size 320:
+        yolo predict model=yolo26n-seg.pt source='https://youtu.be/LNwODJXcvt4' imgsz=320
+
+    3. Validate a pretrained detection model at batch-size 1 and image size 640:
+        yolo val model=yolo26n.pt data=coco8.yaml batch=1 imgsz=640
+
+    4. Export a YOLO26n classification model to ONNX format at image size 224 by 128 (no TASK required)
+        yolo export model=yolo26n-cls.pt format=onnx imgsz=224,128
+
+    5. Ultralytics solutions usage
+        yolo solutions count or any of ['crop', 'blur', 'workout', 'heatmap', 'isegment', 'visioneye', 'speed', 'queue', 'analytics', 'inference', 'trackzone'] source="path/to/video.mp4"
+
+    6. Run special commands:
+        yolo help
+        yolo checks
+        yolo version
+        yolo settings
+        yolo copy-cfg
+        yolo cfg
+        yolo solutions help
+
+    Docs: https://docs.ultralytics.com
+    Solutions: https://docs.ultralytics.com/solutions/
+    Community: https://community.ultralytics.com
+    GitHub: https://github.com/ultralytics/ultralytics
+    
+    C5_multiscale_stenosis: division by zero
+====================================================================================================
+
+[2026-04-16 09:02:33]   ✓ PHASE 2/3 scheduler
+
+========================================================
+  PHASE 4 — compound / pipeline-heavy experiments
+========================================================
+
+[2026-04-16 09:02:33]   GPUs [0,1] idle (>= 8000MB free)
+
+[2026-04-16 09:02:33] STEP: PHASE 4 scheduler
+
+[2026-04-16 09:02:33]   cmd: python -u run_stenosis_strategies_v2.py --experiments B3_background_stenosis B5_iter_pl --arcade-root ../../arcade/submission --gpus 0,1 --min-free-mb 1000 --skip-splits
+[SKIP] Stratified splits (--skip-splits)
+
+############################################################
+# Running 2 experiments on 2 GPUs
+#   Output: /home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/stenosis_strategies
+############################################################
+  advisory GPU 0: B3_background_stenosis — B-3: S54 + ~150 hard-negative background images from syntax pool added to stenosis train as empty labels.
+  advisory GPU 1: B5_iter_pl — B-5: 3-round iterative SSASS pseudo-labeling with conf decay 0.5->0.4->0.3. Each round retrains on GT + accumulated pseudo-labels.
+
+  Initial GPU memory (nvidia-smi):
+    GPU 0: OK free=31759 MB
+    GPU 1: OK free=32095 MB
+
+Scheduling 2 experiments
+  GPU pool            : [0, 1]
+  per-GPU baseline    : {0: '31759MB', 1: '32095MB'}
+  max_concurrent      : 2
+  stagger_seconds     : 15
+  min_free_mb         : 1000
+  idle tolerance (MB) : 500
+  idle timeout (s)    : 600
+  Launched B3_background_stenosis on GPU 0 (PID 1010506, free=31759MB, baseline=31759MB, log: /home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/stenosis_strategies/B3_background_stenosis/worker.log)
+  (staggering 15s before next launch)
+  Launched B5_iter_pl on GPU 1 (PID 1010701, free=32095MB, baseline=32095MB, log: /home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/stenosis_strategies/B5_iter_pl/worker.log)
+  [1/2] [GPU 0] B3_background_stenosis: OK
+    [GPU 0] released: idle (free=31698MB)
+  [2/2] [GPU 1] B5_iter_pl: OK
+    [GPU 1] released: idle (free=32095MB)
+
+====================================================================================================
+STENOSIS IMPROVEMENT STRATEGIES — COMPARISON
+====================================================================================================
+
+Name                         Status    Hours    mAP50       F1   Syn mAP   Sten AP   Sten F1
+----------------------------------------------------------------------------------------------------
+B3_background_stenosis       OK          1.0   0.7228   0.7166    0.7568    0.3140    0.4023
+B5_iter_pl                   OK          1.9   0.7275   0.7196    0.7568    0.3752    0.4426
+
+====================================================================================================
+PER-CLASS F1 (Test)
+====================================================================================================
+Name                                1       11       13       16        2        3        4        5        6        7        8        9 stenosis
+-------------------------------------------------------------------------------------------------------------------------------------------------
+B3_background_stenosis         0.8778   0.8430   0.5215   0.6704   0.7949   0.8162   0.7833   0.8473   0.7427   0.7281   0.7476   0.5053   0.4023
+B5_iter_pl                     0.8778   0.8430   0.5215   0.6704   0.7949   0.8162   0.7833   0.8473   0.7427   0.7281   0.7476   0.5053   0.4426
+
+  S15_multiseed_summary written (n=3):
+    syntax mAP50  : 0.7375 ± 0.0102
+    stenosis AP50 : 0.3466 ± 0.0306
+    stenosis F1   : 0.4177 ± 0.0265
+    overall F1    : 0.6999 ± 0.0083
+
+  S18_multiseed_summary written (n=2):
+    syntax mAP50  : 0.7414 ± 0.0109
+    stenosis AP50 : 0.3620 ± 0.0105
+    stenosis F1   : 0.4375 ± 0.0246
+    overall F1    : 0.7029 ± 0.0096
+
+  S27_multiseed_summary written (n=2):
+    syntax mAP50  : 0.7445 ± 0.0069
+    stenosis AP50 : 0.3775 ± 0.0081
+    stenosis F1   : 0.4422 ± 0.0115
+    overall F1    : 0.7004 ± 0.0027
+
+====================================================================================================
+ALL EXPERIMENTS COMPLETE (1.9h wall time)
+Results saved: /home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/stenosis_strategies/strategy_results.json
+  (merged with 79 existing entries, total 81 entries)
+  2 succeeded, 0 failed
+====================================================================================================
+
+[2026-04-16 10:57:53]   ✓ PHASE 4 scheduler
+
+[2026-04-16 10:57:53] PHASE 2/3/4 finished
+
+========================================================
+  ALL PROPOSAL EXPERIMENTS COMPLETE
+========================================================
+
+[2026-04-16 10:57:53] See ../results/stenosis_strategies/proposal_runs.log for full output
+
+[2026-04-16 10:57:53] Per-experiment metrics: ../results/stenosis_strategies/<exp_name>/all_metrics.json
+
+[2026-04-16 10:57:53] Standalone reports in: ../results/stenosis_strategies/{weighted_f1_report,label_audit_S54,A1_*,A2_*,A4_*,A5_*,A6_*}.json
