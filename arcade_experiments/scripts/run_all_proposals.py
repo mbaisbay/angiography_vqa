@@ -138,6 +138,85 @@ def fix_dataset_yaml_paths():
             log(f"  Fixed path in {fname} -> {correct_path}")
 
 
+def _ensure_clean_data():
+    """Verify data integrity and re-prepare from ground truth if needed.
+
+    Ground truth: ARCADE_ROOT/{syntax,stenosis}/{train,val,test}/
+    Derived data: DATA_DIR/{syntax_filtered,stenosis,dataset_configs}/
+
+    We check:
+      1. Does derived data exist at all?
+      2. Do image counts match the ground truth source?
+      3. Are there stale oversampled/synthetic files from prior runs?
+    If anything is wrong, we wipe and re-prepare from scratch.
+    """
+    needs_prep = False
+    reason = ""
+
+    syntax_src = ARCADE_ROOT / "syntax"
+    stenosis_src = ARCADE_ROOT / "stenosis"
+
+    # Check 1: does derived data exist?
+    if not (DATA_DIR / "dataset_configs" / "syntax_only.yaml").exists():
+        needs_prep = True
+        reason = "dataset configs not found"
+
+    # Check 2: do train image counts match ground truth?
+    if not needs_prep:
+        for task, src_dir, dst_dir in [
+            ("syntax", syntax_src, DATA_DIR / "syntax_filtered"),
+            ("stenosis", stenosis_src, DATA_DIR / "stenosis"),
+        ]:
+            src_count = len(list((src_dir / "train" / "images").glob("*"))) if (src_dir / "train" / "images").exists() else 0
+            dst_img_dir = dst_dir / "images" / "train"
+            if dst_img_dir.exists():
+                # Count only real images, not oversampled/synthetic duplicates
+                dst_count = sum(1 for f in dst_img_dir.iterdir()
+                                if not f.name.startswith(("synth_", "bg_"))
+                                and "_os" not in f.stem)
+                if dst_count != src_count and src_count > 0:
+                    needs_prep = True
+                    reason = (f"{task} train count mismatch: "
+                              f"source={src_count}, derived={dst_count}")
+                    break
+            else:
+                needs_prep = True
+                reason = f"{task} derived images missing"
+                break
+
+    # Check 3: are there stale oversampled/synthetic files?
+    if not needs_prep:
+        for dst_dir in [DATA_DIR / "syntax_filtered", DATA_DIR / "stenosis"]:
+            train_img = dst_dir / "images" / "train"
+            if not train_img.exists():
+                continue
+            stale = [f for f in train_img.iterdir()
+                     if f.name.startswith(("synth_", "bg_")) or "_os" in f.stem]
+            if stale:
+                needs_prep = True
+                reason = f"found {len(stale)} stale oversampled/synthetic files in {dst_dir.name}"
+                break
+
+    if needs_prep:
+        log(f"Data integrity check FAILED: {reason}")
+        log("Re-preparing data from ground truth source...")
+
+        # Wipe derived data to avoid contamination
+        for subdir in ["syntax_filtered", "stenosis", "dataset_configs"]:
+            d = DATA_DIR / subdir
+            if d.exists():
+                shutil.rmtree(d)
+                log(f"  Removed stale {subdir}/")
+
+        from run_pipeline import data_prep
+        data_prep(ARCADE_ROOT, DATA_DIR, min_count=300)
+        fix_dataset_yaml_paths()
+        log("Data preparation complete from ground truth.")
+    else:
+        log("Data integrity check passed.")
+        fix_dataset_yaml_paths()
+
+
 def get_syntax_yaml() -> str:
     return str(DATA_DIR / "dataset_configs" / "syntax_only.yaml")
 
@@ -605,14 +684,16 @@ def run_B1_B2_tail_sampling_loss(device: str = "0"):
     """B-1 + B-2: Per-class weighted sampling + weighted BCE loss."""
     log("B-1/B-2: Tail-class oversampling + loss weighting...")
 
-    # Step 1: Copy syntax data and apply oversampling
+    # Step 1: Copy CLEAN syntax data and apply oversampling
     os_data_dir = RESULTS_DIR / "data" / "B1_B2_oversampled"
     syn_src = DATA_DIR / "syntax_filtered"
     syn_dst = os_data_dir / "syntax_filtered"
 
-    if not syn_dst.exists():
-        log("  Copying syntax data for oversampling...")
-        shutil.copytree(syn_src, syn_dst, dirs_exist_ok=True)
+    # Always start from clean ground-truth-derived data
+    if syn_dst.exists():
+        shutil.rmtree(syn_dst)
+    log("  Copying clean syntax data for oversampling...")
+    shutil.copytree(syn_src, syn_dst)
 
     # Get class info from yaml
     syn_yaml_src = get_syntax_yaml()
@@ -776,12 +857,13 @@ def run_B3_background_images(device: str = "0"):
     best_sten = get_best_stenosis_model()
     syntax_img_dir = DATA_DIR / "syntax_filtered" / "images" / "train"
 
-    # Copy stenosis data to avoid modifying original
+    # Copy CLEAN stenosis data to avoid modifying original
     bg_data_dir = RESULTS_DIR / "data" / "B3_background"
     sten_src = DATA_DIR / "stenosis"
     sten_dst = bg_data_dir / "stenosis"
-    if not sten_dst.exists():
-        shutil.copytree(sten_src, sten_dst, dirs_exist_ok=True)
+    if sten_dst.exists():
+        shutil.rmtree(sten_dst)
+    shutil.copytree(sten_src, sten_dst)
 
     stats = build(best_sten, syntax_img_dir, sten_dst, 512, device, n_hard=150)
     log(f"  Added {stats['total_added']} background images")
@@ -811,12 +893,13 @@ def run_B6_copy_paste(device: str = "0"):
     log("B-6: Copy-paste augmentation for tail classes...")
     from copy_paste_tail_classes import main as cp_main
 
-    # Copy data
+    # Copy CLEAN data
     cp_data_dir = RESULTS_DIR / "data" / "B6_copypaste"
     syn_src = DATA_DIR / "syntax_filtered"
     syn_dst = cp_data_dir / "syntax_filtered"
-    if not syn_dst.exists():
-        shutil.copytree(syn_src, syn_dst, dirs_exist_ok=True)
+    if syn_dst.exists():
+        shutil.rmtree(syn_dst)
+    shutil.copytree(syn_src, syn_dst)
 
     # Get tail classes from yaml
     syn_yaml_src = get_syntax_yaml()
@@ -1003,18 +1086,19 @@ def run_combined_recipe(device: str = "0"):
     log(f"  Combined overrides: {best_overrides}")
 
     results = {}
-    # Step 1: Oversample tail classes (copy data once)
+    # Step 1: Oversample tail classes (always start from clean data)
     combined_data = RESULTS_DIR / "data" / "combined_recipe"
     syn_src = DATA_DIR / "syntax_filtered"
     syn_dst = combined_data / "syntax_filtered"
-    if not syn_dst.exists():
-        shutil.copytree(syn_src, syn_dst, dirs_exist_ok=True)
-        from oversample_tail_classes import oversample, instance_counts
-        counts = instance_counts(syn_dst / "labels" / "train")
-        sorted_cls = sorted(counts.items(), key=lambda x: x[1])
-        tail = [c for c, _ in sorted_cls[:3]]
-        target = sorted_cls[len(sorted_cls) // 2][1]
-        oversample(syn_dst, tail, target)
+    if syn_dst.exists():
+        shutil.rmtree(syn_dst)
+    shutil.copytree(syn_src, syn_dst)
+    from oversample_tail_classes import oversample, instance_counts
+    counts = instance_counts(syn_dst / "labels" / "train")
+    sorted_cls = sorted(counts.items(), key=lambda x: x[1])
+    tail = [c for c, _ in sorted_cls[:3]]
+    target = sorted_cls[len(sorted_cls) // 2][1]
+    oversample(syn_dst, tail, target)
 
     with open(get_syntax_yaml()) as f:
         syn_cfg = yaml.safe_load(f)
@@ -1592,13 +1676,11 @@ def main():
     log(f"Phases:      {phases}")
     log("")
 
-    # Verify data exists — run data prep if needed
-    if not (DATA_DIR / "dataset_configs" / "syntax_only.yaml").exists():
-        log("Dataset configs not found — running data prep from ARCADE root...")
-        from run_pipeline import data_prep
-        data_prep(ARCADE_ROOT, DATA_DIR, min_count=300)
-        # Fix paths after fresh data prep (they'll be correct but let's be sure)
-        fix_dataset_yaml_paths()
+    # ── Always prepare data fresh from the ground truth source ──
+    # arcade/submission/{syntax,stenosis}/ is the ONLY trusted source.
+    # Previous iterations may have altered derived copies in data/.
+    # We verify integrity and re-prep if anything looks wrong.
+    _ensure_clean_data()
 
     t0 = time.time()
 
