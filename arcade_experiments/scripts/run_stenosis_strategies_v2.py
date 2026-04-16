@@ -2445,6 +2445,25 @@ def get_experiments():
               desc="D-2: S54 + flipud=0.5",
               use_stratified=True,
               overrides={"flipud": 0.5}),
+
+        # ── G-1: Train ALL 25 syntax classes, eval on 12 kept ────────
+        # Hypothesis: training on all 25 gives the model explicit
+        # negative examples for class 9 vs 9a, 13 vs 12/12a/12b, etc.
+        # The model learns sharper inter-class boundaries for the tail
+        # classes. At eval time, only the 12 classes with ≥300 training
+        # instances are scored.
+        # S20 tried this on AdamW/200ep recipe → −2.3 pp on 12-class mean.
+        # This re-tests on the S54 SGD/300ep recipe which is +4 pp
+        # stronger and may absorb the gradient dilution penalty.
+        _base("G1_train25_eval12", gpu=0,
+              desc="G-1: Train syntax on ALL 25 classes (min_count=0), "
+                   "evaluate F1 only on the 12 classes with ≥300 instances. "
+                   "S54 recipe otherwise. Tests whether explicit rare-class "
+                   "training improves tail-class discrimination.",
+              use_stratified=True,
+              syntax_overrides={"syntax_min_count": 0,
+                                "syntax_eval_kept_ids": [1, 2, 3, 4, 5, 6, 7, 8, 9,
+                                                         11, 13, 16]}),
     ]
 
     experiments.extend(proposal_experiments)
