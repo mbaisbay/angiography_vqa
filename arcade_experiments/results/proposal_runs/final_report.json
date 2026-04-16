@@ -1,0 +1,1391 @@
+{
+  "total_experiments": 30,
+  "best_syntax": {
+    "name": "",
+    "mAP50": 0
+  },
+  "best_stenosis": {
+    "name": "",
+    "mAP50": 0
+  },
+  "all_results": [
+    {
+      "top5": [
+        {
+          "name": "S54_s43b_clahe",
+          "macro": 0.7181,
+          "weighted": 0.7456,
+          "per_class_f1": {
+            "1": 0.8778,
+            "2": 0.7949,
+            "3": 0.8162,
+            "4": 0.7833,
+            "5": 0.8473,
+            "6": 0.7427,
+            "7": 0.7281,
+            "8": 0.7476,
+            "9": 0.5053,
+            "11": 0.843,
+            "13": 0.5215,
+            "16": 0.6704,
+            "stenosis": 0.4569
+          },
+          "supports_used": {
+            "1": 120,
+            "2": 95,
+            "3": 100,
+            "4": 85,
+            "5": 115,
+            "6": 95,
+            "7": 90,
+            "8": 80,
+            "9": 40,
+            "11": 110,
+            "13": 45,
+            "16": 55,
+            "stenosis": 96
+          }
+        },
+        {
+          "name": "E2s_yolo_angio",
+          "macro": 0.7108,
+          "weighted": 0.7455,
+          "per_class_f1": {
+            "1": 0.8258,
+            "2": 0.7349,
+            "3": 0.8272,
+            "4": 0.7764,
+            "5": 0.8329,
+            "6": 0.7458,
+            "7": 0.6836,
+            "8": 0.6984,
+            "9": 0.3986,
+            "11": 0.8209,
+            "13": 0.5216,
+            "16": 0.6637
+          },
+          "supports_used": {
+            "1": 120,
+            "2": 95,
+            "3": 100,
+            "4": 85,
+            "5": 115,
+            "6": 95,
+            "7": 90,
+            "8": 80,
+            "9": 40,
+            "11": 110,
+            "13": 45,
+            "16": 55
+          }
+        },
+        {
+          "name": "S16_mosaic_both",
+          "macro": 0.7098,
+          "weighted": 0.745,
+          "per_class_f1": {
+            "1": 0.8974,
+            "2": 0.7604,
+            "3": 0.8357,
+            "4": 0.8083,
+            "5": 0.8681,
+            "6": 0.7511,
+            "7": 0.7146,
+            "8": 0.7873,
+            "9": 0.3679,
+            "11": 0.846,
+            "13": 0.5396,
+            "16": 0.6036,
+            "stenosis": 0.4469
+          },
+          "supports_used": {
+            "1": 120,
+            "2": 95,
+            "3": 100,
+            "4": 85,
+            "5": 115,
+            "6": 95,
+            "7": 90,
+            "8": 80,
+            "9": 40,
+            "11": 110,
+            "13": 45,
+            "16": 55,
+            "stenosis": 96
+          }
+        },
+        {
+          "name": "S51_s31_clahe",
+          "macro": 0.7173,
+          "weighted": 0.7447,
+          "per_class_f1": {
+            "1": 0.8778,
+            "2": 0.7949,
+            "3": 0.8162,
+            "4": 0.7833,
+            "5": 0.8473,
+            "6": 0.7427,
+            "7": 0.7281,
+            "8": 0.7476,
+            "9": 0.5053,
+            "11": 0.843,
+            "13": 0.5215,
+            "16": 0.6704,
+            "stenosis": 0.4466
+          },
+          "supports_used": {
+            "1": 120,
+            "2": 95,
+            "3": 100,
+            "4": 85,
+            "5": 115,
+            "6": 95,
+            "7": 90,
+            "8": 80,
+            "9": 40,
+            "11": 110,
+            "13": 45,
+            "16": 55,
+            "stenosis": 96
+          }
+        },
+        {
+          "name": "C1a_label_smooth_05",
+          "macro": 0.7173,
+          "weighted": 0.7447,
+          "per_class_f1": {
+            "1": 0.8778,
+            "2": 0.7949,
+            "3": 0.8162,
+            "4": 0.7833,
+            "5": 0.8473,
+            "6": 0.7427,
+            "7": 0.7281,
+            "8": 0.7476,
+            "9": 0.5053,
+            "11": 0.843,
+            "13": 0.5215,
+            "16": 0.6704,
+            "stenosis": 0.4466
+          },
+          "supports_used": {
+            "1": 120,
+            "2": 95,
+            "3": 100,
+            "4": 85,
+            "5": 115,
+            "6": 95,
+            "7": 90,
+            "8": 80,
+            "9": 40,
+            "11": 110,
+            "13": 45,
+            "16": 55,
+            "stenosis": 96
+          }
+        }
+      ],
+      "name": "F4_weighted_f1",
+      "timestamp": "2026-04-16T14:42:06"
+    },
+    {
+      "contaminated": false,
+      "output": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/F2_label_audit.json",
+      "name": "F2_label_audit",
+      "timestamp": "2026-04-16T14:42:06"
+    },
+    {
+      "syntax_model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/F1_official_syntax/F1_official_syntax_best.pt",
+      "stenosis_model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/F1_official_stenosis/F1_official_stenosis_best.pt",
+      "syntax_metrics": {
+        "split": "test",
+        "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/F1_official_syntax/F1_official_syntax_best.pt",
+        "mAP50": 0.6682,
+        "mAP50_95": 0.264,
+        "precision": 0.7148,
+        "recall": 0.6358,
+        "per_class": {
+          "1": {
+            "ap50": 0.6985,
+            "precision": 0.716,
+            "recall": 0.7058,
+            "f1": 0.7109
+          },
+          "2": {
+            "ap50": 0.6885,
+            "precision": 0.7152,
+            "recall": 0.6277,
+            "f1": 0.6686
+          },
+          "3": {
+            "ap50": 0.7049,
+            "precision": 0.6744,
+            "recall": 0.7,
+            "f1": 0.687
+          },
+          "4": {
+            "ap50": 0.5302,
+            "precision": 0.5798,
+            "recall": 0.6196,
+            "f1": 0.599
+          },
+          "5": {
+            "ap50": 0.8758,
+            "precision": 0.8212,
+            "recall": 0.8103,
+            "f1": 0.8157
+          },
+          "6": {
+            "ap50": 0.7171,
+            "precision": 0.7953,
+            "recall": 0.5993,
+            "f1": 0.6835
+          },
+          "7": {
+            "ap50": 0.6505,
+            "precision": 0.7152,
+            "recall": 0.575,
+            "f1": 0.6375
+          },
+          "8": {
+            "ap50": 0.5806,
+            "precision": 0.6964,
+            "recall": 0.6,
+            "f1": 0.6446
+          },
+          "11": {
+            "ap50": 0.8708,
+            "precision": 0.7974,
+            "recall": 0.8571,
+            "f1": 0.8262
+          },
+          "13": {
+            "ap50": 0.3652,
+            "precision": 0.6376,
+            "recall": 0.2636,
+            "f1": 0.373
+          }
+        },
+        "syntax_mAP50": 0.6682
+      },
+      "stenosis_metrics": {
+        "split": "test",
+        "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/F1_official_stenosis/F1_official_stenosis_best.pt",
+        "mAP50": 0.2498,
+        "mAP50_95": 0.0754,
+        "precision": 0.3106,
+        "recall": 0.3964,
+        "per_class": {
+          "stenosis": {
+            "ap50": 0.2498,
+            "precision": 0.3106,
+            "recall": 0.3964,
+            "f1": 0.3483
+          }
+        },
+        "stenosis_AP50": 0.2498
+      },
+      "name": "F1_official_split",
+      "timestamp": "2026-04-16T15:01:48"
+    },
+    {
+      "syntax": {
+        "thresholds": {
+          "1": 0.3,
+          "2": 0.15,
+          "3": 0.25,
+          "4": 0.25,
+          "5": 0.35,
+          "6": 0.35,
+          "7": 0.1,
+          "8": 0.2,
+          "9": 0.2,
+          "11": 0.25,
+          "13": 0.25,
+          "16": 0.25,
+          "12": 0.25,
+          "14": 0.25,
+          "15": 0.25,
+          "17": 0.25,
+          "18": 0.25,
+          "19": 0.25,
+          "20": 0.25,
+          "21": 0.25,
+          "22": 0.25,
+          "23": 0.25,
+          "24": 0.25
+        },
+        "test_default_f1": 0.2079,
+        "test_tuned_f1": 0.2151,
+        "delta": 0.0072
+      },
+      "stenosis": {
+        "thresholds": {
+          "stenosis": 0.25
+        },
+        "test_default_f1": 0.7334,
+        "test_tuned_f1": 0.7334,
+        "delta": 0.0
+      },
+      "name": "A1_conf_sweep",
+      "timestamp": "2026-04-16T15:02:43"
+    },
+    {
+      "stenosis_area20": {
+        "raw": {
+          "precision": 0.666,
+          "recall": 0.8161,
+          "f1": 0.7334,
+          "tp": 315,
+          "fp": 158,
+          "fn": 71
+        },
+        "filtered": {
+          "precision": 0.666,
+          "recall": 0.8161,
+          "f1": 0.7334,
+          "tp": 315,
+          "fp": 158,
+          "fn": 71
+        },
+        "min_area_px": 20
+      },
+      "stenosis_area50": {
+        "raw": {
+          "precision": 0.666,
+          "recall": 0.8161,
+          "f1": 0.7334,
+          "tp": 315,
+          "fp": 158,
+          "fn": 71
+        },
+        "filtered": {
+          "precision": 0.666,
+          "recall": 0.8161,
+          "f1": 0.7334,
+          "tp": 315,
+          "fp": 158,
+          "fn": 71
+        },
+        "min_area_px": 50
+      },
+      "stenosis_area100": {
+        "raw": {
+          "precision": 0.666,
+          "recall": 0.8161,
+          "f1": 0.7334,
+          "tp": 315,
+          "fp": 158,
+          "fn": 71
+        },
+        "filtered": {
+          "precision": 0.666,
+          "recall": 0.8161,
+          "f1": 0.7334,
+          "tp": 315,
+          "fp": 158,
+          "fn": 71
+        },
+        "min_area_px": 100
+      },
+      "stenosis_area200": {
+        "raw": {
+          "precision": 0.666,
+          "recall": 0.8161,
+          "f1": 0.7334,
+          "tp": 315,
+          "fp": 158,
+          "fn": 71
+        },
+        "filtered": {
+          "precision": 0.666,
+          "recall": 0.8161,
+          "f1": 0.7334,
+          "tp": 315,
+          "fp": 158,
+          "fn": 71
+        },
+        "min_area_px": 200
+      },
+      "syntax_area20": {
+        "raw": {
+          "precision": 0.6075,
+          "recall": 0.5988,
+          "f1": 0.6031,
+          "tp": 791,
+          "fp": 511,
+          "fn": 530
+        },
+        "filtered": {
+          "precision": 0.6075,
+          "recall": 0.5988,
+          "f1": 0.6031,
+          "tp": 791,
+          "fp": 511,
+          "fn": 530
+        },
+        "min_area_px": 20
+      },
+      "syntax_area50": {
+        "raw": {
+          "precision": 0.6075,
+          "recall": 0.5988,
+          "f1": 0.6031,
+          "tp": 791,
+          "fp": 511,
+          "fn": 530
+        },
+        "filtered": {
+          "precision": 0.6075,
+          "recall": 0.5988,
+          "f1": 0.6031,
+          "tp": 791,
+          "fp": 511,
+          "fn": 530
+        },
+        "min_area_px": 50
+      },
+      "syntax_area100": {
+        "raw": {
+          "precision": 0.6075,
+          "recall": 0.5988,
+          "f1": 0.6031,
+          "tp": 791,
+          "fp": 511,
+          "fn": 530
+        },
+        "filtered": {
+          "precision": 0.6075,
+          "recall": 0.5988,
+          "f1": 0.6031,
+          "tp": 791,
+          "fp": 511,
+          "fn": 530
+        },
+        "min_area_px": 100
+      },
+      "name": "A4_cc_filter",
+      "timestamp": "2026-04-16T15:03:15"
+    },
+    {
+      "classes_fitted": [
+        "5",
+        "6",
+        "12",
+        "17",
+        "16",
+        "15",
+        "24",
+        "23",
+        "14",
+        "7",
+        "8",
+        "9",
+        "11",
+        "2",
+        "1",
+        "3",
+        "4",
+        "19",
+        "20",
+        "22",
+        "21",
+        "13",
+        "18",
+        "13",
+        "16"
+      ],
+      "n_val_pairs": {
+        "5": 591,
+        "6": 832,
+        "12": 215,
+        "17": 78,
+        "16": 7,
+        "15": 600,
+        "24": 483,
+        "23": 83,
+        "14": 176,
+        "7": 323,
+        "8": 367,
+        "9": 219,
+        "11": 137,
+        "2": 396,
+        "1": 325,
+        "3": 376,
+        "4": 273,
+        "19": 214,
+        "20": 38,
+        "22": 67,
+        "21": 66,
+        "13": 31,
+        "18": 27
+      },
+      "output_dir": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/A5_calibrators",
+      "name": "A5_calibration",
+      "timestamp": "2026-04-16T15:03:19"
+    },
+    {
+      "syntax": {
+        "no_tta_mAP50": 0.4795,
+        "with_tta_mAP50": 0.4795,
+        "delta_mAP50": 0.0,
+        "no_tta_per_class": {
+          "1": {
+            "ap50": 0.6754,
+            "precision": 0.5749,
+            "recall": 0.81,
+            "f1": 0.6725
+          },
+          "2": {
+            "ap50": 0.7216,
+            "precision": 0.7939,
+            "recall": 0.5778,
+            "f1": 0.6688
+          },
+          "3": {
+            "ap50": 0.652,
+            "precision": 0.6192,
+            "recall": 0.63,
+            "f1": 0.6246
+          },
+          "4": {
+            "ap50": 0.658,
+            "precision": 0.6781,
+            "recall": 0.6183,
+            "f1": 0.6468
+          },
+          "5": {
+            "ap50": 0.9141,
+            "precision": 0.8327,
+            "recall": 0.8615,
+            "f1": 0.8469
+          },
+          "6": {
+            "ap50": 0.8168,
+            "precision": 0.7031,
+            "recall": 0.7766,
+            "f1": 0.738
+          },
+          "7": {
+            "ap50": 0.7624,
+            "precision": 0.7181,
+            "recall": 0.6747,
+            "f1": 0.6957
+          },
+          "8": {
+            "ap50": 0.2815,
+            "precision": 0.3225,
+            "recall": 0.3875,
+            "f1": 0.352
+          },
+          "9": {
+            "ap50": 0.2653,
+            "precision": 0.4298,
+            "recall": 0.3485,
+            "f1": 0.3849
+          },
+          "11": {
+            "ap50": 0.0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0
+          },
+          "13": {
+            "ap50": 0.0063,
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0
+          },
+          "16": {
+            "ap50": 0.0,
+            "precision": 1.0,
+            "recall": 0.0,
+            "f1": 0.0
+          }
+        },
+        "with_tta_per_class": {
+          "1": {
+            "ap50": 0.6754,
+            "precision": 0.5749,
+            "recall": 0.81,
+            "f1": 0.6725
+          },
+          "2": {
+            "ap50": 0.7216,
+            "precision": 0.7939,
+            "recall": 0.5778,
+            "f1": 0.6688
+          },
+          "3": {
+            "ap50": 0.652,
+            "precision": 0.6192,
+            "recall": 0.63,
+            "f1": 0.6246
+          },
+          "4": {
+            "ap50": 0.658,
+            "precision": 0.6781,
+            "recall": 0.6183,
+            "f1": 0.6468
+          },
+          "5": {
+            "ap50": 0.9141,
+            "precision": 0.8327,
+            "recall": 0.8615,
+            "f1": 0.8469
+          },
+          "6": {
+            "ap50": 0.8168,
+            "precision": 0.7031,
+            "recall": 0.7766,
+            "f1": 0.738
+          },
+          "7": {
+            "ap50": 0.7624,
+            "precision": 0.7181,
+            "recall": 0.6747,
+            "f1": 0.6957
+          },
+          "8": {
+            "ap50": 0.2815,
+            "precision": 0.3225,
+            "recall": 0.3875,
+            "f1": 0.352
+          },
+          "9": {
+            "ap50": 0.2653,
+            "precision": 0.4298,
+            "recall": 0.3485,
+            "f1": 0.3849
+          },
+          "11": {
+            "ap50": 0.0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0
+          },
+          "13": {
+            "ap50": 0.0063,
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0
+          },
+          "16": {
+            "ap50": 0.0,
+            "precision": 1.0,
+            "recall": 0.0,
+            "f1": 0.0
+          }
+        }
+      },
+      "stenosis": {
+        "no_tta_mAP50": 0.8137,
+        "with_tta_mAP50": 0.8137,
+        "delta_mAP50": 0.0,
+        "no_tta_per_class": {
+          "stenosis": {
+            "ap50": 0.8137,
+            "precision": 0.7604,
+            "recall": 0.7668,
+            "f1": 0.7636
+          }
+        },
+        "with_tta_per_class": {
+          "stenosis": {
+            "ap50": 0.8137,
+            "precision": 0.7604,
+            "recall": 0.7668,
+            "f1": 0.7636
+          }
+        }
+      },
+      "name": "A3_tta_test",
+      "timestamp": "2026-04-16T15:03:48"
+    },
+    {
+      "upscale_2x": {
+        "tp": 277,
+        "fp": 569,
+        "fn": 109,
+        "precision": 0.3274,
+        "recall": 0.7176,
+        "f1": 0.4497
+      },
+      "upscale_3x": {
+        "tp": 163,
+        "fp": 442,
+        "fn": 223,
+        "precision": 0.2694,
+        "recall": 0.4223,
+        "f1": 0.329
+      },
+      "name": "A2_tile_inference",
+      "timestamp": "2026-04-16T15:04:28"
+    },
+    {
+      "status": "failed",
+      "error": "Cannot re-initialize CUDA in forked subprocess. To use CUDA with multiprocessing, you must use the 'spawn' start method",
+      "name": "run_B1_B2_tail_sampling_loss",
+      "timestamp": "2026-04-16T15:04:30"
+    },
+    {
+      "status": "failed",
+      "error": "Cannot re-initialize CUDA in forked subprocess. To use CUDA with multiprocessing, you must use the 'spawn' start method",
+      "name": "run_B4_warmstart_stenosis",
+      "timestamp": "2026-04-16T15:04:31"
+    },
+    {
+      "status": "failed",
+      "error": "Cannot re-initialize CUDA in forked subprocess. To use CUDA with multiprocessing, you must use the 'spawn' start method",
+      "name": "run_C3_dfl_sweep",
+      "timestamp": "2026-04-16T15:04:32"
+    },
+    {
+      "status": "failed",
+      "error": "Cannot re-initialize CUDA in forked subprocess. To use CUDA with multiprocessing, you must use the 'spawn' start method",
+      "name": "run_C1_label_smoothing",
+      "timestamp": "2026-04-16T15:04:33"
+    },
+    {
+      "status": "failed",
+      "error": "division by zero",
+      "name": "run_C5_multi_scale",
+      "timestamp": "2026-04-16T15:04:45"
+    },
+    {
+      "status": "failed",
+      "error": "Cannot re-initialize CUDA in forked subprocess. To use CUDA with multiprocessing, you must use the 'spawn' start method",
+      "name": "run_B3_background_images",
+      "timestamp": "2026-04-16T15:04:46"
+    },
+    {
+      "status": "failed",
+      "error": "Cannot re-initialize CUDA in forked subprocess. To use CUDA with multiprocessing, you must use the 'spawn' start method",
+      "name": "run_B6_copy_paste",
+      "timestamp": "2026-04-16T15:05:04"
+    },
+    {
+      "status": "failed",
+      "error": "Cannot re-initialize CUDA in forked subprocess. To use CUDA with multiprocessing, you must use the 'spawn' start method",
+      "name": "run_C2_dropout",
+      "timestamp": "2026-04-16T15:05:05"
+    },
+    {
+      "status": "failed",
+      "error": "'\u001b[31m\u001b[1mmask\u001b[0m' is not a valid YOLO argument. Similar arguments are i.e. ['task=detect'].\n\n    Arguments received: ['yolo', '--arcade-root', '/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/scripts/../../arcade/submission', '--phase', 'all', '--devices', '0,1']. Ultralytics 'yolo' commands use the following syntax:\n\n        yolo TASK MODE ARGS\n\n        Where   TASK (optional) is one of ['segment', 'pose', 'classify', 'obb', 'detect']\n                MODE (required) is one of ['export', 'track', 'predict', 'val', 'train', 'benchmark']\n                ARGS (optional) are any number of custom 'arg=value' pairs like 'imgsz=320' that override defaults.\n                    See all ARGS at https://docs.ultralytics.com/usage/cfg or with 'yolo cfg'\n\n    1. Train a detection model for 10 epochs with an initial learning_rate of 0.01\n        yolo train data=coco8.yaml model=yolo26n.pt epochs=10 lr0=0.01\n\n    2. Predict a YouTube video using a pretrained segmentation model at image size 320:\n        yolo predict model=yolo26n-seg.pt source='https://youtu.be/LNwODJXcvt4' imgsz=320\n\n    3. Validate a pretrained detection model at batch-size 1 and image size 640:\n        yolo val model=yolo26n.pt data=coco8.yaml batch=1 imgsz=640\n\n    4. Export a YOLO26n classification model to ONNX format at image size 224 by 128 (no TASK required)\n        yolo export model=yolo26n-cls.pt format=onnx imgsz=224,128\n\n    5. Ultralytics solutions usage\n        yolo solutions count or any of ['crop', 'blur', 'workout', 'heatmap', 'isegment', 'visioneye', 'speed', 'queue', 'analytics', 'inference', 'trackzone'] source=\"path/to/video.mp4\"\n\n    6. Run special commands:\n        yolo help\n        yolo checks\n        yolo version\n        yolo settings\n        yolo copy-cfg\n        yolo cfg\n        yolo solutions help\n\n    Docs: https://docs.ultralytics.com\n    Solutions: https://docs.ultralytics.com/solutions/\n    Community: https://community.ultralytics.com\n    GitHub: https://github.com/ultralytics/ultralytics\n    ",
+      "name": "run_C4_mask_weight",
+      "timestamp": "2026-04-16T15:05:05"
+    },
+    {
+      "status": "failed",
+      "error": "Cannot re-initialize CUDA in forked subprocess. To use CUDA with multiprocessing, you must use the 'spawn' start method",
+      "name": "run_D2_flipud",
+      "timestamp": "2026-04-16T15:05:06"
+    },
+    {
+      "status": "failed",
+      "error": "Cannot re-initialize CUDA in forked subprocess. To use CUDA with multiprocessing, you must use the 'spawn' start method",
+      "name": "run_D1_erasing",
+      "timestamp": "2026-04-16T15:05:07"
+    },
+    {
+      "mild": {
+        "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/D3_shear_mild/D3_shear_mild_best.pt",
+        "metrics": {
+          "split": "test",
+          "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/D3_shear_mild/D3_shear_mild_best.pt",
+          "mAP50": 0.6559,
+          "mAP50_95": 0.2396,
+          "precision": 0.6784,
+          "recall": 0.645,
+          "per_class": {
+            "1": {
+              "ap50": 0.7946,
+              "precision": 0.7319,
+              "recall": 0.86,
+              "f1": 0.7908
+            },
+            "2": {
+              "ap50": 0.6858,
+              "precision": 0.6664,
+              "recall": 0.7192,
+              "f1": 0.6918
+            },
+            "3": {
+              "ap50": 0.7497,
+              "precision": 0.7363,
+              "recall": 0.75,
+              "f1": 0.7431
+            },
+            "4": {
+              "ap50": 0.5505,
+              "precision": 0.5874,
+              "recall": 0.5326,
+              "f1": 0.5587
+            },
+            "5": {
+              "ap50": 0.8854,
+              "precision": 0.8869,
+              "recall": 0.7846,
+              "f1": 0.8326
+            },
+            "6": {
+              "ap50": 0.7389,
+              "precision": 0.7738,
+              "recall": 0.6649,
+              "f1": 0.7152
+            },
+            "7": {
+              "ap50": 0.7093,
+              "precision": 0.656,
+              "recall": 0.7229,
+              "f1": 0.6878
+            },
+            "8": {
+              "ap50": 0.5708,
+              "precision": 0.6751,
+              "recall": 0.5975,
+              "f1": 0.6339
+            },
+            "9": {
+              "ap50": 0.1921,
+              "precision": 0.3215,
+              "recall": 0.2727,
+              "f1": 0.2951
+            },
+            "11": {
+              "ap50": 0.8623,
+              "precision": 0.7844,
+              "recall": 0.8235,
+              "f1": 0.8035
+            },
+            "13": {
+              "ap50": 0.4295,
+              "precision": 0.5663,
+              "recall": 0.4154,
+              "f1": 0.4793
+            },
+            "16": {
+              "ap50": 0.7015,
+              "precision": 0.7554,
+              "recall": 0.5967,
+              "f1": 0.6667
+            }
+          },
+          "syntax_mAP50": 0.6559
+        }
+      },
+      "moderate": {
+        "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/D3_shear_moderate/D3_shear_moderate_best.pt",
+        "metrics": {
+          "split": "test",
+          "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/D3_shear_moderate/D3_shear_moderate_best.pt",
+          "mAP50": 0.6499,
+          "mAP50_95": 0.2532,
+          "precision": 0.6884,
+          "recall": 0.6162,
+          "per_class": {
+            "1": {
+              "ap50": 0.6829,
+              "precision": 0.7003,
+              "recall": 0.7,
+              "f1": 0.7001
+            },
+            "2": {
+              "ap50": 0.7622,
+              "precision": 0.7267,
+              "recall": 0.77,
+              "f1": 0.7477
+            },
+            "3": {
+              "ap50": 0.7991,
+              "precision": 0.768,
+              "recall": 0.75,
+              "f1": 0.7589
+            },
+            "4": {
+              "ap50": 0.5475,
+              "precision": 0.6199,
+              "recall": 0.514,
+              "f1": 0.562
+            },
+            "5": {
+              "ap50": 0.8779,
+              "precision": 0.888,
+              "recall": 0.7726,
+              "f1": 0.8263
+            },
+            "6": {
+              "ap50": 0.7618,
+              "precision": 0.809,
+              "recall": 0.6596,
+              "f1": 0.7267
+            },
+            "7": {
+              "ap50": 0.674,
+              "precision": 0.6391,
+              "recall": 0.6613,
+              "f1": 0.65
+            },
+            "8": {
+              "ap50": 0.6315,
+              "precision": 0.8036,
+              "recall": 0.525,
+              "f1": 0.6351
+            },
+            "9": {
+              "ap50": 0.0975,
+              "precision": 0.2159,
+              "recall": 0.197,
+              "f1": 0.206
+            },
+            "11": {
+              "ap50": 0.8407,
+              "precision": 0.8043,
+              "recall": 0.8151,
+              "f1": 0.8097
+            },
+            "13": {
+              "ap50": 0.4059,
+              "precision": 0.5424,
+              "recall": 0.3818,
+              "f1": 0.4481
+            },
+            "16": {
+              "ap50": 0.7178,
+              "precision": 0.7438,
+              "recall": 0.6477,
+              "f1": 0.6924
+            }
+          },
+          "syntax_mAP50": 0.6499
+        }
+      },
+      "name": "D3_shear_translate",
+      "timestamp": "2026-04-16T15:25:58"
+    },
+    {
+      "seed_42": {
+        "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/combined_seed42/combined_seed42_best.pt",
+        "metrics": {
+          "split": "test",
+          "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/combined_seed42/combined_seed42_best.pt",
+          "mAP50": 0.6217,
+          "mAP50_95": 0.2386,
+          "precision": 0.6482,
+          "recall": 0.6227,
+          "per_class": {
+            "1": {
+              "ap50": 0.8096,
+              "precision": 0.775,
+              "recall": 0.82,
+              "f1": 0.7969
+            },
+            "2": {
+              "ap50": 0.6559,
+              "precision": 0.7083,
+              "recall": 0.5342,
+              "f1": 0.6091
+            },
+            "3": {
+              "ap50": 0.7749,
+              "precision": 0.7975,
+              "recall": 0.71,
+              "f1": 0.7512
+            },
+            "4": {
+              "ap50": 0.5052,
+              "precision": 0.613,
+              "recall": 0.5326,
+              "f1": 0.57
+            },
+            "5": {
+              "ap50": 0.8979,
+              "precision": 0.8108,
+              "recall": 0.8569,
+              "f1": 0.8332
+            },
+            "6": {
+              "ap50": 0.7492,
+              "precision": 0.7382,
+              "recall": 0.6598,
+              "f1": 0.6968
+            },
+            "7": {
+              "ap50": 0.585,
+              "precision": 0.5593,
+              "recall": 0.6265,
+              "f1": 0.591
+            },
+            "8": {
+              "ap50": 0.5518,
+              "precision": 0.6672,
+              "recall": 0.6125,
+              "f1": 0.6387
+            },
+            "9": {
+              "ap50": 0.2064,
+              "precision": 0.3484,
+              "recall": 0.2879,
+              "f1": 0.3153
+            },
+            "11": {
+              "ap50": 0.839,
+              "precision": 0.6792,
+              "recall": 0.8824,
+              "f1": 0.7676
+            },
+            "13": {
+              "ap50": 0.2993,
+              "precision": 0.4717,
+              "recall": 0.3815,
+              "f1": 0.4218
+            },
+            "16": {
+              "ap50": 0.5859,
+              "precision": 0.6101,
+              "recall": 0.5682,
+              "f1": 0.5884
+            }
+          },
+          "syntax_mAP50": 0.6217
+        }
+      },
+      "seed_7": {
+        "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/combined_seed7/combined_seed7_best.pt",
+        "metrics": {
+          "split": "test",
+          "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/combined_seed7/combined_seed7_best.pt",
+          "mAP50": 0.6281,
+          "mAP50_95": 0.2435,
+          "precision": 0.6461,
+          "recall": 0.6116,
+          "per_class": {
+            "1": {
+              "ap50": 0.7599,
+              "precision": 0.7417,
+              "recall": 0.81,
+              "f1": 0.7743
+            },
+            "2": {
+              "ap50": 0.5905,
+              "precision": 0.6684,
+              "recall": 0.55,
+              "f1": 0.6034
+            },
+            "3": {
+              "ap50": 0.7385,
+              "precision": 0.6584,
+              "recall": 0.67,
+              "f1": 0.6641
+            },
+            "4": {
+              "ap50": 0.5443,
+              "precision": 0.5736,
+              "recall": 0.5435,
+              "f1": 0.5581
+            },
+            "5": {
+              "ap50": 0.8733,
+              "precision": 0.8676,
+              "recall": 0.7393,
+              "f1": 0.7983
+            },
+            "6": {
+              "ap50": 0.7325,
+              "precision": 0.6994,
+              "recall": 0.6862,
+              "f1": 0.6927
+            },
+            "7": {
+              "ap50": 0.733,
+              "precision": 0.6562,
+              "recall": 0.7229,
+              "f1": 0.6879
+            },
+            "8": {
+              "ap50": 0.5762,
+              "precision": 0.6775,
+              "recall": 0.55,
+              "f1": 0.6071
+            },
+            "9": {
+              "ap50": 0.2038,
+              "precision": 0.3199,
+              "recall": 0.3182,
+              "f1": 0.319
+            },
+            "11": {
+              "ap50": 0.8017,
+              "precision": 0.701,
+              "recall": 0.7815,
+              "f1": 0.7391
+            },
+            "13": {
+              "ap50": 0.389,
+              "precision": 0.5836,
+              "recall": 0.3545,
+              "f1": 0.4411
+            },
+            "16": {
+              "ap50": 0.5951,
+              "precision": 0.6053,
+              "recall": 0.6136,
+              "f1": 0.6094
+            }
+          },
+          "syntax_mAP50": 0.6281
+        }
+      },
+      "seed_2024": {
+        "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/combined_seed2024/combined_seed2024_best.pt",
+        "metrics": {
+          "split": "test",
+          "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/combined_seed2024/combined_seed2024_best.pt",
+          "mAP50": 0.6173,
+          "mAP50_95": 0.2389,
+          "precision": 0.6392,
+          "recall": 0.5923,
+          "per_class": {
+            "1": {
+              "ap50": 0.734,
+              "precision": 0.7217,
+              "recall": 0.8,
+              "f1": 0.7588
+            },
+            "2": {
+              "ap50": 0.6629,
+              "precision": 0.8399,
+              "recall": 0.34,
+              "f1": 0.4841
+            },
+            "3": {
+              "ap50": 0.693,
+              "precision": 0.544,
+              "recall": 0.72,
+              "f1": 0.6197
+            },
+            "4": {
+              "ap50": 0.5558,
+              "precision": 0.5935,
+              "recall": 0.6304,
+              "f1": 0.6114
+            },
+            "5": {
+              "ap50": 0.8917,
+              "precision": 0.8543,
+              "recall": 0.8154,
+              "f1": 0.8344
+            },
+            "6": {
+              "ap50": 0.7339,
+              "precision": 0.763,
+              "recall": 0.6543,
+              "f1": 0.7045
+            },
+            "7": {
+              "ap50": 0.637,
+              "precision": 0.6092,
+              "recall": 0.6747,
+              "f1": 0.6403
+            },
+            "8": {
+              "ap50": 0.6182,
+              "precision": 0.7497,
+              "recall": 0.625,
+              "f1": 0.6817
+            },
+            "9": {
+              "ap50": 0.0856,
+              "precision": 0.1613,
+              "recall": 0.197,
+              "f1": 0.1774
+            },
+            "11": {
+              "ap50": 0.7872,
+              "precision": 0.6033,
+              "recall": 0.7899,
+              "f1": 0.6841
+            },
+            "13": {
+              "ap50": 0.4217,
+              "precision": 0.6381,
+              "recall": 0.2818,
+              "f1": 0.3909
+            },
+            "16": {
+              "ap50": 0.5862,
+              "precision": 0.5921,
+              "recall": 0.5795,
+              "f1": 0.5857
+            }
+          },
+          "syntax_mAP50": 0.6173
+        }
+      },
+      "name": "combined_recipe_3seeds",
+      "timestamp": "2026-04-16T15:57:14"
+    },
+    {
+      "models": [
+        "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/combined_seed42/combined_seed42_best.pt",
+        "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/combined_seed7/combined_seed7_best.pt",
+        "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/combined_seed2024/combined_seed2024_best.pt"
+      ],
+      "iou_thr": 0.55,
+      "conf": 0.05,
+      "n_images": 300,
+      "metrics": {
+        "per_class": {
+          "0": {
+            "p": 0.2563,
+            "r": 0.61,
+            "f1": 0.3609,
+            "tp": 61,
+            "fp": 177,
+            "fn": 39
+          },
+          "1": {
+            "p": 0.2797,
+            "r": 0.87,
+            "f1": 0.4234,
+            "tp": 87,
+            "fp": 224,
+            "fn": 13
+          },
+          "2": {
+            "p": 0.1577,
+            "r": 0.44,
+            "f1": 0.2322,
+            "tp": 44,
+            "fp": 235,
+            "fn": 56
+          },
+          "3": {
+            "p": 0.176,
+            "r": 0.4783,
+            "f1": 0.2573,
+            "tp": 44,
+            "fp": 206,
+            "fn": 48
+          },
+          "4": {
+            "p": 0.4658,
+            "r": 0.7692,
+            "f1": 0.5803,
+            "tp": 150,
+            "fp": 172,
+            "fn": 45
+          },
+          "5": {
+            "p": 0.3,
+            "r": 0.6064,
+            "f1": 0.4014,
+            "tp": 114,
+            "fp": 266,
+            "fn": 74
+          },
+          "6": {
+            "p": 0.2464,
+            "r": 0.8193,
+            "f1": 0.3788,
+            "tp": 68,
+            "fp": 208,
+            "fn": 15
+          },
+          "7": {
+            "p": 0.2911,
+            "r": 0.575,
+            "f1": 0.3866,
+            "tp": 46,
+            "fp": 112,
+            "fn": 34
+          },
+          "8": {
+            "p": 0.067,
+            "r": 0.2273,
+            "f1": 0.1034,
+            "tp": 15,
+            "fp": 209,
+            "fn": 51
+          },
+          "9": {
+            "p": 0.2601,
+            "r": 0.6471,
+            "f1": 0.3711,
+            "tp": 77,
+            "fp": 219,
+            "fn": 42
+          },
+          "10": {
+            "p": 0.0967,
+            "r": 0.4273,
+            "f1": 0.1577,
+            "tp": 47,
+            "fp": 439,
+            "fn": 63
+          },
+          "11": {
+            "p": 0.166,
+            "r": 0.4659,
+            "f1": 0.2448,
+            "tp": 41,
+            "fp": 206,
+            "fn": 47
+          }
+        },
+        "mean_f1": 0.3248
+      },
+      "name": "A6_wbf_ensemble",
+      "timestamp": "2026-04-16T15:57:25"
+    },
+    {
+      "status": "failed",
+      "error": "Cannot re-initialize CUDA in forked subprocess. To use CUDA with multiprocessing, you must use the 'spawn' start method",
+      "name": "run_B5_pseudo_labeling",
+      "timestamp": "2026-04-16T15:57:26"
+    },
+    {
+      "status": "failed",
+      "error": "Cannot re-initialize CUDA in forked subprocess. To use CUDA with multiprocessing, you must use the 'spawn' start method",
+      "name": "run_E1_p2_head",
+      "timestamp": "2026-04-16T15:57:26"
+    },
+    {
+      "status": "failed",
+      "error": "Cannot re-initialize CUDA in forked subprocess. To use CUDA with multiprocessing, you must use the 'spawn' start method",
+      "name": "run_D4_mosaic_annealing",
+      "timestamp": "2026-04-16T15:57:27"
+    },
+    {
+      "status": "failed",
+      "error": "Cannot re-initialize CUDA in forked subprocess. To use CUDA with multiprocessing, you must use the 'spawn' start method",
+      "name": "run_E2_distillation",
+      "timestamp": "2026-04-16T15:57:28"
+    },
+    {
+      "status": "failed",
+      "error": "Cannot re-initialize CUDA in forked subprocess. To use CUDA with multiprocessing, you must use the 'spawn' start method",
+      "name": "run_C7_lrf_sweep",
+      "timestamp": "2026-04-16T15:57:29"
+    },
+    {
+      "status": "failed",
+      "error": "Cannot re-initialize CUDA in forked subprocess. To use CUDA with multiprocessing, you must use the 'spawn' start method",
+      "name": "run_C6_nbs_lr",
+      "timestamp": "2026-04-16T15:57:29"
+    },
+    {
+      "status": "failed",
+      "error": "Cannot re-initialize CUDA in forked subprocess. To use CUDA with multiprocessing, you must use the 'spawn' start method",
+      "name": "run_C8_warmup",
+      "timestamp": "2026-04-16T15:57:31"
+    },
+    {
+      "status": "failed",
+      "error": "Cannot re-initialize CUDA in forked subprocess. To use CUDA with multiprocessing, you must use the 'spawn' start method",
+      "name": "run_F3_error_analysis",
+      "timestamp": "2026-04-16T15:57:31"
+    }
+  ]
+}
