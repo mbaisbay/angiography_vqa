@@ -2486,6 +2486,121 @@ def get_experiments():
               use_official=True,
               train_only_filter=True,
               syntax_overrides={"syntax_min_count": 0}),
+
+        # ══════════════════════════════════════════════════════════
+        # H-4 / H-5: SINGLE-STAGE TRAINING (LR BUG FIX)
+        # ══════════════════════════════════════════════════════════
+        # The two-stage train_two_stage() applies lr0/10 in Stage B.
+        # For experiments with freeze_epochs=0 (all E-series, SSASS
+        # reproductions), the ENTIRE training ran at 1/10th the
+        # intended LR. These experiments use single-stage training
+        # which calls model.train() once at the full LR for the full
+        # epoch budget.
+
+        # ── H-4: True SSASS single-stage (stenosis) ─────────────
+        # Exact SSASS recipe: yolov8m-seg, SGD lr=0.01, conservative
+        # augs (no mosaic/flips), 300 epochs, no freeze. Single
+        # continuous training call. Then pseudo-label + retrain.
+        # This is the FIRST correct reproduction of SSASS in our repo.
+        {
+            "name": "H4_ssass_single_stage",
+            "gpu": 0,
+            "description": "H-4: True SSASS (single-stage, lr=0.01 continuous, "
+                           "no freeze, yolov8m-seg). Fixes the lr/10 bug in all "
+                           "prior SSASS attempts. Conservative augs, then "
+                           "pseudo-label syntax images at conf=0.5 and retrain.",
+            "overrides": {
+                "optimizer": "SGD",
+                "lr0": 0.01,
+                "lrf": 0.01,
+                "momentum": 0.937,
+                "weight_decay": 0.0005,
+                "epochs": 300,
+                "patience": 50,
+                "warmup_epochs": 5,
+                "mosaic": 0.0,
+                "mixup": 0.0,
+                "copy_paste": 0.0,
+                "fliplr": 0.0,
+                "flipud": 0.0,
+                "degrees": 30.0,
+                "scale": 0.5,
+                "translate": 0.3,
+                "perspective": 0.001,
+                "hsv_h": 0.015,
+                "hsv_s": 0.7,
+                "hsv_v": 0.4,
+                "erasing": 0.0,
+                "shear": 0.0,
+                "close_mosaic": 0,
+                "freeze": 0,
+                "freeze_epochs": 0,
+            },
+            "pipeline_args": {},
+            "custom_pipeline": True,
+            "custom_runner": "ssass_faithful",
+            "single_stage": True,
+            "use_stratified": True,
+            "syntax_overrides": {},
+            "stenosis_overrides": {
+                "stenosis_imgsz": 768,
+                "stenosis_batch": 8,
+                "stenosis_lr0": 0.01,
+                "stenosis_epochs": 300,
+                "stenosis_model_weights": "yolov8m-seg.pt",
+            },
+            "hypothesis_config": {
+                "pseudo_conf": 0.5,
+                "bezier_fraction": 0.4,
+                "min_cc_area_px": 30,
+            },
+        },
+
+        # ── H-5: Best recipe single-stage (syntax + stenosis) ───
+        # S54 recipe but with single-stage training on BOTH models.
+        # For syntax: previously freeze=15 + lr/10 for 285 epochs.
+        #   Now: freeze=10 for full 300 epochs at lr=0.01.
+        # For stenosis: previously lr=0.005 for 15 epochs then
+        #   0.0005 for 285. Now: lr=0.005 continuous for 300 epochs.
+        # Both on stratified splits. All 25 syntax classes (since G2
+        # showed that's the right approach for ARCADE scoring).
+        {
+            "name": "H5_best_single_stage",
+            "gpu": 1,
+            "description": "H-5: S54 best recipe with single-stage training "
+                           "(no lr/10 split). All 25 syntax classes. SGD, "
+                           "mosaic=0.8 on stenosis, CLAHE on stenosis. "
+                           "Tests whether the freeze/unfreeze LR step was "
+                           "helping or hurting our best config.",
+            "overrides": {
+                "degrees": 20.0,
+                "scale": 0.4,
+                "hsv_v": 0.3,
+                "optimizer": "SGD",
+                "lr0": 0.01,
+                "weight_decay": 0.0005,
+                "epochs": 300,
+                "patience": 50,
+                "freeze": 10,
+            },
+            "pipeline_args": {},
+            "custom_pipeline": True,
+            "custom_runner": "separate_v2",
+            "single_stage": True,
+            "use_stratified": True,
+            "syntax_overrides": {"syntax_min_count": 0},
+            "stenosis_overrides": {
+                "copy_paste": 0.0,
+                "scale": 0.5,
+                "mosaic": 0.8,
+                "close_mosaic": 15,
+                "stenosis_lr0": 0.005,
+                "stenosis_epochs": 300,
+                "clahe_preprocess": True,
+                "clahe_clip_limit": 2.0,
+                "clahe_tile_size": 8,
+            },
+        },
     ]
 
     experiments.extend(proposal_experiments)
@@ -2707,7 +2822,7 @@ def run_separate_stenosis(exp: dict, arcade_root: Path, splits_dir: Path,
     The combined evaluation merges both models' per-class metrics.
     """
     from run_pipeline import data_prep, stage1_train_syntax, _save_metrics
-    from train import load_run_config, train_two_stage
+    from train import load_run_config, train_two_stage, train_single_stage
     from evaluate import evaluate_model
     from merge_datasets import get_stenosis_class_id
 
@@ -2856,11 +2971,18 @@ def run_separate_stenosis_v2(exp: dict, arcade_root: Path, splits_dir: Path,
     syntax_overrides = exp.get("syntax_overrides", {}) or {}
 
     # Proposal flag: use raw ARCADE splits (F-1) instead of stratified.
-    # Default path (no flag) keeps the stratified splits_dir the
-    # scheduler passed in — preserves every existing S-run.
     if exp.get("use_official"):
         splits_dir = None
     train_only_filter = bool(exp.get("train_only_filter", False))
+
+    # Pick training function: single-stage (one continuous .train() call
+    # at full lr) vs two-stage (freeze/unfreeze with lr/10). The
+    # two-stage LR reduction was a silent bug for experiments with
+    # freeze_epochs=0 — their entire training ran at lr0/10.
+    if exp.get("single_stage"):
+        from train import train_single_stage as _train_fn
+    else:
+        from train import train_two_stage as _train_fn
 
     # ── Part A: Syntax-only model ──
     # Honors per-experiment ``syntax_overrides`` with these specials:
@@ -2959,7 +3081,7 @@ def run_separate_stenosis_v2(exp: dict, arcade_root: Path, splits_dir: Path,
     syntax_yaml = str(data_dir / "dataset_configs" / "syntax_only.yaml")
     syn_imgsz = int(cfg_s.get("imgsz", 768))
     syn_run_name = f"syntax_{syn_imgsz}"
-    syntax_weights = train_two_stage(
+    syntax_weights = _train_fn(
         cfg_s, syntax_yaml,
         project=str(results_dir / "syntax_model"),
         run_name=syn_run_name,
@@ -3107,7 +3229,7 @@ def run_separate_stenosis_v2(exp: dict, arcade_root: Path, splits_dir: Path,
             f"Unknown stenosis_dataset variant: {stenosis_dataset}. "
             f"Supported: 'lesion_crops', None."
         )
-    stenosis_weights = train_two_stage(
+    stenosis_weights = _train_fn(
         cfg_sten, stenosis_yaml,
         project=str(results_dir / "stenosis_model"),
         run_name=run_name,
@@ -4165,7 +4287,7 @@ def run_ssass_faithful(exp: dict, arcade_root: Path, splits_dir: Path,
       8. Evaluate + small-CC post-processing.
     """
     from run_pipeline import data_prep, _save_metrics
-    from train import load_run_config, train_two_stage
+    from train import load_run_config, train_two_stage, train_single_stage
     from evaluate import evaluate_model
     from generate_stenosis_pseudolabels import (
         run_stenosis_on_syntax_images,
@@ -4177,6 +4299,8 @@ def run_ssass_faithful(exp: dict, arcade_root: Path, splits_dir: Path,
     name = exp["name"]
     results_dir = output_dir / name
     results_dir.mkdir(parents=True, exist_ok=True)
+
+    _train_fn = train_single_stage if exp.get("single_stage") else train_two_stage
 
     h_cfg = exp.get("hypothesis_config", {})
     pseudo_conf   = float(h_cfg.get("pseudo_conf", 0.5))
@@ -4252,7 +4376,7 @@ def run_ssass_faithful(exp: dict, arcade_root: Path, splits_dir: Path,
     with open(cfg_path1, "w") as f:
         yaml.dump(cfg_sten, f, default_flow_style=False)
     cfg_p1 = load_run_config(str(cfg_path1))
-    pass1_weights = train_two_stage(
+    pass1_weights = _train_fn(
         cfg_p1, str(bez_yaml),
         project=str(results_dir / "pass1"),
         run_name="stenosis_pass1",
@@ -4292,7 +4416,7 @@ def run_ssass_faithful(exp: dict, arcade_root: Path, splits_dir: Path,
     with open(cfg_path2, "w") as f:
         yaml.dump(cfg_sten_r, f, default_flow_style=False)
     cfg_p2 = load_run_config(str(cfg_path2))
-    pass2_weights = train_two_stage(
+    pass2_weights = _train_fn(
         cfg_p2, extended_yaml,
         project=str(results_dir / "pass2"),
         run_name="stenosis_pass2",

@@ -163,6 +163,87 @@ def train_two_stage(cfg: dict, data_yaml: str, project: str,
     return str(final_weights)
 
 
+def train_single_stage(cfg: dict, data_yaml: str, project: str,
+                       run_name: str, model_weights: str = None) -> str:
+    """Single continuous training run — no freeze/unfreeze split.
+
+    Uses lr0 as-is for the full run. freeze layers still apply if
+    cfg["freeze"] > 0, but there is NO lr reduction and NO two-call
+    split. This matches how SSASS and most published YOLO recipes
+    actually train.
+    """
+    project = str(Path(project).resolve())
+    weights = model_weights or cfg["model"]
+
+    print("=" * 60)
+    print(f"Single-stage training ({cfg['epochs']} epochs)")
+    print(f"  Model: {weights}")
+    print(f"  Data:  {data_yaml}")
+    print(f"  LR:    {cfg['lr0']} (no reduction)")
+    print(f"  Freeze: {cfg.get('freeze', 0)} layers")
+    print("=" * 60)
+
+    args = {
+        "data": data_yaml,
+        "imgsz": cfg["imgsz"],
+        "batch": cfg["batch"],
+        "epochs": cfg["epochs"],
+        "patience": cfg.get("patience", 50),
+        "optimizer": cfg["optimizer"],
+        "lr0": cfg["lr0"],
+        "lrf": cfg.get("lrf", 0.01),
+        "momentum": cfg.get("momentum", 0.937),
+        "weight_decay": cfg["weight_decay"],
+        "warmup_epochs": cfg.get("warmup_epochs", 5),
+        "freeze": cfg.get("freeze", 0),
+        "seed": cfg.get("seed", 42),
+        "deterministic": cfg.get("deterministic", True),
+        "amp": cfg.get("amp", True),
+        "cos_lr": cfg.get("cos_lr", True),
+        "device": cfg.get("device", "0"),
+        "workers": cfg.get("workers", 4),
+        "project": project,
+        "name": run_name,
+        "exist_ok": True,
+        "mosaic": cfg.get("mosaic", 0.0),
+        "close_mosaic": cfg.get("close_mosaic", 0),
+        "mixup": cfg.get("mixup", 0.0),
+        "copy_paste": cfg.get("copy_paste", 0.0),
+        "fliplr": cfg.get("fliplr", 0.5),
+        "flipud": cfg.get("flipud", 0.0),
+        "degrees": cfg.get("degrees", 20.0),
+        "scale": cfg.get("scale", 0.4),
+        "translate": cfg.get("translate", 0.1),
+        "hsv_h": cfg.get("hsv_h", 0.0),
+        "hsv_s": cfg.get("hsv_s", 0.0),
+        "hsv_v": cfg.get("hsv_v", 0.3),
+        "erasing": cfg.get("erasing", 0.0),
+        "shear": cfg.get("shear", 0.0),
+        "perspective": cfg.get("perspective", 0.0),
+        "box": cfg.get("box", 7.5),
+        "cls": cfg.get("cls", 0.5),
+        "dfl": cfg.get("dfl", 1.5),
+    }
+
+    for k in ("label_smoothing", "dropout", "multi_scale", "nbs",
+              "mask"):
+        if k in cfg and cfg[k] is not None:
+            args[k] = cfg[k]
+
+    model = YOLO(weights)
+    model.train(**args)
+
+    best = Path(project) / run_name / "weights" / "best.pt"
+    if not best.exists():
+        best = Path(project) / run_name / "weights" / "last.pt"
+
+    final = Path(project) / f"{run_name}_best.pt"
+    import shutil
+    shutil.copy2(best, final)
+    print(f"Single-stage complete. Best weights: {final}")
+    return str(final)
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="Two-stage YOLO segmentation training"
