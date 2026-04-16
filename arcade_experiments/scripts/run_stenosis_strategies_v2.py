@@ -2464,6 +2464,28 @@ def get_experiments():
               syntax_overrides={"syntax_min_count": 0,
                                 "syntax_eval_kept_ids": [1, 2, 3, 4, 5, 6, 7, 8, 9,
                                                          11, 13, 16]}),
+
+        # ── G-2: Train ALL 25 syntax classes, eval on ALL 25 ────────
+        # The ARCADE challenge evaluates all 25 syntax classes. With
+        # our 12-class filter, S54 scores ~0.35 on the ARCADE metric
+        # (13 classes get F1=0). This experiment trains and evaluates
+        # on ALL 25 to get a real ARCADE-comparable syntax score.
+        # No eval_kept_ids = full 25-class evaluation reported as-is.
+        _base("G2_train25_eval25", gpu=0,
+              desc="G-2: Train syntax on ALL 25 classes (min_count=0), "
+                   "eval on ALL 25. Full ARCADE-comparable syntax score. "
+                   "S54 recipe otherwise.",
+              use_stratified=True,
+              syntax_overrides={"syntax_min_count": 0}),
+
+        # ── G-3: Same as G-2 but on official ARCADE split ───────────
+        # Leaderboard-comparable: train 1000, val 200, test 300.
+        _base("G3_train25_eval25_official", gpu=1,
+              desc="G-3: G2 on official ARCADE split (1000/200/300). "
+                   "Leaderboard-comparable 25+1 class score.",
+              use_official=True,
+              train_only_filter=True,
+              syntax_overrides={"syntax_min_count": 0}),
     ]
 
     experiments.extend(proposal_experiments)
