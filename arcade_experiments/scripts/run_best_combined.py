@@ -1,23 +1,15 @@
 #!/usr/bin/env python3
-"""Train the best combined model: S54 syntax + enhanced stenosis pipeline.
+"""Best combined model with iterative pseudo-labeling (SSASS-style).
 
-Syntax: S54 recipe exactly as-is (proven best, 0.7398 F1).
+Two independent pipelines that can run on separate GPUs:
+  --task syntax   -> GPU 0: S54 syntax + pseudo-labels from stenosis images
+  --task stenosis -> GPU 1: S54 stenosis + pseudo-labels + Bezier + CLAHE + CC
+  --task both     -> sequential on one GPU
 
-Stenosis: S54 stenosis recipe PLUS three enhancements:
-  1. Pseudo-label semi-supervised step (SSASS technique):
-     - Train stenosis model on labeled stenosis images
-     - Run on syntax images at conf>=0.5 to generate pseudo-labels
-     - Retrain from scratch on stenosis GT + pseudo-labeled syntax images
-  2. Bezier curve augmentation (SSASS, Medipixel 2023):
-     - Draw synthetic vessel curves on training images as background
-       distractors, teaching the model vessel context so it focuses
-       capacity on lesion morphology
-  3. Small connected-component post-processing at inference:
-     - Remove predicted mask regions below a minimum area threshold
-     - Cleans false positives from background noise
-
-Usage:
-    python run_best_combined.py --arcade-root ../../arcade/submission --device 0
+Usage (2 GPUs in parallel):
+    python run_best_combined.py --arcade-root ../../arcade/submission --task syntax --device 0 &
+    python run_best_combined.py --arcade-root ../../arcade/submission --task stenosis --device 1 &
+    wait
 """
 
 from __future__ import annotations
@@ -28,11 +20,9 @@ import os
 import shutil
 import sys
 import time
-import traceback
 from pathlib import Path
 
 import cv2
-import numpy as np
 import yaml
 
 SCRIPT_DIR = Path(__file__).resolve().parent
@@ -124,304 +114,240 @@ def apply_clahe(img_dir, log_file):
     log(f"    CLAHE applied to {len(images)} images", log_file)
 
 
-def main():
-    parser = argparse.ArgumentParser(
-        description="Best combined model: S54 syntax + enhanced stenosis")
-    parser.add_argument("--arcade-root", type=Path, required=True)
-    parser.add_argument("--device", type=str, default="0")
-    parser.add_argument("--output-dir", type=Path, default=None)
-    parser.add_argument("--pseudo-rounds", type=str, default="0.5,0.4,0.3",
-                        help="Comma-separated conf thresholds for iterative "
-                             "pseudo-labeling rounds (SSASS: 0.5,0.4,0.3)")
-    parser.add_argument("--bezier-fraction", type=float, default=0.4,
-                        help="Fraction of images to augment with Bezier curves")
-    parser.add_argument("--cc-min-area", type=int, default=50,
-                        help="Min mask area (px) for connected-component filter")
-    args = parser.parse_args()
+def _collect_img_dirs(arcade_root, task):
+    """Collect all image directories for a task across train/val/test."""
+    dirs = []
+    for split in ("train", "val", "test"):
+        d = arcade_root / task / split / "images"
+        if d.exists():
+            dirs.append(d)
+    return dirs
 
-    arcade_root = args.arcade_root.resolve()
-    output_dir = (args.output_dir or
-                  SCRIPT_DIR.parent / "results" / "best_combined").resolve()
+
+def _generate_pseudo_labels(model_weights, img_dirs, output_dir, conf,
+                             imgsz, device, log_file):
+    """Run a model on images and write YOLO polygon pseudo-labels."""
+    from ultralytics import YOLO
+    if output_dir.exists():
+        shutil.rmtree(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
-    log_file = output_dir / "run_log.txt"
 
-    log(f"ARCADE root:     {arcade_root}", log_file)
-    log(f"Output dir:      {output_dir}", log_file)
-    log(f"Device:          {args.device}", log_file)
-    pseudo_rounds = [float(x) for x in args.pseudo_rounds.split(",")]
-    log(f"Pseudo rounds:   {pseudo_rounds}", log_file)
-    log(f"Bezier fraction: {args.bezier_fraction}", log_file)
-    log(f"CC min area:     {args.cc_min_area} px", log_file)
+    model = YOLO(model_weights)
+    n_pseudo = 0
+    n_total = 0
+    for img_dir in img_dirs:
+        imgs = sorted(list(img_dir.glob("*.png")) + list(img_dir.glob("*.PNG")))
+        n_total += len(imgs)
+        for img_path in imgs:
+            results = model.predict(
+                source=str(img_path), conf=conf, imgsz=imgsz,
+                device=str(device), verbose=False, save=False,
+                retina_masks=True)
+            if not results or results[0].masks is None or len(results[0].masks) == 0:
+                continue
+            r = results[0]
+            lines = []
+            for i, mask_xyn in enumerate(r.masks.xyn):
+                cls = int(r.boxes.cls[i].item())
+                if len(mask_xyn) < 3:
+                    continue
+                coords = " ".join(f"{pt[0]:.6f} {pt[1]:.6f}" for pt in mask_xyn)
+                lines.append(f"{cls} {coords}")
+            if lines:
+                (output_dir / f"{img_path.stem}.txt").write_text(
+                    "\n".join(lines) + "\n")
+                n_pseudo += 1
+    log(f"    {n_pseudo}/{n_total} images pseudo-labeled at conf>={conf}", log_file)
+    return n_pseudo
 
+
+def _add_pseudo_to_dataset(pseudo_dir, img_dirs, dst_img_dir, dst_lbl_dir,
+                            prefix="pseudo"):
+    """Symlink pseudo-labeled images into a dataset directory."""
+    n = 0
+    for lbl_path in pseudo_dir.glob("*.txt"):
+        stem = lbl_path.stem
+        src_img = None
+        for img_dir in img_dirs:
+            for ext in (".png", ".PNG"):
+                cand = img_dir / (stem + ext)
+                if cand.exists():
+                    src_img = cand
+                    break
+            if src_img:
+                break
+        if src_img is None:
+            continue
+        dst_img = dst_img_dir / f"{prefix}_{src_img.name}"
+        dst_lbl = dst_lbl_dir / f"{prefix}_{stem}.txt"
+        if not dst_img.exists():
+            os.symlink(src_img.resolve(), dst_img)
+        if not dst_lbl.exists():
+            os.symlink(lbl_path.resolve(), dst_lbl)
+        n += 1
+    return n
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# SYNTAX PIPELINE
+# ═══════════════════════════════════════════════════════════════════════
+
+def run_syntax(arcade_root, output_dir, data_dir, device, pseudo_rounds, log_file):
+    from train import train_two_stage
+    from evaluate import evaluate_model
+
+    syn_yaml = str(data_dir / "dataset_configs" / "syntax_only.yaml")
+    with open(syn_yaml) as f:
+        syn_cfg = yaml.safe_load(f)
+
+    # All stenosis images = unlabeled data for syntax pseudo-labeling
+    stenosis_img_dirs = _collect_img_dirs(arcade_root, "stenosis")
+
+    # Step 1: Train initial syntax model
+    log("SYNTAX: Training initial model (S54 recipe)", log_file)
+    cfg = s54_syntax_config(device)
+    weights = train_two_stage(cfg, syn_yaml,
+                              str(output_dir / "syntax_initial"), "syn_init")
+    m = evaluate_model(weights, syn_yaml, split="test", augment=False, imgsz=768)
+    pc = m.get("per_class", {})
+    f1s = [v.get("f1", 0) for v in pc.values() if isinstance(v, dict)]
+    init_f1 = sum(f1s) / len(f1s) if f1s else 0
+    log(f"  Initial syntax F1: {init_f1:.4f}", log_file)
+    log(f"  Per-class: { {k: round(v.get('f1',0),4) for k,v in pc.items()} }", log_file)
+
+    # Steps 1b-1d: Iterative pseudo-labeling (3 rounds)
+    for rnd, conf in enumerate(pseudo_rounds, 1):
+        log(f"\nSYNTAX round {rnd}/{len(pseudo_rounds)}: conf>={conf}", log_file)
+
+        pseudo_dir = output_dir / f"syntax_pseudo_r{rnd}"
+        n = _generate_pseudo_labels(weights, stenosis_img_dirs, pseudo_dir,
+                                     conf, 768, device, log_file)
+
+        # Build extended dataset
+        ext_dir = output_dir / f"syntax_ext_r{rnd}"
+        if ext_dir.exists():
+            shutil.rmtree(ext_dir)
+        shutil.copytree(data_dir / "syntax_filtered", ext_dir)
+
+        n_added = _add_pseudo_to_dataset(
+            pseudo_dir, stenosis_img_dirs,
+            ext_dir / "images" / "train", ext_dir / "labels" / "train",
+            prefix="stpseudo")
+        log(f"  Added {n_added} pseudo-labeled stenosis images", log_file)
+
+        ext_yaml = ext_dir / "syntax_ext.yaml"
+        yaml.dump({
+            "path": str(ext_dir.resolve()),
+            "train": "images/train", "val": "images/val", "test": "images/test",
+            "nc": syn_cfg["nc"], "names": syn_cfg["names"],
+        }, open(ext_yaml, "w"), default_flow_style=False, sort_keys=False)
+
+        # Retrain from scratch
+        cfg = s54_syntax_config(device)
+        weights = train_two_stage(cfg, str(ext_yaml),
+                                  str(output_dir / f"syntax_r{rnd}"), f"syn_r{rnd}")
+        m = evaluate_model(weights, syn_yaml, split="test", augment=False, imgsz=768)
+        pc = m.get("per_class", {})
+        f1s = [v.get("f1", 0) for v in pc.values() if isinstance(v, dict)]
+        f1 = sum(f1s) / len(f1s) if f1s else 0
+        log(f"  Round {rnd} syntax F1: {f1:.4f} (delta: {f1-init_f1:+.4f})", log_file)
+        log(f"  Per-class: { {k: round(v.get('f1',0),4) for k,v in pc.items()} }", log_file)
+
+    return {"model": weights, "init_f1": round(init_f1, 4),
+            "final_f1": round(f1, 4), "metrics": m}
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# STENOSIS PIPELINE
+# ═══════════════════════════════════════════════════════════════════════
+
+def run_stenosis(arcade_root, output_dir, data_dir, device, pseudo_rounds,
+                  bezier_fraction, cc_min_area, log_file):
     from train import train_two_stage
     from evaluate import evaluate_model
     from generate_stenosis_pseudolabels import run_stenosis_on_syntax_images
     from bezier_vessel_augment import augment_dataset
     from small_cc_postprocess import evaluate_with_filter_cpu
 
-    t0 = time.time()
-
-    # ── Step 0: Prepare stratified data ──
-    log("\n" + "=" * 60, log_file)
-    log("STEP 0: Prepare stratified data", log_file)
-    log("=" * 60, log_file)
-    data_dir = prepare_stratified_data(arcade_root, output_dir)
-    syn_yaml = str(data_dir / "dataset_configs" / "syntax_only.yaml")
     sten_yaml = str(data_dir / "dataset_configs" / "stenosis_only.yaml")
+    gt_img = data_dir / "stenosis" / "images" / "train"
+    gt_lbl = data_dir / "stenosis" / "labels" / "train"
 
-    # ── Step 1: Train initial syntax model (S54 recipe) ──
-    log("\n" + "=" * 60, log_file)
-    log("STEP 1: Train initial syntax model (S54 recipe)", log_file)
-    log("=" * 60, log_file)
-    cfg_syn = s54_syntax_config(args.device)
-    initial_syn_weights = train_two_stage(
-        cfg_syn, syn_yaml,
-        str(output_dir / "syntax_model_initial"), "syn_initial")
+    # All syntax images = unlabeled data for stenosis pseudo-labeling
+    syntax_img_dirs = _collect_img_dirs(arcade_root, "syntax")
 
-    init_syn_metrics = evaluate_model(initial_syn_weights, syn_yaml, split="test",
-                                       augment=False, imgsz=768)
-    pc_syn = init_syn_metrics.get("per_class", {})
-    f1s_syn = [v.get("f1", 0) for v in pc_syn.values() if isinstance(v, dict)]
-    init_syn_f1 = sum(f1s_syn) / len(f1s_syn) if f1s_syn else 0
-    log(f"  Initial syntax mean F1: {init_syn_f1:.4f}", log_file)
-    log(f"  Per-class: { {k: round(v.get('f1',0), 4) for k, v in pc_syn.items()} }", log_file)
-
-    # ── Step 1b-1d: Iterative pseudo-label syntax (SSASS-style 3 rounds) ──
-    # Run syntax model on ALL 1500 stenosis images (they contain vessels
-    # but have no syntax annotations). At each round, lower the confidence
-    # threshold to capture more pseudo-labels, retrain from scratch.
-    from ultralytics import YOLO
-
-    all_stenosis_img_dirs = []
-    for split in ("train", "val", "test"):
-        img_dir = arcade_root / "stenosis" / split / "images"
-        if img_dir.exists():
-            all_stenosis_img_dirs.append(img_dir)
-
-    with open(syn_yaml) as f:
-        syn_cfg = yaml.safe_load(f)
-
-    current_syn_weights = initial_syn_weights
-    syntax_weights = initial_syn_weights
-    syn_f1 = init_syn_f1
-
-    for round_num, conf in enumerate(pseudo_rounds, start=1):
-        log(f"\n{'=' * 60}", log_file)
-        log(f"STEP 1b round {round_num}/{len(pseudo_rounds)}: "
-            f"syntax pseudo-labels at conf>={conf}", log_file)
-        log(f"{'=' * 60}", log_file)
-
-        # Generate pseudo-labels
-        syn_pseudo_dir = output_dir / "syntax_pseudo_labels" / f"round{round_num}"
-        if syn_pseudo_dir.exists():
-            shutil.rmtree(syn_pseudo_dir)
-        syn_pseudo_dir.mkdir(parents=True, exist_ok=True)
-
-        syn_model = YOLO(current_syn_weights)
-        n_syn_pseudo = 0
-        for img_dir in all_stenosis_img_dirs:
-            imgs = sorted(list(img_dir.glob("*.png")) + list(img_dir.glob("*.PNG")))
-            for img_path in imgs:
-                results = syn_model.predict(
-                    source=str(img_path), conf=conf, imgsz=768,
-                    device=str(args.device), verbose=False, save=False,
-                    retina_masks=True)
-                if not results or results[0].masks is None or len(results[0].masks) == 0:
-                    continue
-                r = results[0]
-                lines = []
-                for i, mask_xyn in enumerate(r.masks.xyn):
-                    cls = int(r.boxes.cls[i].item())
-                    if len(mask_xyn) < 3:
-                        continue
-                    coords = " ".join(f"{pt[0]:.6f} {pt[1]:.6f}" for pt in mask_xyn)
-                    lines.append(f"{cls} {coords}")
-                if lines:
-                    (syn_pseudo_dir / f"{img_path.stem}.txt").write_text(
-                        "\n".join(lines) + "\n")
-                    n_syn_pseudo += 1
-        log(f"  Round {round_num}: {n_syn_pseudo} pseudo-labeled images at conf>={conf}", log_file)
-
-        # Build extended dataset
-        syn_extended = output_dir / f"syntax_extended_r{round_num}"
-        if syn_extended.exists():
-            shutil.rmtree(syn_extended)
-        shutil.copytree(data_dir / "syntax_filtered", syn_extended)
-
-        syn_ext_img = syn_extended / "images" / "train"
-        syn_ext_lbl = syn_extended / "labels" / "train"
-        n_added = 0
-        for lbl_path in syn_pseudo_dir.glob("*.txt"):
-            stem = lbl_path.stem
-            src_img = None
-            for img_dir in all_stenosis_img_dirs:
-                for ext in (".png", ".PNG"):
-                    cand = img_dir / (stem + ext)
-                    if cand.exists():
-                        src_img = cand
-                        break
-                if src_img:
-                    break
-            if src_img is None:
-                continue
-            dst_img = syn_ext_img / f"stpseudo_{src_img.name}"
-            dst_lbl = syn_ext_lbl / f"stpseudo_{stem}.txt"
-            if not dst_img.exists():
-                os.symlink(src_img.resolve(), dst_img)
-            if not dst_lbl.exists():
-                os.symlink(lbl_path.resolve(), dst_lbl)
-            n_added += 1
-        log(f"  Added {n_added} pseudo-labeled images to syntax train", log_file)
-
-        syn_ext_yaml = syn_extended / "syntax_extended.yaml"
-        yaml.dump({
-            "path": str(syn_extended.resolve()),
-            "train": "images/train", "val": "images/val", "test": "images/test",
-            "nc": syn_cfg["nc"], "names": syn_cfg["names"],
-        }, open(syn_ext_yaml, "w"), default_flow_style=False, sort_keys=False)
-
-        # Retrain from scratch
-        cfg_syn_r = s54_syntax_config(args.device)
-        current_syn_weights = train_two_stage(
-            cfg_syn_r, str(syn_ext_yaml),
-            str(output_dir / f"syntax_model_r{round_num}"), f"syn_r{round_num}")
-
-        syn_metrics = evaluate_model(current_syn_weights, syn_yaml, split="test",
-                                      augment=False, imgsz=768)
-        pc_syn2 = syn_metrics.get("per_class", {})
-        f1s_syn2 = [v.get("f1", 0) for v in pc_syn2.values() if isinstance(v, dict)]
-        syn_f1 = sum(f1s_syn2) / len(f1s_syn2) if f1s_syn2 else 0
-        log(f"  Round {round_num} syntax F1: {syn_f1:.4f} "
-            f"(initial: {init_syn_f1:.4f}, delta: {syn_f1 - init_syn_f1:+.4f})", log_file)
-        log(f"  Per-class: { {k: round(v.get('f1',0), 4) for k, v in pc_syn2.items()} }", log_file)
-
-    syntax_weights = current_syn_weights
-
-    # ── Step 2: Train initial stenosis model (S54 recipe + CLAHE) ──
-    log("\n" + "=" * 60, log_file)
-    log("STEP 2: Train initial stenosis model (S54 + CLAHE)", log_file)
-    log("=" * 60, log_file)
-
-    # Copy stenosis data and apply CLAHE
-    sten_work = output_dir / "stenosis_work" / "initial"
+    # Step 2: Train initial stenosis model + CLAHE
+    log("STENOSIS: Training initial model (S54 + CLAHE)", log_file)
+    sten_work = output_dir / "stenosis_initial_data"
     if sten_work.exists():
         shutil.rmtree(sten_work)
     shutil.copytree(data_dir / "stenosis", sten_work)
     apply_clahe(sten_work / "images" / "train", log_file)
 
-    sten_init_yaml = sten_work / "stenosis.yaml"
+    init_yaml = sten_work / "stenosis.yaml"
     yaml.dump({
         "path": str(sten_work.resolve()),
         "train": "images/train", "val": "images/val", "test": "images/test",
         "nc": 1, "names": {0: "stenosis"},
-    }, open(sten_init_yaml, "w"), default_flow_style=False, sort_keys=False)
+    }, open(init_yaml, "w"), default_flow_style=False, sort_keys=False)
 
-    cfg_sten = s54_stenosis_config(args.device)
-    initial_sten_weights = train_two_stage(
-        cfg_sten, str(sten_init_yaml),
-        str(output_dir / "stenosis_model_initial"), "sten_initial")
-
-    init_metrics = evaluate_model(initial_sten_weights, sten_yaml, split="test",
-                                   augment=False, imgsz=768)
-    init_f1 = init_metrics.get("per_class", {}).get("stenosis", {}).get("f1", 0)
+    cfg = s54_stenosis_config(device)
+    weights = train_two_stage(cfg, str(init_yaml),
+                              str(output_dir / "stenosis_initial"), "sten_init")
+    m = evaluate_model(weights, sten_yaml, split="test", augment=False, imgsz=768)
+    init_f1 = m.get("per_class", {}).get("stenosis", {}).get("f1", 0)
     log(f"  Initial stenosis F1: {init_f1:.4f}", log_file)
 
-    # ── Steps 3-5: Iterative stenosis pseudo-labeling (3 rounds, SSASS) ──
-    # Use ALL 1500 syntax images for pseudo-labeling. Each round:
-    # - Run stenosis model on syntax images at decaying conf
-    # - Replace previous pseudo-labels with new predictions
-    # - Build extended dataset: GT + pseudo-labels + Bezier + CLAHE
-    # - Retrain stenosis from scratch
+    # Steps 3-5: Iterative pseudo-labeling (3 rounds)
+    for rnd, conf in enumerate(pseudo_rounds, 1):
+        log(f"\nSTENOSIS round {rnd}/{len(pseudo_rounds)}: conf>={conf}", log_file)
 
-    all_syntax_img_dirs = []
-    for split in ("train", "val", "test"):
-        img_dir = arcade_root / "syntax" / split / "images"
-        if img_dir.exists():
-            all_syntax_img_dirs.append(img_dir)
-
-    gt_img_dir = data_dir / "stenosis" / "images" / "train"
-    gt_lbl_dir = data_dir / "stenosis" / "labels" / "train"
-
-    current_sten_weights = initial_sten_weights
-    final_sten_weights = initial_sten_weights
-    final_f1 = init_f1
-    final_metrics = init_metrics
-    bezier_stats = {}
-
-    for round_num, conf in enumerate(pseudo_rounds, start=1):
-        log(f"\n{'=' * 60}", log_file)
-        log(f"STEP 3-5 round {round_num}/{len(pseudo_rounds)}: "
-            f"stenosis pseudo-labels at conf>={conf}", log_file)
-        log(f"{'=' * 60}", log_file)
-
-        # 3. Generate pseudo-labels on ALL syntax images
-        pseudo_dir = output_dir / "sten_pseudo_labels" / f"round{round_num}"
+        # Pseudo-label ALL 1500 syntax images
+        pseudo_dir = output_dir / f"sten_pseudo_r{rnd}"
         if pseudo_dir.exists():
             shutil.rmtree(pseudo_dir)
-
         total_pseudo = {"images_processed": 0, "images_with_predictions": 0,
                         "total_pseudo_instances": 0}
-        for img_dir in all_syntax_img_dirs:
+        for img_dir in syntax_img_dirs:
             stats = run_stenosis_on_syntax_images(
-                current_sten_weights, img_dir, pseudo_dir,
-                conf_threshold=conf, imgsz=768, device=args.device)
+                weights, img_dir, pseudo_dir,
+                conf_threshold=conf, imgsz=768, device=device)
             for k in total_pseudo:
                 total_pseudo[k] += stats.get(k, 0)
-        log(f"  Pseudo-labels: {total_pseudo['images_with_predictions']} images "
-            f"({total_pseudo['total_pseudo_instances']} instances) "
-            f"from {total_pseudo['images_processed']} syntax images", log_file)
+        log(f"  Pseudo: {total_pseudo['images_with_predictions']} images, "
+            f"{total_pseudo['total_pseudo_instances']} instances", log_file)
 
-        # 4. Build extended dataset
-        extended_dir = output_dir / f"stenosis_extended_r{round_num}"
-        if extended_dir.exists():
-            shutil.rmtree(extended_dir)
+        # Build extended dataset: GT + pseudo + Bezier + CLAHE
+        ext_dir = output_dir / f"stenosis_ext_r{rnd}"
+        if ext_dir.exists():
+            shutil.rmtree(ext_dir)
+        ext_img = ext_dir / "images" / "train"
+        ext_lbl = ext_dir / "labels" / "train"
+        ext_img.mkdir(parents=True, exist_ok=True)
+        ext_lbl.mkdir(parents=True, exist_ok=True)
 
-        ext_img_train = extended_dir / "images" / "train"
-        ext_lbl_train = extended_dir / "labels" / "train"
-        ext_img_train.mkdir(parents=True, exist_ok=True)
-        ext_lbl_train.mkdir(parents=True, exist_ok=True)
-
-        # GT stenosis
+        # GT
         n_gt = 0
-        for img in sorted(list(gt_img_dir.glob("*.png")) + list(gt_img_dir.glob("*.PNG"))):
-            dst = ext_img_train / img.name
+        for f in sorted(list(gt_img.glob("*.png")) + list(gt_img.glob("*.PNG"))):
+            dst = ext_img / f.name
             if not dst.exists():
-                os.symlink(img.resolve(), dst)
+                os.symlink(f.resolve(), dst)
             n_gt += 1
-        for lbl in gt_lbl_dir.glob("*.txt"):
-            dst = ext_lbl_train / lbl.name
+        for f in gt_lbl.glob("*.txt"):
+            dst = ext_lbl / f.name
             if not dst.exists():
-                os.symlink(lbl.resolve(), dst)
+                os.symlink(f.resolve(), dst)
 
-        # Pseudo-labeled syntax
-        n_pseudo = 0
-        for lbl_path in pseudo_dir.glob("*.txt"):
-            stem = lbl_path.stem
-            src_img = None
-            for sid in all_syntax_img_dirs:
-                for ext in (".png", ".PNG"):
-                    cand = sid / (stem + ext)
-                    if cand.exists():
-                        src_img = cand
-                        break
-                if src_img:
-                    break
-            if src_img is None:
-                continue
-            dst_img = ext_img_train / f"pseudo_{src_img.name}"
-            dst_lbl = ext_lbl_train / f"pseudo_{stem}.txt"
-            if not dst_img.exists():
-                os.symlink(src_img.resolve(), dst_img)
-            if not dst_lbl.exists():
-                os.symlink(lbl_path.resolve(), dst_lbl)
-            n_pseudo += 1
-        log(f"  GT: {n_gt}, pseudo: {n_pseudo}, total: {n_gt + n_pseudo}", log_file)
+        # Pseudo
+        n_pseudo = _add_pseudo_to_dataset(pseudo_dir, syntax_img_dirs,
+                                           ext_img, ext_lbl, "pseudo")
+        log(f"  GT: {n_gt}, pseudo: {n_pseudo}", log_file)
 
-        # Val/test symlinks
+        # Val/test
         for split in ("val", "test"):
-            for subdir in ("images", "labels"):
-                src = data_dir / "stenosis" / subdir / split
-                dst = extended_dir / subdir / split
+            for sub in ("images", "labels"):
+                src = data_dir / "stenosis" / sub / split
+                dst = ext_dir / sub / split
                 dst.mkdir(parents=True, exist_ok=True)
                 if src.exists():
                     for f in src.iterdir():
@@ -429,110 +355,104 @@ def main():
                         if not d.exists():
                             os.symlink(f.resolve(), d)
 
-        # Bezier augmentation
-        bezier_img_out = output_dir / "bezier_tmp" / "images"
-        bezier_lbl_out = output_dir / "bezier_tmp" / "labels"
-        if bezier_img_out.exists():
-            shutil.rmtree(bezier_img_out.parent)
-        bezier_stats = augment_dataset(
-            ext_img_train, ext_lbl_train,
-            bezier_img_out, bezier_lbl_out,
-            fraction=args.bezier_fraction, seed=42)
-        shutil.rmtree(ext_img_train)
-        shutil.rmtree(ext_lbl_train)
-        shutil.move(str(bezier_img_out), str(ext_img_train))
-        shutil.move(str(bezier_lbl_out), str(ext_lbl_train))
-        shutil.rmtree(output_dir / "bezier_tmp", ignore_errors=True)
+        # Bezier
+        bez_img = output_dir / "bez_tmp" / "images"
+        bez_lbl = output_dir / "bez_tmp" / "labels"
+        if bez_img.exists():
+            shutil.rmtree(bez_img.parent)
+        bez_stats = augment_dataset(ext_img, ext_lbl, bez_img, bez_lbl,
+                                     fraction=bezier_fraction, seed=42)
+        shutil.rmtree(ext_img)
+        shutil.rmtree(ext_lbl)
+        shutil.move(str(bez_img), str(ext_img))
+        shutil.move(str(bez_lbl), str(ext_lbl))
+        shutil.rmtree(output_dir / "bez_tmp", ignore_errors=True)
 
         # CLAHE
-        apply_clahe(ext_img_train, log_file)
+        apply_clahe(ext_img, log_file)
+        total = len(list(ext_img.glob("*.png")) + list(ext_img.glob("*.PNG")))
+        log(f"  Total train (GT+pseudo+Bezier+CLAHE): {total}", log_file)
 
-        total_train = len(list(ext_img_train.glob("*.png")) +
-                          list(ext_img_train.glob("*.PNG")))
-        log(f"  Total train images (with Bezier+CLAHE): {total_train}", log_file)
-
-        ext_yaml_path = extended_dir / "stenosis_extended.yaml"
+        ext_yaml = ext_dir / "stenosis_ext.yaml"
         yaml.dump({
-            "path": str(extended_dir.resolve()),
+            "path": str(ext_dir.resolve()),
             "train": "images/train", "val": "images/val", "test": "images/test",
             "nc": 1, "names": {0: "stenosis"},
-        }, open(ext_yaml_path, "w"), default_flow_style=False, sort_keys=False)
+        }, open(ext_yaml, "w"), default_flow_style=False, sort_keys=False)
 
-        # 5. Retrain from scratch
-        cfg_sten_r = s54_stenosis_config(args.device)
-        current_sten_weights = train_two_stage(
-            cfg_sten_r, str(ext_yaml_path),
-            str(output_dir / f"stenosis_model_r{round_num}"), f"sten_r{round_num}")
+        # Retrain from scratch
+        cfg = s54_stenosis_config(device)
+        weights = train_two_stage(cfg, str(ext_yaml),
+                                  str(output_dir / f"stenosis_r{rnd}"), f"sten_r{rnd}")
+        m = evaluate_model(weights, sten_yaml, split="test", augment=False, imgsz=768)
+        f1 = m.get("per_class", {}).get("stenosis", {}).get("f1", 0)
+        log(f"  Round {rnd} stenosis F1: {f1:.4f} (delta: {f1-init_f1:+.4f})", log_file)
 
-        r_metrics = evaluate_model(current_sten_weights, sten_yaml, split="test",
-                                    augment=False, imgsz=768)
-        r_f1 = r_metrics.get("per_class", {}).get("stenosis", {}).get("f1", 0)
-        log(f"  Round {round_num} stenosis F1: {r_f1:.4f} "
-            f"(initial: {init_f1:.4f}, delta: {r_f1 - init_f1:+.4f})", log_file)
-
-        final_sten_weights = current_sten_weights
-        final_f1 = r_f1
-        final_metrics = r_metrics
-
-    pseudo_stats = total_pseudo
-
-    # ── Step 6: Evaluate with CC post-processing ──
-    log("\n" + "=" * 60, log_file)
-    log(f"STEP 6: CC post-processing (min_area={args.cc_min_area}px)", log_file)
-    log("=" * 60, log_file)
-
+    # CC post-processing sweep
+    log("\nSTENOSIS: CC post-processing sweep", log_file)
     cc_results = {}
-    for min_area in [30, 50, 100]:
-        cc = evaluate_with_filter_cpu(
-            final_sten_weights, sten_yaml, split="test", imgsz=768,
-            min_area_px=min_area, device=args.device)
-        cc_results[min_area] = cc
-        log(f"  min_area={min_area}: raw F1={cc['raw']['f1']:.4f} "
-            f"filtered F1={cc['filtered']['f1']:.4f} "
-            f"(delta={cc['filtered']['f1'] - cc['raw']['f1']:+.4f})", log_file)
+    for area in [30, 50, 100]:
+        cc = evaluate_with_filter_cpu(weights, sten_yaml, split="test",
+                                       imgsz=768, min_area_px=area, device=device)
+        cc_results[area] = cc
+        log(f"  min_area={area}: raw={cc['raw']['f1']:.4f} "
+            f"filtered={cc['filtered']['f1']:.4f}", log_file)
 
-    # ── Final summary ──
-    log("\n" + "=" * 60, log_file)
-    log("FINAL RESULTS", log_file)
-    log("=" * 60, log_file)
-    log(f"  Syntax model:    {syntax_weights}", log_file)
-    log(f"  Syntax F1:       {syn_f1:.4f} (initial: {init_syn_f1:.4f})", log_file)
-    log(f"  Stenosis model:  {final_sten_weights}", log_file)
-    log(f"  Stenosis F1:     {final_f1:.4f} (initial: {init_f1:.4f})", log_file)
-    log(f"  Stenosis delta:  {final_f1 - init_f1:+.4f} from pseudo-labels + Bezier", log_file)
-    log(f"", log_file)
-    log(f"  BASELINE S54:    syntax 0.7398, stenosis 0.4569", log_file)
-    log(f"  THIS RUN:        syntax {syn_f1:.4f}, stenosis {final_f1:.4f}", log_file)
+    best_cc = max(cc_results, key=lambda k: cc_results[k]["filtered"]["f1"])
+    return {
+        "model": weights, "init_f1": round(init_f1, 4),
+        "final_f1": round(f1, 4), "metrics": m,
+        "cc_results": {str(k): v for k, v in cc_results.items()},
+        "best_cc_area": best_cc,
+        "best_cc_f1": round(cc_results[best_cc]["filtered"]["f1"], 4),
+    }
 
-    # Best CC threshold
-    best_cc_area = max(cc_results, key=lambda k: cc_results[k]["filtered"]["f1"])
-    best_cc_f1 = cc_results[best_cc_area]["filtered"]["f1"]
-    log(f"  Best CC filter:  min_area={best_cc_area}px -> stenosis F1={best_cc_f1:.4f}", log_file)
+
+# ═══════════════════════════════════════════════════════════════════════
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--arcade-root", type=Path, required=True)
+    parser.add_argument("--device", type=str, default="0")
+    parser.add_argument("--task", type=str, default="both",
+                        choices=["syntax", "stenosis", "both"])
+    parser.add_argument("--output-dir", type=Path, default=None)
+    parser.add_argument("--pseudo-rounds", type=str, default="0.5,0.4,0.3")
+    parser.add_argument("--bezier-fraction", type=float, default=0.4)
+    parser.add_argument("--cc-min-area", type=int, default=50)
+    args = parser.parse_args()
+
+    arcade_root = args.arcade_root.resolve()
+    output_dir = (args.output_dir or
+                  SCRIPT_DIR.parent / "results" / "best_combined").resolve()
+    output_dir.mkdir(parents=True, exist_ok=True)
+    log_file = output_dir / f"run_{args.task}_log.txt"
+    pseudo_rounds = [float(x) for x in args.pseudo_rounds.split(",")]
+
+    log(f"ARCADE root: {arcade_root}", log_file)
+    log(f"Task: {args.task}, Device: {args.device}", log_file)
+    log(f"Pseudo rounds: {pseudo_rounds}", log_file)
+
+    t0 = time.time()
+    data_dir = prepare_stratified_data(arcade_root, output_dir)
+    results = {}
+
+    if args.task in ("syntax", "both"):
+        results["syntax"] = run_syntax(
+            arcade_root, output_dir, data_dir, args.device, pseudo_rounds, log_file)
+
+    if args.task in ("stenosis", "both"):
+        results["stenosis"] = run_stenosis(
+            arcade_root, output_dir, data_dir, args.device, pseudo_rounds,
+            args.bezier_fraction, args.cc_min_area, log_file)
 
     elapsed = time.time() - t0
-    log(f"\nTotal time: {elapsed / 3600:.1f} hours", log_file)
+    results["elapsed_hours"] = round(elapsed / 3600, 2)
 
-    # Save results
-    results = {
-        "syntax_model": syntax_weights,
-        "syntax_initial_f1": round(init_syn_f1, 4),
-        "syntax_final_f1": round(syn_f1, 4),
-        "syntax_metrics": syn_metrics,
-        "stenosis_initial_f1": round(init_f1, 4),
-        "stenosis_final_model": final_sten_weights,
-        "stenosis_final_f1": round(final_f1, 4),
-        "stenosis_final_metrics": final_metrics,
-        "pseudo_label_stats": pseudo_stats,
-        "bezier_stats": bezier_stats,
-        "cc_postprocess": {str(k): v for k, v in cc_results.items()},
-        "best_cc_min_area": best_cc_area,
-        "best_cc_f1": round(best_cc_f1, 4),
-        "elapsed_hours": round(elapsed / 3600, 2),
-    }
-    json.dump(results, open(output_dir / "results.json", "w"),
-              indent=2, default=str)
-    log(f"Results saved to {output_dir / 'results.json'}", log_file)
-    log("DONE.", log_file)
+    out_path = output_dir / f"results_{args.task}.json"
+    json.dump(results, open(out_path, "w"), indent=2, default=str)
+
+    log(f"\n{'='*60}\nDONE in {elapsed/3600:.1f}h. Results: {out_path}\n{'='*60}", log_file)
 
 
 if __name__ == "__main__":
