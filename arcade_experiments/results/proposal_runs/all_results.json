@@ -1933,5 +1933,2855 @@
     },
     "name": "A6_wbf_ensemble",
     "timestamp": "2026-04-16T17:25:56"
+  },
+  {
+    "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/B1_B2_oversample_cls125/B1_B2_oversample_cls125_best.pt",
+    "oversampling": {
+      "original": {
+        "10": 305,
+        "9": 320,
+        "7": 310,
+        "6": 340,
+        "8": 198,
+        "5": 537,
+        "0": 374,
+        "1": 375,
+        "2": 369,
+        "11": 232,
+        "3": 303,
+        "4": 525
+      },
+      "after": {
+        "10": 329,
+        "9": 348,
+        "7": 477,
+        "6": 521,
+        "8": 396,
+        "5": 735,
+        "0": 374,
+        "1": 375,
+        "2": 369,
+        "11": 232,
+        "3": 303,
+        "4": 696
+      },
+      "duplicates_created": 198
+    },
+    "cls_weight": 1.25,
+    "metrics": {
+      "split": "test",
+      "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/B1_B2_oversample_cls125/B1_B2_oversample_cls125_best.pt",
+      "mAP50": 0.6296,
+      "mAP50_95": 0.2305,
+      "precision": 0.7041,
+      "recall": 0.618,
+      "per_class": {
+        "1": {
+          "ap50": 0.695,
+          "precision": 0.6882,
+          "recall": 0.76,
+          "f1": 0.7223
+        },
+        "2": {
+          "ap50": 0.6556,
+          "precision": 0.7033,
+          "recall": 0.72,
+          "f1": 0.7116
+        },
+        "3": {
+          "ap50": 0.7594,
+          "precision": 0.7694,
+          "recall": 0.75,
+          "f1": 0.7596
+        },
+        "4": {
+          "ap50": 0.5438,
+          "precision": 0.6692,
+          "recall": 0.5109,
+          "f1": 0.5794
+        },
+        "5": {
+          "ap50": 0.8719,
+          "precision": 0.8947,
+          "recall": 0.7436,
+          "f1": 0.8122
+        },
+        "6": {
+          "ap50": 0.6799,
+          "precision": 0.745,
+          "recall": 0.5585,
+          "f1": 0.6384
+        },
+        "7": {
+          "ap50": 0.648,
+          "precision": 0.6694,
+          "recall": 0.6586,
+          "f1": 0.664
+        },
+        "8": {
+          "ap50": 0.5885,
+          "precision": 0.7185,
+          "recall": 0.6125,
+          "f1": 0.6613
+        },
+        "9": {
+          "ap50": 0.2164,
+          "precision": 0.501,
+          "recall": 0.2121,
+          "f1": 0.298
+        },
+        "11": {
+          "ap50": 0.8388,
+          "precision": 0.7576,
+          "recall": 0.8405,
+          "f1": 0.7969
+        },
+        "13": {
+          "ap50": 0.4015,
+          "precision": 0.5639,
+          "recall": 0.4584,
+          "f1": 0.5057
+        },
+        "16": {
+          "ap50": 0.6561,
+          "precision": 0.7693,
+          "recall": 0.5909,
+          "f1": 0.6684
+        }
+      },
+      "syntax_mAP50": 0.6296
+    },
+    "name": "B1_B2_tail_sampling_loss",
+    "timestamp": "2026-04-16T18:11:56"
+  },
+  {
+    "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/B4_warmstart_stenosis/B4_warmstart_stenosis_best.pt",
+    "source_syntax": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/F1_official_syntax/F1_official_syntax_best.pt",
+    "metrics": {
+      "split": "test",
+      "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/B4_warmstart_stenosis/B4_warmstart_stenosis_best.pt",
+      "mAP50": 0.2983,
+      "mAP50_95": 0.0845,
+      "precision": 0.3334,
+      "recall": 0.4145,
+      "per_class": {
+        "stenosis": {
+          "ap50": 0.2983,
+          "precision": 0.3334,
+          "recall": 0.4145,
+          "f1": 0.3696
+        }
+      },
+      "stenosis_AP50": 0.2983
+    },
+    "name": "B4_warmstart_stenosis",
+    "timestamp": "2026-04-16T18:21:46"
+  },
+  {
+    "ls_0.05": {
+      "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/C1_ls_0.05/C1_ls_0.05_best.pt",
+      "metrics": {
+        "split": "test",
+        "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/C1_ls_0.05/C1_ls_0.05_best.pt",
+        "mAP50": 0.6506,
+        "mAP50_95": 0.2395,
+        "precision": 0.7094,
+        "recall": 0.6058,
+        "per_class": {
+          "1": {
+            "ap50": 0.7195,
+            "precision": 0.7277,
+            "recall": 0.7482,
+            "f1": 0.7378
+          },
+          "2": {
+            "ap50": 0.7908,
+            "precision": 0.7632,
+            "recall": 0.76,
+            "f1": 0.7616
+          },
+          "3": {
+            "ap50": 0.7678,
+            "precision": 0.788,
+            "recall": 0.73,
+            "f1": 0.7579
+          },
+          "4": {
+            "ap50": 0.5275,
+            "precision": 0.6406,
+            "recall": 0.4783,
+            "f1": 0.5477
+          },
+          "5": {
+            "ap50": 0.8681,
+            "precision": 0.8715,
+            "recall": 0.7649,
+            "f1": 0.8147
+          },
+          "6": {
+            "ap50": 0.7778,
+            "precision": 0.7885,
+            "recall": 0.6649,
+            "f1": 0.7214
+          },
+          "7": {
+            "ap50": 0.7201,
+            "precision": 0.6918,
+            "recall": 0.6506,
+            "f1": 0.6706
+          },
+          "8": {
+            "ap50": 0.5385,
+            "precision": 0.5963,
+            "recall": 0.575,
+            "f1": 0.5855
+          },
+          "9": {
+            "ap50": 0.218,
+            "precision": 0.4228,
+            "recall": 0.2727,
+            "f1": 0.3316
+          },
+          "11": {
+            "ap50": 0.8874,
+            "precision": 0.9089,
+            "recall": 0.7815,
+            "f1": 0.8404
+          },
+          "13": {
+            "ap50": 0.4117,
+            "precision": 0.6141,
+            "recall": 0.4341,
+            "f1": 0.5086
+          },
+          "16": {
+            "ap50": 0.58,
+            "precision": 0.6997,
+            "recall": 0.4091,
+            "f1": 0.5163
+          }
+        },
+        "syntax_mAP50": 0.6506
+      }
+    },
+    "ls_0.1": {
+      "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/C1_ls_0.1/C1_ls_0.1_best.pt",
+      "metrics": {
+        "split": "test",
+        "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/C1_ls_0.1/C1_ls_0.1_best.pt",
+        "mAP50": 0.6506,
+        "mAP50_95": 0.2395,
+        "precision": 0.7094,
+        "recall": 0.6058,
+        "per_class": {
+          "1": {
+            "ap50": 0.7195,
+            "precision": 0.7277,
+            "recall": 0.7482,
+            "f1": 0.7378
+          },
+          "2": {
+            "ap50": 0.7908,
+            "precision": 0.7632,
+            "recall": 0.76,
+            "f1": 0.7616
+          },
+          "3": {
+            "ap50": 0.7678,
+            "precision": 0.788,
+            "recall": 0.73,
+            "f1": 0.7579
+          },
+          "4": {
+            "ap50": 0.5275,
+            "precision": 0.6406,
+            "recall": 0.4783,
+            "f1": 0.5477
+          },
+          "5": {
+            "ap50": 0.8681,
+            "precision": 0.8715,
+            "recall": 0.7649,
+            "f1": 0.8147
+          },
+          "6": {
+            "ap50": 0.7778,
+            "precision": 0.7885,
+            "recall": 0.6649,
+            "f1": 0.7214
+          },
+          "7": {
+            "ap50": 0.7201,
+            "precision": 0.6918,
+            "recall": 0.6506,
+            "f1": 0.6706
+          },
+          "8": {
+            "ap50": 0.5385,
+            "precision": 0.5963,
+            "recall": 0.575,
+            "f1": 0.5855
+          },
+          "9": {
+            "ap50": 0.218,
+            "precision": 0.4228,
+            "recall": 0.2727,
+            "f1": 0.3316
+          },
+          "11": {
+            "ap50": 0.8874,
+            "precision": 0.9089,
+            "recall": 0.7815,
+            "f1": 0.8404
+          },
+          "13": {
+            "ap50": 0.4117,
+            "precision": 0.6141,
+            "recall": 0.4341,
+            "f1": 0.5086
+          },
+          "16": {
+            "ap50": 0.58,
+            "precision": 0.6997,
+            "recall": 0.4091,
+            "f1": 0.5163
+          }
+        },
+        "syntax_mAP50": 0.6506
+      }
+    },
+    "name": "C1_label_smoothing",
+    "timestamp": "2026-04-16T18:47:14"
+  },
+  {
+    "dfl_2.0": {
+      "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/C3_dfl_2.0/C3_dfl_2.0_best.pt",
+      "metrics": {
+        "split": "test",
+        "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/C3_dfl_2.0/C3_dfl_2.0_best.pt",
+        "mAP50": 0.2745,
+        "mAP50_95": 0.0896,
+        "precision": 0.3246,
+        "recall": 0.3653,
+        "per_class": {
+          "stenosis": {
+            "ap50": 0.2745,
+            "precision": 0.3246,
+            "recall": 0.3653,
+            "f1": 0.3437
+          }
+        },
+        "stenosis_AP50": 0.2745
+      }
+    },
+    "dfl_2.5": {
+      "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/C3_dfl_2.5/C3_dfl_2.5_best.pt",
+      "metrics": {
+        "split": "test",
+        "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/C3_dfl_2.5/C3_dfl_2.5_best.pt",
+        "mAP50": 0.3055,
+        "mAP50_95": 0.0956,
+        "precision": 0.3507,
+        "recall": 0.4145,
+        "per_class": {
+          "stenosis": {
+            "ap50": 0.3055,
+            "precision": 0.3507,
+            "recall": 0.4145,
+            "f1": 0.3799
+          }
+        },
+        "stenosis_AP50": 0.3055
+      }
+    },
+    "dfl_3.0": {
+      "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/C3_dfl_3.0/C3_dfl_3.0_best.pt",
+      "metrics": {
+        "split": "test",
+        "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/C3_dfl_3.0/C3_dfl_3.0_best.pt",
+        "mAP50": 0.2273,
+        "mAP50_95": 0.0683,
+        "precision": 0.3143,
+        "recall": 0.3627,
+        "per_class": {
+          "stenosis": {
+            "ap50": 0.2273,
+            "precision": 0.3143,
+            "recall": 0.3627,
+            "f1": 0.3368
+          }
+        },
+        "stenosis_AP50": 0.2273
+      }
+    },
+    "name": "C3_dfl_sweep",
+    "timestamp": "2026-04-16T19:18:11"
+  },
+  {
+    "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/C5_hires_stenosis_768/C5_hires_stenosis_768_best.pt",
+    "metrics": {
+      "split": "test",
+      "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/C5_hires_stenosis_768/C5_hires_stenosis_768_best.pt",
+      "mAP50": 0.3127,
+      "mAP50_95": 0.0912,
+      "precision": 0.3998,
+      "recall": 0.4067,
+      "per_class": {
+        "stenosis": {
+          "ap50": 0.3127,
+          "precision": 0.3998,
+          "recall": 0.4067,
+          "f1": 0.4032
+        }
+      },
+      "stenosis_AP50": 0.3127
+    },
+    "name": "C5_multi_scale",
+    "timestamp": "2026-04-16T19:37:54"
+  },
+  {
+    "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/B3_background_stenosis/B3_background_stenosis_best.pt",
+    "bg_stats": {
+      "total_added": 150,
+      "hard_negatives": 150,
+      "clean_negatives": 0
+    },
+    "metrics": {
+      "split": "test",
+      "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/B3_background_stenosis/B3_background_stenosis_best.pt",
+      "mAP50": 0.1367,
+      "mAP50_95": 0.0415,
+      "precision": 0.2355,
+      "recall": 0.1632,
+      "per_class": {
+        "stenosis": {
+          "ap50": 0.1367,
+          "precision": 0.2355,
+          "recall": 0.1632,
+          "f1": 0.1928
+        }
+      },
+      "stenosis_AP50": 0.1367
+    },
+    "name": "B3_background_images",
+    "timestamp": "2026-04-16T19:50:47"
+  },
+  {
+    "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/B6_copypaste_syntax/B6_copypaste_syntax_best.pt",
+    "metrics": {
+      "split": "test",
+      "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/B6_copypaste_syntax/B6_copypaste_syntax_best.pt",
+      "mAP50": 0.6416,
+      "mAP50_95": 0.2382,
+      "precision": 0.6505,
+      "recall": 0.6635,
+      "per_class": {
+        "1": {
+          "ap50": 0.7271,
+          "precision": 0.6698,
+          "recall": 0.83,
+          "f1": 0.7413
+        },
+        "2": {
+          "ap50": 0.6889,
+          "precision": 0.6181,
+          "recall": 0.79,
+          "f1": 0.6936
+        },
+        "3": {
+          "ap50": 0.7096,
+          "precision": 0.691,
+          "recall": 0.75,
+          "f1": 0.7193
+        },
+        "4": {
+          "ap50": 0.5446,
+          "precision": 0.5022,
+          "recall": 0.5652,
+          "f1": 0.5318
+        },
+        "5": {
+          "ap50": 0.8608,
+          "precision": 0.8195,
+          "recall": 0.7917,
+          "f1": 0.8054
+        },
+        "6": {
+          "ap50": 0.7533,
+          "precision": 0.7725,
+          "recall": 0.6436,
+          "f1": 0.7022
+        },
+        "7": {
+          "ap50": 0.7113,
+          "precision": 0.7021,
+          "recall": 0.7385,
+          "f1": 0.7198
+        },
+        "8": {
+          "ap50": 0.6024,
+          "precision": 0.628,
+          "recall": 0.6753,
+          "f1": 0.6508
+        },
+        "9": {
+          "ap50": 0.1642,
+          "precision": 0.2548,
+          "recall": 0.2576,
+          "f1": 0.2562
+        },
+        "11": {
+          "ap50": 0.8525,
+          "precision": 0.7651,
+          "recall": 0.8235,
+          "f1": 0.7932
+        },
+        "13": {
+          "ap50": 0.4328,
+          "precision": 0.6401,
+          "recall": 0.4727,
+          "f1": 0.5438
+        },
+        "16": {
+          "ap50": 0.6517,
+          "precision": 0.743,
+          "recall": 0.6243,
+          "f1": 0.6785
+        }
+      },
+      "syntax_mAP50": 0.6416
+    },
+    "name": "B6_copy_paste",
+    "timestamp": "2026-04-16T20:09:01"
+  },
+  {
+    "dropout_0.05": {
+      "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/C2_dropout_0.05/C2_dropout_0.05_best.pt",
+      "metrics": {
+        "split": "test",
+        "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/C2_dropout_0.05/C2_dropout_0.05_best.pt",
+        "mAP50": 0.6506,
+        "mAP50_95": 0.2395,
+        "precision": 0.7094,
+        "recall": 0.6058,
+        "per_class": {
+          "1": {
+            "ap50": 0.7195,
+            "precision": 0.7277,
+            "recall": 0.7482,
+            "f1": 0.7378
+          },
+          "2": {
+            "ap50": 0.7908,
+            "precision": 0.7632,
+            "recall": 0.76,
+            "f1": 0.7616
+          },
+          "3": {
+            "ap50": 0.7678,
+            "precision": 0.788,
+            "recall": 0.73,
+            "f1": 0.7579
+          },
+          "4": {
+            "ap50": 0.5275,
+            "precision": 0.6406,
+            "recall": 0.4783,
+            "f1": 0.5477
+          },
+          "5": {
+            "ap50": 0.8681,
+            "precision": 0.8715,
+            "recall": 0.7649,
+            "f1": 0.8147
+          },
+          "6": {
+            "ap50": 0.7778,
+            "precision": 0.7885,
+            "recall": 0.6649,
+            "f1": 0.7214
+          },
+          "7": {
+            "ap50": 0.7201,
+            "precision": 0.6918,
+            "recall": 0.6506,
+            "f1": 0.6706
+          },
+          "8": {
+            "ap50": 0.5385,
+            "precision": 0.5963,
+            "recall": 0.575,
+            "f1": 0.5855
+          },
+          "9": {
+            "ap50": 0.218,
+            "precision": 0.4228,
+            "recall": 0.2727,
+            "f1": 0.3316
+          },
+          "11": {
+            "ap50": 0.8874,
+            "precision": 0.9089,
+            "recall": 0.7815,
+            "f1": 0.8404
+          },
+          "13": {
+            "ap50": 0.4117,
+            "precision": 0.6141,
+            "recall": 0.4341,
+            "f1": 0.5086
+          },
+          "16": {
+            "ap50": 0.58,
+            "precision": 0.6997,
+            "recall": 0.4091,
+            "f1": 0.5163
+          }
+        },
+        "syntax_mAP50": 0.6506
+      }
+    },
+    "dropout_0.1": {
+      "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/C2_dropout_0.1/C2_dropout_0.1_best.pt",
+      "metrics": {
+        "split": "test",
+        "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/C2_dropout_0.1/C2_dropout_0.1_best.pt",
+        "mAP50": 0.6506,
+        "mAP50_95": 0.2395,
+        "precision": 0.7094,
+        "recall": 0.6058,
+        "per_class": {
+          "1": {
+            "ap50": 0.7195,
+            "precision": 0.7277,
+            "recall": 0.7482,
+            "f1": 0.7378
+          },
+          "2": {
+            "ap50": 0.7908,
+            "precision": 0.7632,
+            "recall": 0.76,
+            "f1": 0.7616
+          },
+          "3": {
+            "ap50": 0.7678,
+            "precision": 0.788,
+            "recall": 0.73,
+            "f1": 0.7579
+          },
+          "4": {
+            "ap50": 0.5275,
+            "precision": 0.6406,
+            "recall": 0.4783,
+            "f1": 0.5477
+          },
+          "5": {
+            "ap50": 0.8681,
+            "precision": 0.8715,
+            "recall": 0.7649,
+            "f1": 0.8147
+          },
+          "6": {
+            "ap50": 0.7778,
+            "precision": 0.7885,
+            "recall": 0.6649,
+            "f1": 0.7214
+          },
+          "7": {
+            "ap50": 0.7201,
+            "precision": 0.6918,
+            "recall": 0.6506,
+            "f1": 0.6706
+          },
+          "8": {
+            "ap50": 0.5385,
+            "precision": 0.5963,
+            "recall": 0.575,
+            "f1": 0.5855
+          },
+          "9": {
+            "ap50": 0.218,
+            "precision": 0.4228,
+            "recall": 0.2727,
+            "f1": 0.3316
+          },
+          "11": {
+            "ap50": 0.8874,
+            "precision": 0.9089,
+            "recall": 0.7815,
+            "f1": 0.8404
+          },
+          "13": {
+            "ap50": 0.4117,
+            "precision": 0.6141,
+            "recall": 0.4341,
+            "f1": 0.5086
+          },
+          "16": {
+            "ap50": 0.58,
+            "precision": 0.6997,
+            "recall": 0.4091,
+            "f1": 0.5163
+          }
+        },
+        "syntax_mAP50": 0.6506
+      }
+    },
+    "name": "C2_dropout",
+    "timestamp": "2026-04-16T20:34:17"
+  },
+  {
+    "box_10.0": {
+      "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/C4_box_10.0/C4_box_10.0_best.pt",
+      "metrics": {
+        "split": "test",
+        "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/C4_box_10.0/C4_box_10.0_best.pt",
+        "mAP50": 0.6574,
+        "mAP50_95": 0.2504,
+        "precision": 0.6786,
+        "recall": 0.6323,
+        "per_class": {
+          "1": {
+            "ap50": 0.7432,
+            "precision": 0.725,
+            "recall": 0.81,
+            "f1": 0.7651
+          },
+          "2": {
+            "ap50": 0.6839,
+            "precision": 0.6905,
+            "recall": 0.73,
+            "f1": 0.7097
+          },
+          "3": {
+            "ap50": 0.7484,
+            "precision": 0.7685,
+            "recall": 0.697,
+            "f1": 0.731
+          },
+          "4": {
+            "ap50": 0.508,
+            "precision": 0.6196,
+            "recall": 0.5435,
+            "f1": 0.5791
+          },
+          "5": {
+            "ap50": 0.8722,
+            "precision": 0.8455,
+            "recall": 0.7641,
+            "f1": 0.8027
+          },
+          "6": {
+            "ap50": 0.7778,
+            "precision": 0.8188,
+            "recall": 0.617,
+            "f1": 0.7037
+          },
+          "7": {
+            "ap50": 0.7799,
+            "precision": 0.7548,
+            "recall": 0.7047,
+            "f1": 0.7289
+          },
+          "8": {
+            "ap50": 0.646,
+            "precision": 0.596,
+            "recall": 0.675,
+            "f1": 0.633
+          },
+          "9": {
+            "ap50": 0.2132,
+            "precision": 0.3343,
+            "recall": 0.2879,
+            "f1": 0.3094
+          },
+          "11": {
+            "ap50": 0.8343,
+            "precision": 0.658,
+            "recall": 0.8403,
+            "f1": 0.7381
+          },
+          "13": {
+            "ap50": 0.4547,
+            "precision": 0.6206,
+            "recall": 0.3727,
+            "f1": 0.4657
+          },
+          "16": {
+            "ap50": 0.6268,
+            "precision": 0.7121,
+            "recall": 0.5455,
+            "f1": 0.6178
+          }
+        },
+        "syntax_mAP50": 0.6574
+      }
+    },
+    "box_12.5": {
+      "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/C4_box_12.5/C4_box_12.5_best.pt",
+      "metrics": {
+        "split": "test",
+        "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/C4_box_12.5/C4_box_12.5_best.pt",
+        "mAP50": 0.6654,
+        "mAP50_95": 0.2536,
+        "precision": 0.688,
+        "recall": 0.6457,
+        "per_class": {
+          "1": {
+            "ap50": 0.7652,
+            "precision": 0.75,
+            "recall": 0.75,
+            "f1": 0.75
+          },
+          "2": {
+            "ap50": 0.7194,
+            "precision": 0.7589,
+            "recall": 0.63,
+            "f1": 0.6885
+          },
+          "3": {
+            "ap50": 0.7978,
+            "precision": 0.7823,
+            "recall": 0.7547,
+            "f1": 0.7683
+          },
+          "4": {
+            "ap50": 0.6448,
+            "precision": 0.6642,
+            "recall": 0.6413,
+            "f1": 0.6525
+          },
+          "5": {
+            "ap50": 0.8515,
+            "precision": 0.876,
+            "recall": 0.7248,
+            "f1": 0.7933
+          },
+          "6": {
+            "ap50": 0.7407,
+            "precision": 0.7331,
+            "recall": 0.7181,
+            "f1": 0.7255
+          },
+          "7": {
+            "ap50": 0.7237,
+            "precision": 0.6684,
+            "recall": 0.747,
+            "f1": 0.7055
+          },
+          "8": {
+            "ap50": 0.6045,
+            "precision": 0.6944,
+            "recall": 0.625,
+            "f1": 0.6579
+          },
+          "9": {
+            "ap50": 0.1521,
+            "precision": 0.3081,
+            "recall": 0.197,
+            "f1": 0.2403
+          },
+          "11": {
+            "ap50": 0.8365,
+            "precision": 0.679,
+            "recall": 0.8487,
+            "f1": 0.7544
+          },
+          "13": {
+            "ap50": 0.4825,
+            "precision": 0.6,
+            "recall": 0.5091,
+            "f1": 0.5508
+          },
+          "16": {
+            "ap50": 0.6658,
+            "precision": 0.7418,
+            "recall": 0.6023,
+            "f1": 0.6648
+          }
+        },
+        "syntax_mAP50": 0.6654
+      }
+    },
+    "box_15.0": {
+      "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/C4_box_15.0/C4_box_15.0_best.pt",
+      "metrics": {
+        "split": "test",
+        "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/C4_box_15.0/C4_box_15.0_best.pt",
+        "mAP50": 0.6559,
+        "mAP50_95": 0.2476,
+        "precision": 0.6815,
+        "recall": 0.6231,
+        "per_class": {
+          "1": {
+            "ap50": 0.7542,
+            "precision": 0.7562,
+            "recall": 0.74,
+            "f1": 0.748
+          },
+          "2": {
+            "ap50": 0.6986,
+            "precision": 0.6613,
+            "recall": 0.703,
+            "f1": 0.6815
+          },
+          "3": {
+            "ap50": 0.7621,
+            "precision": 0.677,
+            "recall": 0.72,
+            "f1": 0.6978
+          },
+          "4": {
+            "ap50": 0.576,
+            "precision": 0.6053,
+            "recall": 0.5834,
+            "f1": 0.5941
+          },
+          "5": {
+            "ap50": 0.88,
+            "precision": 0.8648,
+            "recall": 0.8103,
+            "f1": 0.8367
+          },
+          "6": {
+            "ap50": 0.7908,
+            "precision": 0.7835,
+            "recall": 0.6545,
+            "f1": 0.7132
+          },
+          "7": {
+            "ap50": 0.6963,
+            "precision": 0.6837,
+            "recall": 0.6747,
+            "f1": 0.6792
+          },
+          "8": {
+            "ap50": 0.6642,
+            "precision": 0.6998,
+            "recall": 0.625,
+            "f1": 0.6603
+          },
+          "9": {
+            "ap50": 0.2261,
+            "precision": 0.338,
+            "recall": 0.303,
+            "f1": 0.3195
+          },
+          "11": {
+            "ap50": 0.7995,
+            "precision": 0.7659,
+            "recall": 0.7815,
+            "f1": 0.7736
+          },
+          "13": {
+            "ap50": 0.3602,
+            "precision": 0.6225,
+            "recall": 0.2909,
+            "f1": 0.3965
+          },
+          "16": {
+            "ap50": 0.6631,
+            "precision": 0.72,
+            "recall": 0.5909,
+            "f1": 0.6491
+          }
+        },
+        "syntax_mAP50": 0.6559
+      }
+    },
+    "name": "C4_mask_weight",
+    "timestamp": "2026-04-16T20:59:46"
+  },
+  {
+    "erasing_0.2": {
+      "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/D1_erasing_0.2/D1_erasing_0.2_best.pt",
+      "metrics": {
+        "split": "test",
+        "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/D1_erasing_0.2/D1_erasing_0.2_best.pt",
+        "mAP50": 0.6506,
+        "mAP50_95": 0.2395,
+        "precision": 0.7094,
+        "recall": 0.6058,
+        "per_class": {
+          "1": {
+            "ap50": 0.7195,
+            "precision": 0.7277,
+            "recall": 0.7482,
+            "f1": 0.7378
+          },
+          "2": {
+            "ap50": 0.7908,
+            "precision": 0.7632,
+            "recall": 0.76,
+            "f1": 0.7616
+          },
+          "3": {
+            "ap50": 0.7678,
+            "precision": 0.788,
+            "recall": 0.73,
+            "f1": 0.7579
+          },
+          "4": {
+            "ap50": 0.5275,
+            "precision": 0.6406,
+            "recall": 0.4783,
+            "f1": 0.5477
+          },
+          "5": {
+            "ap50": 0.8681,
+            "precision": 0.8715,
+            "recall": 0.7649,
+            "f1": 0.8147
+          },
+          "6": {
+            "ap50": 0.7778,
+            "precision": 0.7885,
+            "recall": 0.6649,
+            "f1": 0.7214
+          },
+          "7": {
+            "ap50": 0.7201,
+            "precision": 0.6918,
+            "recall": 0.6506,
+            "f1": 0.6706
+          },
+          "8": {
+            "ap50": 0.5385,
+            "precision": 0.5963,
+            "recall": 0.575,
+            "f1": 0.5855
+          },
+          "9": {
+            "ap50": 0.218,
+            "precision": 0.4228,
+            "recall": 0.2727,
+            "f1": 0.3316
+          },
+          "11": {
+            "ap50": 0.8874,
+            "precision": 0.9089,
+            "recall": 0.7815,
+            "f1": 0.8404
+          },
+          "13": {
+            "ap50": 0.4117,
+            "precision": 0.6141,
+            "recall": 0.4341,
+            "f1": 0.5086
+          },
+          "16": {
+            "ap50": 0.58,
+            "precision": 0.6997,
+            "recall": 0.4091,
+            "f1": 0.5163
+          }
+        },
+        "syntax_mAP50": 0.6506
+      }
+    },
+    "erasing_0.4": {
+      "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/D1_erasing_0.4/D1_erasing_0.4_best.pt",
+      "metrics": {
+        "split": "test",
+        "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/D1_erasing_0.4/D1_erasing_0.4_best.pt",
+        "mAP50": 0.6506,
+        "mAP50_95": 0.2395,
+        "precision": 0.7094,
+        "recall": 0.6058,
+        "per_class": {
+          "1": {
+            "ap50": 0.7195,
+            "precision": 0.7277,
+            "recall": 0.7482,
+            "f1": 0.7378
+          },
+          "2": {
+            "ap50": 0.7908,
+            "precision": 0.7632,
+            "recall": 0.76,
+            "f1": 0.7616
+          },
+          "3": {
+            "ap50": 0.7678,
+            "precision": 0.788,
+            "recall": 0.73,
+            "f1": 0.7579
+          },
+          "4": {
+            "ap50": 0.5275,
+            "precision": 0.6406,
+            "recall": 0.4783,
+            "f1": 0.5477
+          },
+          "5": {
+            "ap50": 0.8681,
+            "precision": 0.8715,
+            "recall": 0.7649,
+            "f1": 0.8147
+          },
+          "6": {
+            "ap50": 0.7778,
+            "precision": 0.7885,
+            "recall": 0.6649,
+            "f1": 0.7214
+          },
+          "7": {
+            "ap50": 0.7201,
+            "precision": 0.6918,
+            "recall": 0.6506,
+            "f1": 0.6706
+          },
+          "8": {
+            "ap50": 0.5385,
+            "precision": 0.5963,
+            "recall": 0.575,
+            "f1": 0.5855
+          },
+          "9": {
+            "ap50": 0.218,
+            "precision": 0.4228,
+            "recall": 0.2727,
+            "f1": 0.3316
+          },
+          "11": {
+            "ap50": 0.8874,
+            "precision": 0.9089,
+            "recall": 0.7815,
+            "f1": 0.8404
+          },
+          "13": {
+            "ap50": 0.4117,
+            "precision": 0.6141,
+            "recall": 0.4341,
+            "f1": 0.5086
+          },
+          "16": {
+            "ap50": 0.58,
+            "precision": 0.6997,
+            "recall": 0.4091,
+            "f1": 0.5163
+          }
+        },
+        "syntax_mAP50": 0.6506
+      }
+    },
+    "name": "D1_erasing",
+    "timestamp": "2026-04-16T21:24:56"
+  },
+  {
+    "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/D2_flipud/D2_flipud_best.pt",
+    "metrics": {
+      "split": "test",
+      "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/D2_flipud/D2_flipud_best.pt",
+      "mAP50": 0.6358,
+      "mAP50_95": 0.2553,
+      "precision": 0.6687,
+      "recall": 0.6055,
+      "per_class": {
+        "1": {
+          "ap50": 0.8268,
+          "precision": 0.7512,
+          "recall": 0.85,
+          "f1": 0.7976
+        },
+        "2": {
+          "ap50": 0.7473,
+          "precision": 0.813,
+          "recall": 0.67,
+          "f1": 0.7346
+        },
+        "3": {
+          "ap50": 0.7638,
+          "precision": 0.7881,
+          "recall": 0.68,
+          "f1": 0.7301
+        },
+        "4": {
+          "ap50": 0.5452,
+          "precision": 0.6498,
+          "recall": 0.6196,
+          "f1": 0.6343
+        },
+        "5": {
+          "ap50": 0.8855,
+          "precision": 0.8667,
+          "recall": 0.767,
+          "f1": 0.8138
+        },
+        "6": {
+          "ap50": 0.7603,
+          "precision": 0.7827,
+          "recall": 0.6896,
+          "f1": 0.7332
+        },
+        "7": {
+          "ap50": 0.6617,
+          "precision": 0.7107,
+          "recall": 0.592,
+          "f1": 0.6459
+        },
+        "8": {
+          "ap50": 0.6154,
+          "precision": 0.5957,
+          "recall": 0.6375,
+          "f1": 0.6159
+        },
+        "9": {
+          "ap50": 0.0947,
+          "precision": 0.2013,
+          "recall": 0.1515,
+          "f1": 0.1729
+        },
+        "11": {
+          "ap50": 0.8181,
+          "precision": 0.635,
+          "recall": 0.8655,
+          "f1": 0.7325
+        },
+        "13": {
+          "ap50": 0.3383,
+          "precision": 0.6021,
+          "recall": 0.2889,
+          "f1": 0.3905
+        },
+        "16": {
+          "ap50": 0.5727,
+          "precision": 0.6278,
+          "recall": 0.4545,
+          "f1": 0.5273
+        }
+      },
+      "syntax_mAP50": 0.6358
+    },
+    "name": "D2_flipud",
+    "timestamp": "2026-04-16T21:33:29"
+  },
+  {
+    "mild": {
+      "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/D3_shear_mild/D3_shear_mild_best.pt",
+      "metrics": {
+        "split": "test",
+        "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/D3_shear_mild/D3_shear_mild_best.pt",
+        "mAP50": 0.6559,
+        "mAP50_95": 0.2396,
+        "precision": 0.6784,
+        "recall": 0.645,
+        "per_class": {
+          "1": {
+            "ap50": 0.7946,
+            "precision": 0.7319,
+            "recall": 0.86,
+            "f1": 0.7908
+          },
+          "2": {
+            "ap50": 0.6858,
+            "precision": 0.6664,
+            "recall": 0.7192,
+            "f1": 0.6918
+          },
+          "3": {
+            "ap50": 0.7497,
+            "precision": 0.7363,
+            "recall": 0.75,
+            "f1": 0.7431
+          },
+          "4": {
+            "ap50": 0.5505,
+            "precision": 0.5874,
+            "recall": 0.5326,
+            "f1": 0.5587
+          },
+          "5": {
+            "ap50": 0.8854,
+            "precision": 0.8869,
+            "recall": 0.7846,
+            "f1": 0.8326
+          },
+          "6": {
+            "ap50": 0.7389,
+            "precision": 0.7738,
+            "recall": 0.6649,
+            "f1": 0.7152
+          },
+          "7": {
+            "ap50": 0.7093,
+            "precision": 0.656,
+            "recall": 0.7229,
+            "f1": 0.6878
+          },
+          "8": {
+            "ap50": 0.5708,
+            "precision": 0.6751,
+            "recall": 0.5975,
+            "f1": 0.6339
+          },
+          "9": {
+            "ap50": 0.1921,
+            "precision": 0.3215,
+            "recall": 0.2727,
+            "f1": 0.2951
+          },
+          "11": {
+            "ap50": 0.8623,
+            "precision": 0.7844,
+            "recall": 0.8235,
+            "f1": 0.8035
+          },
+          "13": {
+            "ap50": 0.4295,
+            "precision": 0.5663,
+            "recall": 0.4154,
+            "f1": 0.4793
+          },
+          "16": {
+            "ap50": 0.7015,
+            "precision": 0.7554,
+            "recall": 0.5967,
+            "f1": 0.6667
+          }
+        },
+        "syntax_mAP50": 0.6559
+      }
+    },
+    "moderate": {
+      "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/D3_shear_moderate/D3_shear_moderate_best.pt",
+      "metrics": {
+        "split": "test",
+        "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/D3_shear_moderate/D3_shear_moderate_best.pt",
+        "mAP50": 0.6499,
+        "mAP50_95": 0.2532,
+        "precision": 0.6884,
+        "recall": 0.6162,
+        "per_class": {
+          "1": {
+            "ap50": 0.6829,
+            "precision": 0.7003,
+            "recall": 0.7,
+            "f1": 0.7001
+          },
+          "2": {
+            "ap50": 0.7622,
+            "precision": 0.7267,
+            "recall": 0.77,
+            "f1": 0.7477
+          },
+          "3": {
+            "ap50": 0.7991,
+            "precision": 0.768,
+            "recall": 0.75,
+            "f1": 0.7589
+          },
+          "4": {
+            "ap50": 0.5475,
+            "precision": 0.6199,
+            "recall": 0.514,
+            "f1": 0.562
+          },
+          "5": {
+            "ap50": 0.8779,
+            "precision": 0.888,
+            "recall": 0.7726,
+            "f1": 0.8263
+          },
+          "6": {
+            "ap50": 0.7618,
+            "precision": 0.809,
+            "recall": 0.6596,
+            "f1": 0.7267
+          },
+          "7": {
+            "ap50": 0.674,
+            "precision": 0.6391,
+            "recall": 0.6613,
+            "f1": 0.65
+          },
+          "8": {
+            "ap50": 0.6315,
+            "precision": 0.8036,
+            "recall": 0.525,
+            "f1": 0.6351
+          },
+          "9": {
+            "ap50": 0.0975,
+            "precision": 0.2159,
+            "recall": 0.197,
+            "f1": 0.206
+          },
+          "11": {
+            "ap50": 0.8407,
+            "precision": 0.8043,
+            "recall": 0.8151,
+            "f1": 0.8097
+          },
+          "13": {
+            "ap50": 0.4059,
+            "precision": 0.5424,
+            "recall": 0.3818,
+            "f1": 0.4481
+          },
+          "16": {
+            "ap50": 0.7178,
+            "precision": 0.7438,
+            "recall": 0.6477,
+            "f1": 0.6924
+          }
+        },
+        "syntax_mAP50": 0.6499
+      }
+    },
+    "name": "D3_shear_translate",
+    "timestamp": "2026-04-16T21:53:01"
+  },
+  {
+    "seed_42": {
+      "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/combined_seed42/combined_seed42_best.pt",
+      "metrics": {
+        "split": "test",
+        "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/combined_seed42/combined_seed42_best.pt",
+        "mAP50": 0.6217,
+        "mAP50_95": 0.2386,
+        "precision": 0.6482,
+        "recall": 0.6227,
+        "per_class": {
+          "1": {
+            "ap50": 0.8096,
+            "precision": 0.775,
+            "recall": 0.82,
+            "f1": 0.7969
+          },
+          "2": {
+            "ap50": 0.6559,
+            "precision": 0.7083,
+            "recall": 0.5342,
+            "f1": 0.6091
+          },
+          "3": {
+            "ap50": 0.7749,
+            "precision": 0.7975,
+            "recall": 0.71,
+            "f1": 0.7512
+          },
+          "4": {
+            "ap50": 0.5052,
+            "precision": 0.613,
+            "recall": 0.5326,
+            "f1": 0.57
+          },
+          "5": {
+            "ap50": 0.8979,
+            "precision": 0.8108,
+            "recall": 0.8569,
+            "f1": 0.8332
+          },
+          "6": {
+            "ap50": 0.7492,
+            "precision": 0.7382,
+            "recall": 0.6598,
+            "f1": 0.6968
+          },
+          "7": {
+            "ap50": 0.585,
+            "precision": 0.5593,
+            "recall": 0.6265,
+            "f1": 0.591
+          },
+          "8": {
+            "ap50": 0.5518,
+            "precision": 0.6672,
+            "recall": 0.6125,
+            "f1": 0.6387
+          },
+          "9": {
+            "ap50": 0.2064,
+            "precision": 0.3484,
+            "recall": 0.2879,
+            "f1": 0.3153
+          },
+          "11": {
+            "ap50": 0.839,
+            "precision": 0.6792,
+            "recall": 0.8824,
+            "f1": 0.7676
+          },
+          "13": {
+            "ap50": 0.2993,
+            "precision": 0.4717,
+            "recall": 0.3815,
+            "f1": 0.4218
+          },
+          "16": {
+            "ap50": 0.5859,
+            "precision": 0.6101,
+            "recall": 0.5682,
+            "f1": 0.5884
+          }
+        },
+        "syntax_mAP50": 0.6217
+      }
+    },
+    "seed_7": {
+      "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/combined_seed7/combined_seed7_best.pt",
+      "metrics": {
+        "split": "test",
+        "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/combined_seed7/combined_seed7_best.pt",
+        "mAP50": 0.6281,
+        "mAP50_95": 0.2435,
+        "precision": 0.6461,
+        "recall": 0.6116,
+        "per_class": {
+          "1": {
+            "ap50": 0.7599,
+            "precision": 0.7417,
+            "recall": 0.81,
+            "f1": 0.7743
+          },
+          "2": {
+            "ap50": 0.5905,
+            "precision": 0.6684,
+            "recall": 0.55,
+            "f1": 0.6034
+          },
+          "3": {
+            "ap50": 0.7385,
+            "precision": 0.6584,
+            "recall": 0.67,
+            "f1": 0.6641
+          },
+          "4": {
+            "ap50": 0.5443,
+            "precision": 0.5736,
+            "recall": 0.5435,
+            "f1": 0.5581
+          },
+          "5": {
+            "ap50": 0.8733,
+            "precision": 0.8676,
+            "recall": 0.7393,
+            "f1": 0.7983
+          },
+          "6": {
+            "ap50": 0.7325,
+            "precision": 0.6994,
+            "recall": 0.6862,
+            "f1": 0.6927
+          },
+          "7": {
+            "ap50": 0.733,
+            "precision": 0.6562,
+            "recall": 0.7229,
+            "f1": 0.6879
+          },
+          "8": {
+            "ap50": 0.5762,
+            "precision": 0.6775,
+            "recall": 0.55,
+            "f1": 0.6071
+          },
+          "9": {
+            "ap50": 0.2038,
+            "precision": 0.3199,
+            "recall": 0.3182,
+            "f1": 0.319
+          },
+          "11": {
+            "ap50": 0.8017,
+            "precision": 0.701,
+            "recall": 0.7815,
+            "f1": 0.7391
+          },
+          "13": {
+            "ap50": 0.389,
+            "precision": 0.5836,
+            "recall": 0.3545,
+            "f1": 0.4411
+          },
+          "16": {
+            "ap50": 0.5951,
+            "precision": 0.6053,
+            "recall": 0.6136,
+            "f1": 0.6094
+          }
+        },
+        "syntax_mAP50": 0.6281
+      }
+    },
+    "seed_2024": {
+      "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/combined_seed2024/combined_seed2024_best.pt",
+      "metrics": {
+        "split": "test",
+        "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/combined_seed2024/combined_seed2024_best.pt",
+        "mAP50": 0.6173,
+        "mAP50_95": 0.2389,
+        "precision": 0.6392,
+        "recall": 0.5923,
+        "per_class": {
+          "1": {
+            "ap50": 0.734,
+            "precision": 0.7217,
+            "recall": 0.8,
+            "f1": 0.7588
+          },
+          "2": {
+            "ap50": 0.6629,
+            "precision": 0.8399,
+            "recall": 0.34,
+            "f1": 0.4841
+          },
+          "3": {
+            "ap50": 0.693,
+            "precision": 0.544,
+            "recall": 0.72,
+            "f1": 0.6197
+          },
+          "4": {
+            "ap50": 0.5558,
+            "precision": 0.5935,
+            "recall": 0.6304,
+            "f1": 0.6114
+          },
+          "5": {
+            "ap50": 0.8917,
+            "precision": 0.8543,
+            "recall": 0.8154,
+            "f1": 0.8344
+          },
+          "6": {
+            "ap50": 0.7339,
+            "precision": 0.763,
+            "recall": 0.6543,
+            "f1": 0.7045
+          },
+          "7": {
+            "ap50": 0.637,
+            "precision": 0.6092,
+            "recall": 0.6747,
+            "f1": 0.6403
+          },
+          "8": {
+            "ap50": 0.6182,
+            "precision": 0.7497,
+            "recall": 0.625,
+            "f1": 0.6817
+          },
+          "9": {
+            "ap50": 0.0856,
+            "precision": 0.1613,
+            "recall": 0.197,
+            "f1": 0.1774
+          },
+          "11": {
+            "ap50": 0.7872,
+            "precision": 0.6033,
+            "recall": 0.7899,
+            "f1": 0.6841
+          },
+          "13": {
+            "ap50": 0.4217,
+            "precision": 0.6381,
+            "recall": 0.2818,
+            "f1": 0.3909
+          },
+          "16": {
+            "ap50": 0.5862,
+            "precision": 0.5921,
+            "recall": 0.5795,
+            "f1": 0.5857
+          }
+        },
+        "syntax_mAP50": 0.6173
+      }
+    },
+    "name": "combined_recipe_3seeds",
+    "timestamp": "2026-04-16T22:22:09"
+  },
+  {
+    "models": [
+      "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/combined_seed42/combined_seed42_best.pt",
+      "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/combined_seed7/combined_seed7_best.pt",
+      "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/combined_seed2024/combined_seed2024_best.pt"
+    ],
+    "iou_thr": 0.55,
+    "conf": 0.05,
+    "n_images": 300,
+    "metrics": {
+      "per_class": {
+        "0": {
+          "p": 0.2563,
+          "r": 0.61,
+          "f1": 0.3609,
+          "tp": 61,
+          "fp": 177,
+          "fn": 39
+        },
+        "1": {
+          "p": 0.2797,
+          "r": 0.87,
+          "f1": 0.4234,
+          "tp": 87,
+          "fp": 224,
+          "fn": 13
+        },
+        "2": {
+          "p": 0.1577,
+          "r": 0.44,
+          "f1": 0.2322,
+          "tp": 44,
+          "fp": 235,
+          "fn": 56
+        },
+        "3": {
+          "p": 0.176,
+          "r": 0.4783,
+          "f1": 0.2573,
+          "tp": 44,
+          "fp": 206,
+          "fn": 48
+        },
+        "4": {
+          "p": 0.4658,
+          "r": 0.7692,
+          "f1": 0.5803,
+          "tp": 150,
+          "fp": 172,
+          "fn": 45
+        },
+        "5": {
+          "p": 0.3,
+          "r": 0.6064,
+          "f1": 0.4014,
+          "tp": 114,
+          "fp": 266,
+          "fn": 74
+        },
+        "6": {
+          "p": 0.2464,
+          "r": 0.8193,
+          "f1": 0.3788,
+          "tp": 68,
+          "fp": 208,
+          "fn": 15
+        },
+        "7": {
+          "p": 0.2911,
+          "r": 0.575,
+          "f1": 0.3866,
+          "tp": 46,
+          "fp": 112,
+          "fn": 34
+        },
+        "8": {
+          "p": 0.067,
+          "r": 0.2273,
+          "f1": 0.1034,
+          "tp": 15,
+          "fp": 209,
+          "fn": 51
+        },
+        "9": {
+          "p": 0.2601,
+          "r": 0.6471,
+          "f1": 0.3711,
+          "tp": 77,
+          "fp": 219,
+          "fn": 42
+        },
+        "10": {
+          "p": 0.0967,
+          "r": 0.4273,
+          "f1": 0.1577,
+          "tp": 47,
+          "fp": 439,
+          "fn": 63
+        },
+        "11": {
+          "p": 0.166,
+          "r": 0.4659,
+          "f1": 0.2448,
+          "tp": 41,
+          "fp": 206,
+          "fn": 47
+        }
+      },
+      "mean_f1": 0.3248
+    },
+    "name": "A6_wbf_ensemble",
+    "timestamp": "2026-04-16T22:22:20"
+  },
+  {
+    "round1": {
+      "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/B5_round1/B5_round1_best.pt",
+      "conf": 0.5,
+      "pseudo_stats": {
+        "images_processed": 1000,
+        "images_with_predictions": 244,
+        "total_pseudo_instances": 327,
+        "conf_threshold": 0.5,
+        "imgsz": 512
+      },
+      "metrics": {
+        "split": "test",
+        "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/B5_round1/B5_round1_best.pt",
+        "mAP50": 0.2251,
+        "mAP50_95": 0.0691,
+        "precision": 0.3029,
+        "recall": 0.3394,
+        "per_class": {
+          "stenosis": {
+            "ap50": 0.2251,
+            "precision": 0.3029,
+            "recall": 0.3394,
+            "f1": 0.3201
+          }
+        },
+        "stenosis_AP50": 0.2251
+      }
+    },
+    "round2": {
+      "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/B5_round2/B5_round2_best.pt",
+      "conf": 0.4,
+      "pseudo_stats": {
+        "images_processed": 1000,
+        "images_with_predictions": 306,
+        "total_pseudo_instances": 410,
+        "conf_threshold": 0.4,
+        "imgsz": 512
+      },
+      "metrics": {
+        "split": "test",
+        "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/B5_round2/B5_round2_best.pt",
+        "mAP50": 0.1649,
+        "mAP50_95": 0.0512,
+        "precision": 0.2533,
+        "recall": 0.3083,
+        "per_class": {
+          "stenosis": {
+            "ap50": 0.1649,
+            "precision": 0.2533,
+            "recall": 0.3083,
+            "f1": 0.2781
+          }
+        },
+        "stenosis_AP50": 0.1649
+      }
+    },
+    "round3": {
+      "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/B5_round3/B5_round3_best.pt",
+      "conf": 0.3,
+      "pseudo_stats": {
+        "images_processed": 1000,
+        "images_with_predictions": 381,
+        "total_pseudo_instances": 525,
+        "conf_threshold": 0.3,
+        "imgsz": 512
+      },
+      "metrics": {
+        "split": "test",
+        "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/B5_round3/B5_round3_best.pt",
+        "mAP50": 0.1686,
+        "mAP50_95": 0.0488,
+        "precision": 0.2336,
+        "recall": 0.3161,
+        "per_class": {
+          "stenosis": {
+            "ap50": 0.1686,
+            "precision": 0.2336,
+            "recall": 0.3161,
+            "f1": 0.2687
+          }
+        },
+        "stenosis_AP50": 0.1686
+      }
+    },
+    "name": "B5_pseudo_labeling",
+    "timestamp": "2026-04-16T23:07:24"
+  },
+  {
+    "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/E1_p2_equivalent_1024/E1_p2_equivalent_1024_best.pt",
+    "metrics": {
+      "split": "test",
+      "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/E1_p2_equivalent_1024/E1_p2_equivalent_1024_best.pt",
+      "mAP50": 0.3063,
+      "mAP50_95": 0.099,
+      "precision": 0.336,
+      "recall": 0.4974,
+      "per_class": {
+        "stenosis": {
+          "ap50": 0.3063,
+          "precision": 0.336,
+          "recall": 0.4974,
+          "f1": 0.4011
+        }
+      },
+      "stenosis_AP50": 0.3063
+    },
+    "imgsz": 1024,
+    "name": "E1_p2_head",
+    "timestamp": "2026-04-16T23:47:28"
+  },
+  {
+    "teacher_model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/E2_teacher_yolo11x/E2_teacher_yolo11x_best.pt",
+    "teacher_metrics": {
+      "split": "test",
+      "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/E2_teacher_yolo11x/E2_teacher_yolo11x_best.pt",
+      "mAP50": 0.6529,
+      "mAP50_95": 0.2495,
+      "precision": 0.6573,
+      "recall": 0.6432,
+      "per_class": {
+        "1": {
+          "ap50": 0.6783,
+          "precision": 0.7019,
+          "recall": 0.69,
+          "f1": 0.6959
+        },
+        "2": {
+          "ap50": 0.6519,
+          "precision": 0.5628,
+          "recall": 0.69,
+          "f1": 0.6199
+        },
+        "3": {
+          "ap50": 0.7648,
+          "precision": 0.7151,
+          "recall": 0.7531,
+          "f1": 0.7336
+        },
+        "4": {
+          "ap50": 0.578,
+          "precision": 0.5655,
+          "recall": 0.5761,
+          "f1": 0.5708
+        },
+        "5": {
+          "ap50": 0.8964,
+          "precision": 0.8462,
+          "recall": 0.8,
+          "f1": 0.8225
+        },
+        "6": {
+          "ap50": 0.7513,
+          "precision": 0.7849,
+          "recall": 0.6212,
+          "f1": 0.6935
+        },
+        "7": {
+          "ap50": 0.7679,
+          "precision": 0.7435,
+          "recall": 0.7711,
+          "f1": 0.757
+        },
+        "8": {
+          "ap50": 0.65,
+          "precision": 0.7053,
+          "recall": 0.6625,
+          "f1": 0.6832
+        },
+        "9": {
+          "ap50": 0.2344,
+          "precision": 0.3506,
+          "recall": 0.3333,
+          "f1": 0.3417
+        },
+        "11": {
+          "ap50": 0.8309,
+          "precision": 0.7597,
+          "recall": 0.8319,
+          "f1": 0.7942
+        },
+        "13": {
+          "ap50": 0.377,
+          "precision": 0.5063,
+          "recall": 0.3455,
+          "f1": 0.4107
+        },
+        "16": {
+          "ap50": 0.6535,
+          "precision": 0.6463,
+          "recall": 0.6438,
+          "f1": 0.645
+        }
+      },
+      "syntax_mAP50": 0.6529
+    },
+    "student_model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/E2_student_yolo11m/E2_student_yolo11m_best.pt",
+    "student_metrics": {
+      "split": "test",
+      "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/E2_student_yolo11m/E2_student_yolo11m_best.pt",
+      "mAP50": 0.5461,
+      "mAP50_95": 0.1861,
+      "precision": 0.5515,
+      "recall": 0.5798,
+      "per_class": {
+        "1": {
+          "ap50": 0.7651,
+          "precision": 0.7987,
+          "recall": 0.6744,
+          "f1": 0.7313
+        },
+        "2": {
+          "ap50": 0.5798,
+          "precision": 0.6632,
+          "recall": 0.5514,
+          "f1": 0.6022
+        },
+        "3": {
+          "ap50": 0.6217,
+          "precision": 0.6062,
+          "recall": 0.68,
+          "f1": 0.641
+        },
+        "4": {
+          "ap50": 0.4942,
+          "precision": 0.4911,
+          "recall": 0.5761,
+          "f1": 0.5302
+        },
+        "5": {
+          "ap50": 0.8615,
+          "precision": 0.8152,
+          "recall": 0.7795,
+          "f1": 0.797
+        },
+        "6": {
+          "ap50": 0.6848,
+          "precision": 0.6366,
+          "recall": 0.7181,
+          "f1": 0.6749
+        },
+        "7": {
+          "ap50": 0.5494,
+          "precision": 0.625,
+          "recall": 0.5422,
+          "f1": 0.5807
+        },
+        "8": {
+          "ap50": 0.4371,
+          "precision": 0.401,
+          "recall": 0.5439,
+          "f1": 0.4616
+        },
+        "9": {
+          "ap50": 0.2072,
+          "precision": 0.2004,
+          "recall": 0.3788,
+          "f1": 0.2621
+        },
+        "11": {
+          "ap50": 0.7502,
+          "precision": 0.6907,
+          "recall": 0.7311,
+          "f1": 0.7103
+        },
+        "13": {
+          "ap50": 0.0835,
+          "precision": 0.1733,
+          "recall": 0.1909,
+          "f1": 0.1817
+        },
+        "16": {
+          "ap50": 0.5183,
+          "precision": 0.5162,
+          "recall": 0.5909,
+          "f1": 0.551
+        }
+      },
+      "syntax_mAP50": 0.5461
+    },
+    "name": "E2_distillation",
+    "timestamp": "2026-04-17T00:22:50"
+  },
+  {
+    "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/D4_mosaic_anneal/D4_mosaic_anneal_best.pt",
+    "metrics": {
+      "split": "test",
+      "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/D4_mosaic_anneal/D4_mosaic_anneal_best.pt",
+      "mAP50": 0.6589,
+      "mAP50_95": 0.2568,
+      "precision": 0.7044,
+      "recall": 0.6098,
+      "per_class": {
+        "1": {
+          "ap50": 0.7651,
+          "precision": 0.7486,
+          "recall": 0.7446,
+          "f1": 0.7466
+        },
+        "2": {
+          "ap50": 0.7385,
+          "precision": 0.7876,
+          "recall": 0.68,
+          "f1": 0.7299
+        },
+        "3": {
+          "ap50": 0.7471,
+          "precision": 0.8349,
+          "recall": 0.7,
+          "f1": 0.7615
+        },
+        "4": {
+          "ap50": 0.6181,
+          "precision": 0.6563,
+          "recall": 0.6087,
+          "f1": 0.6316
+        },
+        "5": {
+          "ap50": 0.9086,
+          "precision": 0.8884,
+          "recall": 0.8051,
+          "f1": 0.8447
+        },
+        "6": {
+          "ap50": 0.7336,
+          "precision": 0.7644,
+          "recall": 0.6489,
+          "f1": 0.7019
+        },
+        "7": {
+          "ap50": 0.6705,
+          "precision": 0.6607,
+          "recall": 0.6569,
+          "f1": 0.6588
+        },
+        "8": {
+          "ap50": 0.5707,
+          "precision": 0.5987,
+          "recall": 0.575,
+          "f1": 0.5866
+        },
+        "9": {
+          "ap50": 0.1799,
+          "precision": 0.3671,
+          "recall": 0.197,
+          "f1": 0.2564
+        },
+        "11": {
+          "ap50": 0.8656,
+          "precision": 0.7042,
+          "recall": 0.8403,
+          "f1": 0.7663
+        },
+        "13": {
+          "ap50": 0.4689,
+          "precision": 0.72,
+          "recall": 0.3272,
+          "f1": 0.4499
+        },
+        "16": {
+          "ap50": 0.6401,
+          "precision": 0.7225,
+          "recall": 0.5341,
+          "f1": 0.6142
+        }
+      },
+      "syntax_mAP50": 0.6589
+    },
+    "name": "D4_mosaic_annealing",
+    "timestamp": "2026-04-17T00:32:23"
+  },
+  {
+    "lr_0.00025": {
+      "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/C6_nbs16_lr0.00025/C6_nbs16_lr0.00025_best.pt",
+      "metrics": {
+        "split": "test",
+        "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/C6_nbs16_lr0.00025/C6_nbs16_lr0.00025_best.pt",
+        "mAP50": 0.6431,
+        "mAP50_95": 0.2509,
+        "precision": 0.6608,
+        "recall": 0.6215,
+        "per_class": {
+          "1": {
+            "ap50": 0.7506,
+            "precision": 0.8425,
+            "recall": 0.58,
+            "f1": 0.687
+          },
+          "2": {
+            "ap50": 0.6717,
+            "precision": 0.7297,
+            "recall": 0.65,
+            "f1": 0.6875
+          },
+          "3": {
+            "ap50": 0.7289,
+            "precision": 0.6246,
+            "recall": 0.74,
+            "f1": 0.6774
+          },
+          "4": {
+            "ap50": 0.5699,
+            "precision": 0.6243,
+            "recall": 0.6087,
+            "f1": 0.6164
+          },
+          "5": {
+            "ap50": 0.8844,
+            "precision": 0.8772,
+            "recall": 0.7487,
+            "f1": 0.8079
+          },
+          "6": {
+            "ap50": 0.7718,
+            "precision": 0.7722,
+            "recall": 0.6809,
+            "f1": 0.7237
+          },
+          "7": {
+            "ap50": 0.6831,
+            "precision": 0.6653,
+            "recall": 0.6867,
+            "f1": 0.6758
+          },
+          "8": {
+            "ap50": 0.6189,
+            "precision": 0.5966,
+            "recall": 0.6875,
+            "f1": 0.6388
+          },
+          "9": {
+            "ap50": 0.2088,
+            "precision": 0.2763,
+            "recall": 0.2576,
+            "f1": 0.2666
+          },
+          "11": {
+            "ap50": 0.8087,
+            "precision": 0.7397,
+            "recall": 0.7882,
+            "f1": 0.7632
+          },
+          "13": {
+            "ap50": 0.3674,
+            "precision": 0.5362,
+            "recall": 0.3818,
+            "f1": 0.446
+          },
+          "16": {
+            "ap50": 0.653,
+            "precision": 0.6447,
+            "recall": 0.6477,
+            "f1": 0.6462
+          }
+        },
+        "syntax_mAP50": 0.6431
+      }
+    },
+    "lr_0.0005": {
+      "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/C6_nbs16_lr0.0005/C6_nbs16_lr0.0005_best.pt",
+      "metrics": {
+        "split": "test",
+        "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/C6_nbs16_lr0.0005/C6_nbs16_lr0.0005_best.pt",
+        "mAP50": 0.5993,
+        "mAP50_95": 0.2306,
+        "precision": 0.603,
+        "recall": 0.5834,
+        "per_class": {
+          "1": {
+            "ap50": 0.6329,
+            "precision": 0.5299,
+            "recall": 0.76,
+            "f1": 0.6244
+          },
+          "2": {
+            "ap50": 0.6528,
+            "precision": 0.6801,
+            "recall": 0.5316,
+            "f1": 0.5968
+          },
+          "3": {
+            "ap50": 0.6863,
+            "precision": 0.6579,
+            "recall": 0.6731,
+            "f1": 0.6654
+          },
+          "4": {
+            "ap50": 0.5372,
+            "precision": 0.5574,
+            "recall": 0.5339,
+            "f1": 0.5454
+          },
+          "5": {
+            "ap50": 0.8865,
+            "precision": 0.8441,
+            "recall": 0.7897,
+            "f1": 0.816
+          },
+          "6": {
+            "ap50": 0.7232,
+            "precision": 0.7157,
+            "recall": 0.6809,
+            "f1": 0.6979
+          },
+          "7": {
+            "ap50": 0.6253,
+            "precision": 0.6002,
+            "recall": 0.6024,
+            "f1": 0.6013
+          },
+          "8": {
+            "ap50": 0.5548,
+            "precision": 0.5923,
+            "recall": 0.55,
+            "f1": 0.5704
+          },
+          "9": {
+            "ap50": 0.0993,
+            "precision": 0.2216,
+            "recall": 0.1364,
+            "f1": 0.1689
+          },
+          "11": {
+            "ap50": 0.8307,
+            "precision": 0.646,
+            "recall": 0.8235,
+            "f1": 0.724
+          },
+          "13": {
+            "ap50": 0.3687,
+            "precision": 0.5953,
+            "recall": 0.2943,
+            "f1": 0.3939
+          },
+          "16": {
+            "ap50": 0.594,
+            "precision": 0.5954,
+            "recall": 0.625,
+            "f1": 0.6098
+          }
+        },
+        "syntax_mAP50": 0.5993
+      }
+    },
+    "lr_0.001": {
+      "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/C6_nbs16_lr0.001/C6_nbs16_lr0.001_best.pt",
+      "metrics": {
+        "split": "test",
+        "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/C6_nbs16_lr0.001/C6_nbs16_lr0.001_best.pt",
+        "mAP50": 0.6635,
+        "mAP50_95": 0.2465,
+        "precision": 0.7254,
+        "recall": 0.613,
+        "per_class": {
+          "1": {
+            "ap50": 0.6525,
+            "precision": 0.6797,
+            "recall": 0.7,
+            "f1": 0.6897
+          },
+          "2": {
+            "ap50": 0.717,
+            "precision": 0.6901,
+            "recall": 0.77,
+            "f1": 0.7279
+          },
+          "3": {
+            "ap50": 0.7778,
+            "precision": 0.7906,
+            "recall": 0.7554,
+            "f1": 0.7726
+          },
+          "4": {
+            "ap50": 0.5579,
+            "precision": 0.6423,
+            "recall": 0.5326,
+            "f1": 0.5823
+          },
+          "5": {
+            "ap50": 0.8864,
+            "precision": 0.9209,
+            "recall": 0.7761,
+            "f1": 0.8423
+          },
+          "6": {
+            "ap50": 0.7644,
+            "precision": 0.8052,
+            "recall": 0.6156,
+            "f1": 0.6977
+          },
+          "7": {
+            "ap50": 0.7279,
+            "precision": 0.7614,
+            "recall": 0.6988,
+            "f1": 0.7288
+          },
+          "8": {
+            "ap50": 0.5573,
+            "precision": 0.6612,
+            "recall": 0.5625,
+            "f1": 0.6079
+          },
+          "9": {
+            "ap50": 0.2436,
+            "precision": 0.4137,
+            "recall": 0.2576,
+            "f1": 0.3175
+          },
+          "11": {
+            "ap50": 0.8654,
+            "precision": 0.8445,
+            "recall": 0.776,
+            "f1": 0.8088
+          },
+          "13": {
+            "ap50": 0.5084,
+            "precision": 0.6967,
+            "recall": 0.3727,
+            "f1": 0.4856
+          },
+          "16": {
+            "ap50": 0.7038,
+            "precision": 0.7981,
+            "recall": 0.5389,
+            "f1": 0.6434
+          }
+        },
+        "syntax_mAP50": 0.6635
+      }
+    },
+    "name": "C6_nbs_lr",
+    "timestamp": "2026-04-17T01:06:04"
+  },
+  {
+    "lrf_0.001": {
+      "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/C7_lrf_0.001/C7_lrf_0.001_best.pt",
+      "metrics": {
+        "split": "test",
+        "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/C7_lrf_0.001/C7_lrf_0.001_best.pt",
+        "mAP50": 0.6565,
+        "mAP50_95": 0.2448,
+        "precision": 0.685,
+        "recall": 0.6351,
+        "per_class": {
+          "1": {
+            "ap50": 0.6865,
+            "precision": 0.6864,
+            "recall": 0.72,
+            "f1": 0.7028
+          },
+          "2": {
+            "ap50": 0.6863,
+            "precision": 0.6988,
+            "recall": 0.76,
+            "f1": 0.7281
+          },
+          "3": {
+            "ap50": 0.7409,
+            "precision": 0.7519,
+            "recall": 0.69,
+            "f1": 0.7196
+          },
+          "4": {
+            "ap50": 0.6014,
+            "precision": 0.6399,
+            "recall": 0.6375,
+            "f1": 0.6387
+          },
+          "5": {
+            "ap50": 0.8833,
+            "precision": 0.9248,
+            "recall": 0.6937,
+            "f1": 0.7928
+          },
+          "6": {
+            "ap50": 0.7225,
+            "precision": 0.7303,
+            "recall": 0.617,
+            "f1": 0.6689
+          },
+          "7": {
+            "ap50": 0.6818,
+            "precision": 0.6718,
+            "recall": 0.7108,
+            "f1": 0.6907
+          },
+          "8": {
+            "ap50": 0.6501,
+            "precision": 0.6406,
+            "recall": 0.6625,
+            "f1": 0.6514
+          },
+          "9": {
+            "ap50": 0.2136,
+            "precision": 0.3696,
+            "recall": 0.2576,
+            "f1": 0.3036
+          },
+          "11": {
+            "ap50": 0.8619,
+            "precision": 0.7843,
+            "recall": 0.8067,
+            "f1": 0.7953
+          },
+          "13": {
+            "ap50": 0.5252,
+            "precision": 0.6565,
+            "recall": 0.5,
+            "f1": 0.5677
+          },
+          "16": {
+            "ap50": 0.6249,
+            "precision": 0.6653,
+            "recall": 0.5648,
+            "f1": 0.6109
+          }
+        },
+        "syntax_mAP50": 0.6565
+      }
+    },
+    "lrf_0.05": {
+      "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/C7_lrf_0.05/C7_lrf_0.05_best.pt",
+      "metrics": {
+        "split": "test",
+        "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/C7_lrf_0.05/C7_lrf_0.05_best.pt",
+        "mAP50": 0.6232,
+        "mAP50_95": 0.2377,
+        "precision": 0.6263,
+        "recall": 0.6078,
+        "per_class": {
+          "1": {
+            "ap50": 0.675,
+            "precision": 0.5407,
+            "recall": 0.78,
+            "f1": 0.6387
+          },
+          "2": {
+            "ap50": 0.7125,
+            "precision": 0.7625,
+            "recall": 0.5778,
+            "f1": 0.6574
+          },
+          "3": {
+            "ap50": 0.709,
+            "precision": 0.7381,
+            "recall": 0.6765,
+            "f1": 0.706
+          },
+          "4": {
+            "ap50": 0.5733,
+            "precision": 0.6327,
+            "recall": 0.543,
+            "f1": 0.5844
+          },
+          "5": {
+            "ap50": 0.8707,
+            "precision": 0.8352,
+            "recall": 0.7795,
+            "f1": 0.8064
+          },
+          "6": {
+            "ap50": 0.6995,
+            "precision": 0.6928,
+            "recall": 0.6489,
+            "f1": 0.6701
+          },
+          "7": {
+            "ap50": 0.7611,
+            "precision": 0.7254,
+            "recall": 0.6684,
+            "f1": 0.6957
+          },
+          "8": {
+            "ap50": 0.518,
+            "precision": 0.5831,
+            "recall": 0.6125,
+            "f1": 0.5974
+          },
+          "9": {
+            "ap50": 0.1326,
+            "precision": 0.2226,
+            "recall": 0.2273,
+            "f1": 0.2249
+          },
+          "11": {
+            "ap50": 0.8362,
+            "precision": 0.6371,
+            "recall": 0.8319,
+            "f1": 0.7216
+          },
+          "13": {
+            "ap50": 0.3405,
+            "precision": 0.4677,
+            "recall": 0.3909,
+            "f1": 0.4259
+          },
+          "16": {
+            "ap50": 0.6497,
+            "precision": 0.6778,
+            "recall": 0.5568,
+            "f1": 0.6114
+          }
+        },
+        "syntax_mAP50": 0.6232
+      }
+    },
+    "lrf_0.1": {
+      "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/C7_lrf_0.1/C7_lrf_0.1_best.pt",
+      "metrics": {
+        "split": "test",
+        "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/C7_lrf_0.1/C7_lrf_0.1_best.pt",
+        "mAP50": 0.6423,
+        "mAP50_95": 0.2493,
+        "precision": 0.6743,
+        "recall": 0.6311,
+        "per_class": {
+          "1": {
+            "ap50": 0.7338,
+            "precision": 0.7311,
+            "recall": 0.81,
+            "f1": 0.7685
+          },
+          "2": {
+            "ap50": 0.6789,
+            "precision": 0.7156,
+            "recall": 0.66,
+            "f1": 0.6867
+          },
+          "3": {
+            "ap50": 0.7309,
+            "precision": 0.6439,
+            "recall": 0.7414,
+            "f1": 0.6892
+          },
+          "4": {
+            "ap50": 0.5419,
+            "precision": 0.6484,
+            "recall": 0.5412,
+            "f1": 0.59
+          },
+          "5": {
+            "ap50": 0.8902,
+            "precision": 0.865,
+            "recall": 0.7886,
+            "f1": 0.825
+          },
+          "6": {
+            "ap50": 0.7781,
+            "precision": 0.7464,
+            "recall": 0.6809,
+            "f1": 0.7121
+          },
+          "7": {
+            "ap50": 0.6107,
+            "precision": 0.6702,
+            "recall": 0.6747,
+            "f1": 0.6724
+          },
+          "8": {
+            "ap50": 0.6677,
+            "precision": 0.6365,
+            "recall": 0.7005,
+            "f1": 0.667
+          },
+          "9": {
+            "ap50": 0.1663,
+            "precision": 0.309,
+            "recall": 0.2121,
+            "f1": 0.2515
+          },
+          "11": {
+            "ap50": 0.8119,
+            "precision": 0.7392,
+            "recall": 0.7859,
+            "f1": 0.7618
+          },
+          "13": {
+            "ap50": 0.4516,
+            "precision": 0.6411,
+            "recall": 0.3818,
+            "f1": 0.4786
+          },
+          "16": {
+            "ap50": 0.6461,
+            "precision": 0.7447,
+            "recall": 0.5967,
+            "f1": 0.6625
+          }
+        },
+        "syntax_mAP50": 0.6423
+      }
+    },
+    "name": "C7_lrf_sweep",
+    "timestamp": "2026-04-17T01:32:18"
+  },
+  {
+    "warmup_3": {
+      "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/C8_warmup_3/C8_warmup_3_best.pt",
+      "metrics": {
+        "split": "test",
+        "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/C8_warmup_3/C8_warmup_3_best.pt",
+        "mAP50": 0.6294,
+        "mAP50_95": 0.2312,
+        "precision": 0.6783,
+        "recall": 0.5949,
+        "per_class": {
+          "1": {
+            "ap50": 0.5566,
+            "precision": 0.5837,
+            "recall": 0.68,
+            "f1": 0.6282
+          },
+          "2": {
+            "ap50": 0.6123,
+            "precision": 0.6062,
+            "recall": 0.68,
+            "f1": 0.641
+          },
+          "3": {
+            "ap50": 0.778,
+            "precision": 0.7783,
+            "recall": 0.72,
+            "f1": 0.748
+          },
+          "4": {
+            "ap50": 0.5497,
+            "precision": 0.6383,
+            "recall": 0.5217,
+            "f1": 0.5741
+          },
+          "5": {
+            "ap50": 0.8924,
+            "precision": 0.8744,
+            "recall": 0.7854,
+            "f1": 0.8275
+          },
+          "6": {
+            "ap50": 0.6794,
+            "precision": 0.7048,
+            "recall": 0.5588,
+            "f1": 0.6234
+          },
+          "7": {
+            "ap50": 0.7202,
+            "precision": 0.7278,
+            "recall": 0.6747,
+            "f1": 0.7002
+          },
+          "8": {
+            "ap50": 0.636,
+            "precision": 0.7218,
+            "recall": 0.625,
+            "f1": 0.6699
+          },
+          "9": {
+            "ap50": 0.2768,
+            "precision": 0.3838,
+            "recall": 0.303,
+            "f1": 0.3386
+          },
+          "11": {
+            "ap50": 0.837,
+            "precision": 0.7911,
+            "recall": 0.7311,
+            "f1": 0.7599
+          },
+          "13": {
+            "ap50": 0.4529,
+            "precision": 0.6538,
+            "recall": 0.4091,
+            "f1": 0.5033
+          },
+          "16": {
+            "ap50": 0.561,
+            "precision": 0.6758,
+            "recall": 0.4502,
+            "f1": 0.5404
+          }
+        },
+        "syntax_mAP50": 0.6294
+      }
+    },
+    "warmup_10": {
+      "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/C8_warmup_10/C8_warmup_10_best.pt",
+      "metrics": {
+        "split": "test",
+        "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/proposal_runs/C8_warmup_10/C8_warmup_10_best.pt",
+        "mAP50": 0.6432,
+        "mAP50_95": 0.2552,
+        "precision": 0.6543,
+        "recall": 0.6234,
+        "per_class": {
+          "1": {
+            "ap50": 0.7426,
+            "precision": 0.7207,
+            "recall": 0.76,
+            "f1": 0.7398
+          },
+          "2": {
+            "ap50": 0.7794,
+            "precision": 0.7674,
+            "recall": 0.76,
+            "f1": 0.7637
+          },
+          "3": {
+            "ap50": 0.7614,
+            "precision": 0.5989,
+            "recall": 0.74,
+            "f1": 0.662
+          },
+          "4": {
+            "ap50": 0.5491,
+            "precision": 0.6314,
+            "recall": 0.5213,
+            "f1": 0.5711
+          },
+          "5": {
+            "ap50": 0.8663,
+            "precision": 0.8749,
+            "recall": 0.7533,
+            "f1": 0.8096
+          },
+          "6": {
+            "ap50": 0.7321,
+            "precision": 0.769,
+            "recall": 0.655,
+            "f1": 0.7074
+          },
+          "7": {
+            "ap50": 0.6471,
+            "precision": 0.5951,
+            "recall": 0.6553,
+            "f1": 0.6238
+          },
+          "8": {
+            "ap50": 0.6506,
+            "precision": 0.6465,
+            "recall": 0.6859,
+            "f1": 0.6656
+          },
+          "9": {
+            "ap50": 0.1637,
+            "precision": 0.3331,
+            "recall": 0.2576,
+            "f1": 0.2905
+          },
+          "11": {
+            "ap50": 0.8057,
+            "precision": 0.6132,
+            "recall": 0.7992,
+            "f1": 0.694
+          },
+          "13": {
+            "ap50": 0.3911,
+            "precision": 0.6719,
+            "recall": 0.2793,
+            "f1": 0.3946
+          },
+          "16": {
+            "ap50": 0.6296,
+            "precision": 0.6295,
+            "recall": 0.6136,
+            "f1": 0.6214
+          }
+        },
+        "syntax_mAP50": 0.6432
+      }
+    },
+    "name": "C8_warmup",
+    "timestamp": "2026-04-17T01:50:28"
+  },
+  {
+    "status": "failed",
+    "error": "index 11 is out of bounds for axis 1 with size 11",
+    "name": "run_F3_error_analysis",
+    "timestamp": "2026-04-17T01:50:29"
   }
 ]
