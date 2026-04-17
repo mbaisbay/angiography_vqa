@@ -1,0 +1,84 @@
+[2026-04-17 11:36:00] ARCADE root: /home/c504-5090-x2/Documents/repos/angiography_vqa/arcade/submission
+[2026-04-17 11:36:00] Output dir:  /home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/4_untested
+[2026-04-17 11:36:00] Devices:     ['0', '1']
+[2026-04-17 11:36:15] 
+============================================================
+[2026-04-17 11:36:15] L1: Per-class weighted loss
+[2026-04-17 11:36:15] ============================================================
+[2026-04-17 11:36:15] L1: Per-class weighted loss (oversampling + cls emphasis)
+[2026-04-17 11:36:15]   L1 seed=42: preparing data...
+[2026-04-17 11:36:15]     Tail classes: [8, 11, 3], target: 342, counts: {5: 565, 8: 221, 7: 320, 6: 342, 4: 567, 9: 329, 10: 311, 3: 298, 1: 358, 2: 354, 11: 246, 0: 357}
+[2026-04-17 11:36:16]     Training seed=42 with cls=1.5...
+[2026-04-17 11:59:25]     seed=42: mean_F1=0.7176 mAP50=0.7431
+[2026-04-17 11:59:25]   L1 seed=7: preparing data...
+[2026-04-17 11:59:26]     Tail classes: [8, 11, 3], target: 342, counts: {5: 565, 8: 221, 7: 320, 6: 342, 4: 567, 9: 329, 10: 311, 3: 298, 1: 358, 2: 354, 11: 246, 0: 357}
+[2026-04-17 11:59:26]     Training seed=7 with cls=1.5...
+[2026-04-17 12:54:21]     seed=7: mean_F1=0.7300 mAP50=0.7497
+[2026-04-17 12:54:21]   L1 seed=2024: preparing data...
+[2026-04-17 12:54:21]     Tail classes: [8, 11, 3], target: 342, counts: {5: 565, 8: 221, 7: 320, 6: 342, 4: 567, 9: 329, 10: 311, 3: 298, 1: 358, 2: 354, 11: 246, 0: 357}
+[2026-04-17 12:54:21]     Training seed=2024 with cls=1.5...
+[2026-04-17 13:31:04]     seed=2024: mean_F1=0.7456 mAP50=0.7577
+[2026-04-17 13:31:04]   L1 multi-seed mean F1: 0.7311
+[2026-04-17 13:31:04] 
+============================================================
+[2026-04-17 13:31:04] L2: Confidence threshold sweep
+[2026-04-17 13:31:04] ============================================================
+[2026-04-17 13:31:04] L2: Per-class confidence threshold sweep
+[2026-04-17 13:31:04]   Using existing syntax model: /home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/4_untested/L1_models/seed42/L1_seed42_best.pt
+[2026-04-17 13:31:04]   Training baseline stenosis model...
+[2026-04-17 13:45:30]   Sweeping syntax thresholds on val...
+[2026-04-17 13:46:00]     Chosen thresholds: {'1': np.float64(0.35), '2': np.float64(0.4), '3': np.float64(0.3), '4': np.float64(0.4), '5': np.float64(0.45), '6': np.float64(0.4), '7': np.float64(0.4), '8': np.float64(0.4), '9': np.float64(0.25), '11': np.float64(0.3), '13': np.float64(0.4), '16': np.float64(0.3)}
+[2026-04-17 13:46:04]   Syntax: default=0.7262 tuned=0.7287 delta=+0.0025
+[2026-04-17 13:46:04]   Sweeping stenosis thresholds on val...
+[2026-04-17 13:46:10]   Stenosis: default=0.3396 tuned=0.3781 delta=+0.0385
+[2026-04-17 13:46:10] 
+============================================================
+[2026-04-17 13:46:10] L3: 3-seed WBF ensemble
+[2026-04-17 13:46:10] ============================================================
+[2026-04-17 13:46:10] L3: 3-seed WBF ensemble at conf=0.25
+[2026-04-17 13:46:10]   Training syntax seed=42...
+[2026-04-17 14:12:59]     syntax seed=42: mean_F1=0.7398
+[2026-04-17 14:12:59]   Training stenosis seed=42...
+[2026-04-17 14:27:59]     stenosis seed=42: F1=0.3948
+[2026-04-17 14:27:59]   Training syntax seed=7...
+[2026-04-17 14:47:00]     syntax seed=7: mean_F1=0.7216
+[2026-04-17 14:47:00]   Training stenosis seed=7...
+[2026-04-17 15:04:34]     stenosis seed=7: F1=0.4030
+[2026-04-17 15:04:34]   Training syntax seed=2024...
+[2026-04-17 15:19:36]     syntax seed=2024: mean_F1=0.7012
+[2026-04-17 15:19:36]   Training stenosis seed=2024...
+[2026-04-17 15:40:56]     stenosis seed=2024: F1=0.4381
+[2026-04-17 15:40:56]   Running WBF ensemble for syntax (conf=0.25)...
+[2026-04-17 15:41:07]   Running WBF ensemble for stenosis (conf=0.25)...
+[2026-04-17 15:41:19]   Syntax WBF ensemble mean_F1: 0.6291
+[2026-04-17 15:41:19]   Stenosis WBF ensemble F1: 0.3156
+[2026-04-17 15:41:19] 
+============================================================
+[2026-04-17 15:41:19] L4: CLAHE + 768px stenosis
+[2026-04-17 15:41:19] ============================================================
+[2026-04-17 15:41:19] L4: CLAHE + 768px combined for stenosis (3 seeds)
+[2026-04-17 15:41:19]   L4 seed=42: preparing CLAHE data...
+[2026-04-17 15:41:28]     CLAHE applied to 998 train images
+[2026-04-17 15:41:28]     Training seed=42 at 768px with CLAHE...
+[2026-04-17 15:57:33]     seed=42: stenosis F1=0.3954 mAP50=0.3276
+[2026-04-17 15:57:33]   L4 seed=7: preparing CLAHE data...
+[2026-04-17 15:57:43]     CLAHE applied to 998 train images
+[2026-04-17 15:57:43]     Training seed=7 at 768px with CLAHE...
+[2026-04-17 16:16:02]     seed=7: stenosis F1=0.3914 mAP50=0.3147
+[2026-04-17 16:16:02]   L4 seed=2024: preparing CLAHE data...
+[2026-04-17 16:16:11]     CLAHE applied to 998 train images
+[2026-04-17 16:16:11]     Training seed=2024 at 768px with CLAHE...
+[2026-04-17 16:32:19]     seed=2024: stenosis F1=0.3939 mAP50=0.3319
+[2026-04-17 16:32:19]   L4 multi-seed mean stenosis F1: 0.3936
+[2026-04-17 16:32:19] 
+Total time: 4.9 hours
+[2026-04-17 16:32:19] Results: /home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/4_untested/results.json
+[2026-04-17 16:32:19] 
+============================================================
+[2026-04-17 16:32:19] SUMMARY
+[2026-04-17 16:32:19] ============================================================
+[2026-04-17 16:32:19]   L1 weighted loss: multi-seed mean F1 = 0.7311
+[2026-04-17 16:32:19]   L2 conf sweep: syntax delta=+0.0025, stenosis delta=+0.0385
+[2026-04-17 16:32:19]   L3 WBF ensemble: syntax F1=0.6291, stenosis F1=0.3156
+[2026-04-17 16:32:19]   L4 CLAHE+768: multi-seed mean stenosis F1 = 0.3936
+[2026-04-17 16:32:19] DONE.

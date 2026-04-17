@@ -1,0 +1,631 @@
+{
+  "L1": {
+    "seed_42": {
+      "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/4_untested/L1_models/seed42/L1_seed42_best.pt",
+      "mean_f1": 0.7176,
+      "mAP50": 0.7431,
+      "per_class": {
+        "1": {
+          "ap50": 0.9006,
+          "precision": 0.7919,
+          "recall": 0.8636,
+          "f1": 0.8262
+        },
+        "2": {
+          "ap50": 0.7905,
+          "precision": 0.6789,
+          "recall": 0.8073,
+          "f1": 0.7376
+        },
+        "3": {
+          "ap50": 0.8763,
+          "precision": 0.8637,
+          "recall": 0.7558,
+          "f1": 0.8062
+        },
+        "4": {
+          "ap50": 0.8083,
+          "precision": 0.8225,
+          "recall": 0.7579,
+          "f1": 0.7889
+        },
+        "5": {
+          "ap50": 0.8605,
+          "precision": 0.8487,
+          "recall": 0.7875,
+          "f1": 0.817
+        },
+        "6": {
+          "ap50": 0.8156,
+          "precision": 0.7722,
+          "recall": 0.7929,
+          "f1": 0.7824
+        },
+        "7": {
+          "ap50": 0.7782,
+          "precision": 0.7545,
+          "recall": 0.7021,
+          "f1": 0.7274
+        },
+        "8": {
+          "ap50": 0.761,
+          "precision": 0.7617,
+          "recall": 0.7241,
+          "f1": 0.7424
+        },
+        "9": {
+          "ap50": 0.3087,
+          "precision": 0.486,
+          "recall": 0.2931,
+          "f1": 0.3657
+        },
+        "11": {
+          "ap50": 0.8957,
+          "precision": 0.8523,
+          "recall": 0.832,
+          "f1": 0.842
+        },
+        "13": {
+          "ap50": 0.5124,
+          "precision": 0.6047,
+          "recall": 0.4906,
+          "f1": 0.5417
+        },
+        "16": {
+          "ap50": 0.61,
+          "precision": 0.6142,
+          "recall": 0.6531,
+          "f1": 0.6331
+        }
+      }
+    },
+    "seed_7": {
+      "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/4_untested/L1_models/seed7/L1_seed7_best.pt",
+      "mean_f1": 0.73,
+      "mAP50": 0.7497,
+      "per_class": {
+        "1": {
+          "ap50": 0.9245,
+          "precision": 0.8698,
+          "recall": 0.8506,
+          "f1": 0.8601
+        },
+        "2": {
+          "ap50": 0.7027,
+          "precision": 0.6778,
+          "recall": 0.7636,
+          "f1": 0.7181
+        },
+        "3": {
+          "ap50": 0.8796,
+          "precision": 0.8517,
+          "recall": 0.7902,
+          "f1": 0.8198
+        },
+        "4": {
+          "ap50": 0.8093,
+          "precision": 0.7778,
+          "recall": 0.8,
+          "f1": 0.7887
+        },
+        "5": {
+          "ap50": 0.8993,
+          "precision": 0.8643,
+          "recall": 0.8596,
+          "f1": 0.8619
+        },
+        "6": {
+          "ap50": 0.8347,
+          "precision": 0.8321,
+          "recall": 0.7751,
+          "f1": 0.8026
+        },
+        "7": {
+          "ap50": 0.7776,
+          "precision": 0.8624,
+          "recall": 0.6666,
+          "f1": 0.752
+        },
+        "8": {
+          "ap50": 0.7238,
+          "precision": 0.729,
+          "recall": 0.6782,
+          "f1": 0.7027
+        },
+        "9": {
+          "ap50": 0.3978,
+          "precision": 0.6467,
+          "recall": 0.3276,
+          "f1": 0.4349
+        },
+        "11": {
+          "ap50": 0.8684,
+          "precision": 0.808,
+          "recall": 0.796,
+          "f1": 0.802
+        },
+        "13": {
+          "ap50": 0.5458,
+          "precision": 0.6543,
+          "recall": 0.5472,
+          "f1": 0.596
+        },
+        "16": {
+          "ap50": 0.6324,
+          "precision": 0.6572,
+          "recall": 0.59,
+          "f1": 0.6218
+        }
+      }
+    },
+    "seed_2024": {
+      "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/4_untested/L1_models/seed2024/L1_seed2024_best.pt",
+      "mean_f1": 0.7456,
+      "mAP50": 0.7577,
+      "per_class": {
+        "1": {
+          "ap50": 0.899,
+          "precision": 0.8434,
+          "recall": 0.8727,
+          "f1": 0.8578
+        },
+        "2": {
+          "ap50": 0.7895,
+          "precision": 0.7669,
+          "recall": 0.8273,
+          "f1": 0.796
+        },
+        "3": {
+          "ap50": 0.8507,
+          "precision": 0.8309,
+          "recall": 0.7706,
+          "f1": 0.7996
+        },
+        "4": {
+          "ap50": 0.8262,
+          "precision": 0.7908,
+          "recall": 0.8,
+          "f1": 0.7954
+        },
+        "5": {
+          "ap50": 0.901,
+          "precision": 0.887,
+          "recall": 0.7953,
+          "f1": 0.8387
+        },
+        "6": {
+          "ap50": 0.8241,
+          "precision": 0.8644,
+          "recall": 0.7164,
+          "f1": 0.7835
+        },
+        "7": {
+          "ap50": 0.7791,
+          "precision": 0.8595,
+          "recall": 0.7157,
+          "f1": 0.781
+        },
+        "8": {
+          "ap50": 0.7805,
+          "precision": 0.8234,
+          "recall": 0.7356,
+          "f1": 0.777
+        },
+        "9": {
+          "ap50": 0.4098,
+          "precision": 0.6345,
+          "recall": 0.3621,
+          "f1": 0.4611
+        },
+        "11": {
+          "ap50": 0.9032,
+          "precision": 0.8788,
+          "recall": 0.8739,
+          "f1": 0.8763
+        },
+        "13": {
+          "ap50": 0.5489,
+          "precision": 0.5879,
+          "recall": 0.5189,
+          "f1": 0.5512
+        },
+        "16": {
+          "ap50": 0.5804,
+          "precision": 0.6234,
+          "recall": 0.6367,
+          "f1": 0.63
+        }
+      }
+    },
+    "multi_seed_mean_f1": 0.7311
+  },
+  "L2": {
+    "syntax": {
+      "thresholds": {
+        "1": 0.35,
+        "2": 0.4,
+        "3": 0.3,
+        "4": 0.4,
+        "5": 0.45,
+        "6": 0.4,
+        "7": 0.4,
+        "8": 0.4,
+        "9": 0.25,
+        "11": 0.3,
+        "13": 0.4,
+        "16": 0.3
+      },
+      "test_default_f1": 0.7262,
+      "test_tuned_f1": 0.7287,
+      "delta": 0.0025,
+      "per_class_default": {
+        "1": {
+          "p": 0.8,
+          "r": 0.9091,
+          "f1": 0.8511,
+          "tp": 100,
+          "fp": 25,
+          "fn": 10
+        },
+        "2": {
+          "p": 0.6643,
+          "r": 0.8455,
+          "f1": 0.744,
+          "tp": 93,
+          "fp": 47,
+          "fn": 17
+        },
+        "3": {
+          "p": 0.7667,
+          "r": 0.844,
+          "f1": 0.8035,
+          "tp": 92,
+          "fp": 28,
+          "fn": 17
+        },
+        "4": {
+          "p": 0.7826,
+          "r": 0.7579,
+          "f1": 0.7701,
+          "tp": 72,
+          "fp": 20,
+          "fn": 23
+        },
+        "5": {
+          "p": 0.8363,
+          "r": 0.8363,
+          "f1": 0.8363,
+          "tp": 143,
+          "fp": 28,
+          "fn": 28
+        },
+        "6": {
+          "p": 0.7568,
+          "r": 0.8284,
+          "f1": 0.791,
+          "tp": 140,
+          "fp": 45,
+          "fn": 29
+        },
+        "7": {
+          "p": 0.7374,
+          "r": 0.7766,
+          "f1": 0.7565,
+          "tp": 73,
+          "fp": 26,
+          "fn": 21
+        },
+        "8": {
+          "p": 0.7292,
+          "r": 0.8046,
+          "f1": 0.765,
+          "tp": 70,
+          "fp": 26,
+          "fn": 17
+        },
+        "9": {
+          "p": 0.5294,
+          "r": 0.3103,
+          "f1": 0.3913,
+          "tp": 18,
+          "fp": 16,
+          "fn": 40
+        },
+        "11": {
+          "p": 0.7656,
+          "r": 0.8829,
+          "f1": 0.8201,
+          "tp": 98,
+          "fp": 30,
+          "fn": 13
+        },
+        "13": {
+          "p": 0.5446,
+          "r": 0.5701,
+          "f1": 0.5571,
+          "tp": 61,
+          "fp": 51,
+          "fn": 46
+        },
+        "16": {
+          "p": 0.567,
+          "r": 0.7051,
+          "f1": 0.6286,
+          "tp": 55,
+          "fp": 42,
+          "fn": 23
+        }
+      },
+      "per_class_tuned": {
+        "1": {
+          "p": 0.8509,
+          "r": 0.8818,
+          "f1": 0.8661,
+          "tp": 97,
+          "fp": 17,
+          "fn": 13
+        },
+        "2": {
+          "p": 0.7636,
+          "r": 0.7636,
+          "f1": 0.7636,
+          "tp": 84,
+          "fp": 26,
+          "fn": 26
+        },
+        "3": {
+          "p": 0.819,
+          "r": 0.789,
+          "f1": 0.8037,
+          "tp": 86,
+          "fp": 19,
+          "fn": 23
+        },
+        "4": {
+          "p": 0.8193,
+          "r": 0.7158,
+          "f1": 0.764,
+          "tp": 68,
+          "fp": 15,
+          "fn": 27
+        },
+        "5": {
+          "p": 0.8792,
+          "r": 0.7661,
+          "f1": 0.8187,
+          "tp": 131,
+          "fp": 18,
+          "fn": 40
+        },
+        "6": {
+          "p": 0.7939,
+          "r": 0.7751,
+          "f1": 0.7844,
+          "tp": 131,
+          "fp": 34,
+          "fn": 38
+        },
+        "7": {
+          "p": 0.8462,
+          "r": 0.7021,
+          "f1": 0.7674,
+          "tp": 66,
+          "fp": 12,
+          "fn": 28
+        },
+        "8": {
+          "p": 0.7821,
+          "r": 0.7011,
+          "f1": 0.7394,
+          "tp": 61,
+          "fp": 17,
+          "fn": 26
+        },
+        "9": {
+          "p": 0.5294,
+          "r": 0.3103,
+          "f1": 0.3913,
+          "tp": 18,
+          "fp": 16,
+          "fn": 40
+        },
+        "11": {
+          "p": 0.7886,
+          "r": 0.8739,
+          "f1": 0.8291,
+          "tp": 97,
+          "fp": 26,
+          "fn": 14
+        },
+        "13": {
+          "p": 0.6623,
+          "r": 0.4766,
+          "f1": 0.5543,
+          "tp": 51,
+          "fp": 26,
+          "fn": 56
+        },
+        "16": {
+          "p": 0.625,
+          "r": 0.7051,
+          "f1": 0.6627,
+          "tp": 55,
+          "fp": 33,
+          "fn": 23
+        }
+      }
+    },
+    "stenosis": {
+      "thresholds": {
+        "stenosis": 0.2
+      },
+      "test_default_f1": 0.3396,
+      "test_tuned_f1": 0.3781,
+      "delta": 0.0385
+    }
+  },
+  "L3": {
+    "syntax_models": [
+      "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/4_untested/L3_syntax/seed42/L3_syn_s42_best.pt",
+      "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/4_untested/L3_syntax/seed7/L3_syn_s7_best.pt",
+      "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/4_untested/L3_syntax/seed2024/L3_syn_s2024_best.pt"
+    ],
+    "stenosis_models": [
+      "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/4_untested/L3_stenosis/seed42/L3_sten_s42_best.pt",
+      "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/4_untested/L3_stenosis/seed7/L3_sten_s7_best.pt",
+      "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/4_untested/L3_stenosis/seed2024/L3_sten_s2024_best.pt"
+    ],
+    "syntax_wbf": {
+      "models": [
+        "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/4_untested/L3_syntax/seed42/L3_syn_s42_best.pt",
+        "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/4_untested/L3_syntax/seed7/L3_syn_s7_best.pt",
+        "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/4_untested/L3_syntax/seed2024/L3_syn_s2024_best.pt"
+      ],
+      "iou_thr": 0.55,
+      "conf": 0.25,
+      "n_images": 301,
+      "metrics": {
+        "per_class": {
+          "0": {
+            "p": 0.5765,
+            "r": 0.8909,
+            "f1": 0.7,
+            "tp": 98,
+            "fp": 72,
+            "fn": 12
+          },
+          "1": {
+            "p": 0.517,
+            "r": 0.8273,
+            "f1": 0.6364,
+            "tp": 91,
+            "fp": 85,
+            "fn": 19
+          },
+          "2": {
+            "p": 0.5849,
+            "r": 0.8532,
+            "f1": 0.694,
+            "tp": 93,
+            "fp": 66,
+            "fn": 16
+          },
+          "3": {
+            "p": 0.5245,
+            "r": 0.7895,
+            "f1": 0.6303,
+            "tp": 75,
+            "fp": 68,
+            "fn": 20
+          },
+          "4": {
+            "p": 0.7537,
+            "r": 0.8947,
+            "f1": 0.8182,
+            "tp": 153,
+            "fp": 50,
+            "fn": 18
+          },
+          "5": {
+            "p": 0.5141,
+            "r": 0.7574,
+            "f1": 0.6124,
+            "tp": 128,
+            "fp": 121,
+            "fn": 41
+          },
+          "6": {
+            "p": 0.584,
+            "r": 0.7766,
+            "f1": 0.6667,
+            "tp": 73,
+            "fp": 52,
+            "fn": 21
+          },
+          "7": {
+            "p": 0.541,
+            "r": 0.7586,
+            "f1": 0.6316,
+            "tp": 66,
+            "fp": 56,
+            "fn": 21
+          },
+          "8": {
+            "p": 0.3418,
+            "r": 0.4655,
+            "f1": 0.3942,
+            "tp": 27,
+            "fp": 52,
+            "fn": 31
+          },
+          "9": {
+            "p": 0.6552,
+            "r": 0.8559,
+            "f1": 0.7422,
+            "tp": 95,
+            "fp": 50,
+            "fn": 16
+          },
+          "10": {
+            "p": 0.4275,
+            "r": 0.5514,
+            "f1": 0.4816,
+            "tp": 59,
+            "fp": 79,
+            "fn": 48
+          },
+          "11": {
+            "p": 0.4265,
+            "r": 0.7436,
+            "f1": 0.5421,
+            "tp": 58,
+            "fp": 78,
+            "fn": 20
+          }
+        },
+        "mean_f1": 0.6291
+      }
+    },
+    "stenosis_wbf": {
+      "models": [
+        "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/4_untested/L3_stenosis/seed42/L3_sten_s42_best.pt",
+        "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/4_untested/L3_stenosis/seed7/L3_sten_s7_best.pt",
+        "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/4_untested/L3_stenosis/seed2024/L3_sten_s2024_best.pt"
+      ],
+      "iou_thr": 0.55,
+      "conf": 0.25,
+      "n_images": 301,
+      "metrics": {
+        "per_class": {
+          "0": {
+            "p": 0.2773,
+            "r": 0.3661,
+            "f1": 0.3156,
+            "tp": 175,
+            "fp": 456,
+            "fn": 303
+          }
+        },
+        "mean_f1": 0.3156
+      }
+    }
+  },
+  "L4": {
+    "seed_42": {
+      "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/4_untested/L4_models/seed42/L4_seed42_best.pt",
+      "f1": 0.3954,
+      "mAP50": 0.3276
+    },
+    "seed_7": {
+      "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/4_untested/L4_models/seed7/L4_seed7_best.pt",
+      "f1": 0.3914,
+      "mAP50": 0.3147
+    },
+    "seed_2024": {
+      "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/4_untested/L4_models/seed2024/L4_seed2024_best.pt",
+      "f1": 0.3939,
+      "mAP50": 0.3319
+    },
+    "multi_seed_mean_f1": 0.3936
+  }
+}
