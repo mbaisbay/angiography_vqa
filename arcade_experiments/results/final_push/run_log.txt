@@ -1,0 +1,72 @@
+[2026-04-17 17:00:21] ARCADE root: /home/c504-5090-x2/Documents/repos/angiography_vqa/arcade/submission
+[2026-04-17 17:00:21] Output dir:  /home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/final_push
+[2026-04-17 17:00:21] Device:      0
+[2026-04-17 17:00:37] 
+============================================================
+F1: Conf tuning on S54
+============================================================
+[2026-04-17 17:00:37] F1: Conf tuning on S54 models
+[2026-04-17 17:00:37]   No syntax model found — training S54 baseline...
+[2026-04-17 17:08:39] ARCADE root: /home/c504-5090-x2/Documents/repos/angiography_vqa/arcade/submission
+[2026-04-17 17:08:39] Output dir:  /home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/final_push
+[2026-04-17 17:08:39] Device:      0
+[2026-04-17 17:08:39] 
+============================================================
+F1: Conf tuning on S54
+============================================================
+[2026-04-17 17:08:39] F1: Conf tuning on S54 models
+[2026-04-17 17:08:39]   No syntax model found — training S54 baseline...
+[2026-04-17 17:35:34]     s54_baseline: syntax mean_F1=0.7398 mAP50=0.7568
+[2026-04-17 17:35:34]   No stenosis model found — training baseline...
+[2026-04-17 17:50:28]     s54_sten: stenosis F1=0.3948 mAP50=0.3249
+[2026-04-17 17:50:28]   Sweeping syntax conf on val...
+[2026-04-17 17:50:57]     Thresholds: {'1': np.float64(0.55), '2': np.float64(0.4), '3': np.float64(0.5), '4': np.float64(0.2), '5': np.float64(0.35), '6': np.float64(0.3), '7': np.float64(0.4), '8': np.float64(0.4), '9': np.float64(0.4), '11': np.float64(0.45), '13': np.float64(0.15), '16': np.float64(0.6)}
+[2026-04-17 17:51:01]   Syntax: 0.7311 -> 0.7221 (delta=-0.0090)
+[2026-04-17 17:51:01]   Sweeping stenosis conf on val...
+[2026-04-17 17:51:07]   Stenosis: 0.3396 -> 0.3781 (delta=+0.0385)
+[2026-04-17 17:51:07] 
+============================================================
+F2: S54 + yolo11x-seg
+============================================================
+[2026-04-17 17:51:07] F2: S54 recipe on yolo11x-seg.pt
+[2026-04-17 17:51:07]   Training syntax with yolo11x-seg.pt...
+[2026-04-17 19:33:52]     F2_syn: syntax mean_F1=0.7089 mAP50=0.7422
+[2026-04-17 19:33:52]   Preparing CLAHE stenosis data...
+[2026-04-17 19:34:01]     CLAHE applied to 998 images
+[2026-04-17 19:34:01]   Training stenosis with yolo11x-seg.pt + CLAHE...
+[2026-04-17 20:08:55]     F2_sten: stenosis F1=0.4198 mAP50=0.3453
+[2026-04-17 20:08:55] 
+============================================================
+F3: S54 + yolov8x-seg
+============================================================
+[2026-04-17 20:08:55] F3: S54 recipe on yolov8x-seg.pt
+[2026-04-17 20:08:55]   Training syntax with yolov8x-seg.pt...
+[2026-04-17 20:59:14]     F3_syn: syntax mean_F1=0.6784 mAP50=0.7017
+[2026-04-17 20:59:14]   Preparing CLAHE stenosis data...
+[2026-04-17 20:59:23]     CLAHE applied to 998 images
+[2026-04-17 20:59:23]   Training stenosis with yolov8x-seg.pt + CLAHE...
+[2026-04-17 21:40:03]     F3_sten: stenosis F1=0.4198 mAP50=0.3650
+[2026-04-17 21:40:03] 
+============================================================
+F4: S54 + yolo26m-seg
+============================================================
+[2026-04-17 21:40:03] F4: S54 recipe on yolo26m-seg.pt
+[2026-04-17 21:40:03]   Training syntax with yolo26m-seg.pt...
+[2026-04-17 22:49:46]     F4_syn: syntax mean_F1=0.7358 mAP50=0.7505
+[2026-04-17 22:49:46]   Preparing CLAHE stenosis data...
+[2026-04-17 22:49:56]     CLAHE applied to 998 images
+[2026-04-17 22:49:56]   Training stenosis with yolo26m-seg.pt + CLAHE...
+[2026-04-17 23:25:19]     F4_sten: stenosis F1=0.3908 mAP50=0.3266
+[2026-04-17 23:25:19] 
+============================================================
+SUMMARY
+============================================================
+[2026-04-17 23:25:19]   F1 conf tune: syntax 0.7311->0.7221 | stenosis 0.3396->0.3781
+[2026-04-17 23:25:19]   F2 (yolo11x-seg.pt): syntax F1=0.7089 stenosis F1=0.4198
+[2026-04-17 23:25:19]   F3 (yolov8x-seg.pt): syntax F1=0.6784 stenosis F1=0.4198
+[2026-04-17 23:25:19]   F4 (yolo26m-seg.pt): syntax F1=0.7358 stenosis F1=0.3908
+[2026-04-17 23:25:19] 
+  BASELINE (S54): syntax 0.7398, stenosis 0.4569
+[2026-04-17 23:25:19] 
+Total time: 6.3 hours
+[2026-04-17 23:25:19] DONE.
