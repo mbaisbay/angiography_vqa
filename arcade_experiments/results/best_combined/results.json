@@ -1,0 +1,182 @@
+{
+  "syntax_model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/best_combined/syntax_model/syntax_s54_best.pt",
+  "syntax_f1": 0.7398,
+  "syntax_metrics": {
+    "split": "test",
+    "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/best_combined/syntax_model/syntax_s54_best.pt",
+    "mAP50": 0.7568,
+    "mAP50_95": 0.3164,
+    "precision": 0.7846,
+    "recall": 0.7045,
+    "per_class": {
+      "1": {
+        "ap50": 0.9203,
+        "precision": 0.9025,
+        "recall": 0.8545,
+        "f1": 0.8778
+      },
+      "2": {
+        "ap50": 0.8161,
+        "precision": 0.7729,
+        "recall": 0.8182,
+        "f1": 0.7949
+      },
+      "3": {
+        "ap50": 0.8702,
+        "precision": 0.8102,
+        "recall": 0.8223,
+        "f1": 0.8162
+      },
+      "4": {
+        "ap50": 0.8087,
+        "precision": 0.8425,
+        "recall": 0.7319,
+        "f1": 0.7833
+      },
+      "5": {
+        "ap50": 0.8854,
+        "precision": 0.878,
+        "recall": 0.8187,
+        "f1": 0.8473
+      },
+      "6": {
+        "ap50": 0.7805,
+        "precision": 0.7858,
+        "recall": 0.7041,
+        "f1": 0.7427
+      },
+      "7": {
+        "ap50": 0.7381,
+        "precision": 0.8126,
+        "recall": 0.6596,
+        "f1": 0.7281
+      },
+      "8": {
+        "ap50": 0.7835,
+        "precision": 0.8161,
+        "recall": 0.6897,
+        "f1": 0.7476
+      },
+      "9": {
+        "ap50": 0.4547,
+        "precision": 0.5525,
+        "recall": 0.4655,
+        "f1": 0.5053
+      },
+      "11": {
+        "ap50": 0.8804,
+        "precision": 0.8779,
+        "recall": 0.8108,
+        "f1": 0.843
+      },
+      "13": {
+        "ap50": 0.5188,
+        "precision": 0.6759,
+        "recall": 0.4245,
+        "f1": 0.5215
+      },
+      "16": {
+        "ap50": 0.6253,
+        "precision": 0.6878,
+        "recall": 0.6538,
+        "f1": 0.6704
+      }
+    },
+    "syntax_mAP50": 0.7568
+  },
+  "stenosis_initial_f1": 0.3954,
+  "stenosis_final_model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/best_combined/stenosis_model_final/sten_final_best.pt",
+  "stenosis_final_f1": 0.3651,
+  "stenosis_final_metrics": {
+    "split": "test",
+    "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/best_combined/stenosis_model_final/sten_final_best.pt",
+    "mAP50": 0.2768,
+    "mAP50_95": 0.0887,
+    "precision": 0.411,
+    "recall": 0.3285,
+    "per_class": {
+      "stenosis": {
+        "ap50": 0.2768,
+        "precision": 0.411,
+        "recall": 0.3285,
+        "f1": 0.3651
+      }
+    },
+    "stenosis_AP50": 0.2768
+  },
+  "pseudo_label_stats": {
+    "images_processed": 999,
+    "images_with_predictions": 84,
+    "total_pseudo_instances": 88,
+    "conf_threshold": 0.5,
+    "imgsz": 768
+  },
+  "bezier_stats": {
+    "original": 1082,
+    "augmented": 438,
+    "total": 1520,
+    "fraction": 0.4
+  },
+  "cc_postprocess": {
+    "30": {
+      "raw": {
+        "precision": 0.4698,
+        "recall": 0.2929,
+        "f1": 0.3608,
+        "tp": 140,
+        "fp": 158,
+        "fn": 338
+      },
+      "filtered": {
+        "precision": 0.4698,
+        "recall": 0.2929,
+        "f1": 0.3608,
+        "tp": 140,
+        "fp": 158,
+        "fn": 338
+      },
+      "min_area_px": 30
+    },
+    "50": {
+      "raw": {
+        "precision": 0.4698,
+        "recall": 0.2929,
+        "f1": 0.3608,
+        "tp": 140,
+        "fp": 158,
+        "fn": 338
+      },
+      "filtered": {
+        "precision": 0.4698,
+        "recall": 0.2929,
+        "f1": 0.3608,
+        "tp": 140,
+        "fp": 158,
+        "fn": 338
+      },
+      "min_area_px": 50
+    },
+    "100": {
+      "raw": {
+        "precision": 0.4698,
+        "recall": 0.2929,
+        "f1": 0.3608,
+        "tp": 140,
+        "fp": 158,
+        "fn": 338
+      },
+      "filtered": {
+        "precision": 0.4698,
+        "recall": 0.2929,
+        "f1": 0.3608,
+        "tp": 140,
+        "fp": 158,
+        "fn": 338
+      },
+      "min_area_px": 100
+    }
+  },
+  "best_cc_min_area": 30,
+  "best_cc_f1": 0.3608,
+  "elapsed_hours": 1.17
+}

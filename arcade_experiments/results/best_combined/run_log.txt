@@ -1,0 +1,67 @@
+[2026-04-17 23:56:26] ARCADE root:     /home/c504-5090-x2/Documents/repos/angiography_vqa/arcade/submission
+[2026-04-17 23:56:26] Output dir:      /home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/best_combined
+[2026-04-17 23:56:26] Device:          1
+[2026-04-17 23:56:26] Pseudo conf:     0.5
+[2026-04-17 23:56:26] Bezier fraction: 0.4
+[2026-04-17 23:56:26] CC min area:     50 px
+[2026-04-17 23:56:27] 
+============================================================
+[2026-04-17 23:56:27] STEP 0: Prepare stratified data
+[2026-04-17 23:56:27] ============================================================
+[2026-04-17 23:56:42] 
+============================================================
+[2026-04-17 23:56:42] STEP 1: Train syntax model (S54 recipe)
+[2026-04-17 23:56:42] ============================================================
+[2026-04-18 00:22:21]   Syntax mean F1: 0.7398
+[2026-04-18 00:22:21]   Per-class: {'1': 0.8778, '2': 0.7949, '3': 0.8162, '4': 0.7833, '5': 0.8473, '6': 0.7427, '7': 0.7281, '8': 0.7476, '9': 0.5053, '11': 0.843, '13': 0.5215, '16': 0.6704}
+[2026-04-18 00:22:21] 
+============================================================
+[2026-04-18 00:22:21] STEP 2: Train initial stenosis model (S54 + CLAHE)
+[2026-04-18 00:22:21] ============================================================
+[2026-04-18 00:22:30]     CLAHE applied to 998 images
+[2026-04-18 00:38:15]   Initial stenosis F1: 0.3954
+[2026-04-18 00:38:15] 
+============================================================
+[2026-04-18 00:38:15] STEP 3: Pseudo-label syntax images (conf>=0.5)
+[2026-04-18 00:38:15] ============================================================
+[2026-04-18 00:38:24]   Pseudo-labels: 84 images, 88 instances
+[2026-04-18 00:38:24] 
+============================================================
+[2026-04-18 00:38:24] STEP 4: Build extended stenosis dataset
+[2026-04-18 00:38:24] ============================================================
+[2026-04-18 00:38:24]   GT stenosis images: 998
+[2026-04-18 00:38:24]   Pseudo-labeled syntax images: 84
+[2026-04-18 00:38:24]   Applying Bezier curve augmentation (fraction=0.4)...
+[2026-04-18 00:38:27]   Bezier augmentation: {'original': 1082, 'augmented': 438, 'total': 1520, 'fraction': 0.4}
+[2026-04-18 00:38:27]   Applying CLAHE to extended training set...
+[2026-04-18 00:38:41]     CLAHE applied to 1520 images
+[2026-04-18 00:38:41]   Total extended train images: 1520
+[2026-04-18 00:38:41] 
+============================================================
+[2026-04-18 00:38:41] STEP 5: Retrain stenosis on extended dataset (from scratch)
+[2026-04-18 00:38:41] ============================================================
+[2026-04-18 01:06:17]   Final stenosis F1 (standard): 0.3651
+[2026-04-18 01:06:17] 
+============================================================
+[2026-04-18 01:06:17] STEP 6: CC post-processing (min_area=50px)
+[2026-04-18 01:06:17] ============================================================
+[2026-04-18 01:06:20]   min_area=30: raw F1=0.3608 filtered F1=0.3608 (delta=+0.0000)
+[2026-04-18 01:06:24]   min_area=50: raw F1=0.3608 filtered F1=0.3608 (delta=+0.0000)
+[2026-04-18 01:06:28]   min_area=100: raw F1=0.3608 filtered F1=0.3608 (delta=+0.0000)
+[2026-04-18 01:06:28] 
+============================================================
+[2026-04-18 01:06:28] FINAL RESULTS
+[2026-04-18 01:06:28] ============================================================
+[2026-04-18 01:06:28]   Syntax model:    /home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/best_combined/syntax_model/syntax_s54_best.pt
+[2026-04-18 01:06:28]   Syntax F1:       0.7398
+[2026-04-18 01:06:28]   Stenosis model:  /home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/best_combined/stenosis_model_final/sten_final_best.pt
+[2026-04-18 01:06:28]   Stenosis F1:     0.3651 (initial: 0.3954)
+[2026-04-18 01:06:28]   Stenosis delta:  -0.0303 from pseudo-labels + Bezier
+[2026-04-18 01:06:28] 
+[2026-04-18 01:06:28]   BASELINE S54:    syntax 0.7398, stenosis 0.4569
+[2026-04-18 01:06:28]   THIS RUN:        syntax 0.7398, stenosis 0.3651
+[2026-04-18 01:06:28]   Best CC filter:  min_area=30px -> stenosis F1=0.3608
+[2026-04-18 01:06:28] 
+Total time: 1.2 hours
+[2026-04-18 01:06:28] Results saved to /home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/best_combined/results.json
+[2026-04-18 01:06:28] DONE.
