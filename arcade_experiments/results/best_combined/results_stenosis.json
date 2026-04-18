@@ -1,0 +1,86 @@
+{
+  "stenosis": {
+    "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/best_combined/stenosis_r3/sten_r3_best.pt",
+    "init_f1": 0.3954,
+    "final_f1": 0.3704,
+    "metrics": {
+      "split": "test",
+      "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/best_combined/stenosis_r3/sten_r3_best.pt",
+      "mAP50": 0.2914,
+      "mAP50_95": 0.1005,
+      "precision": 0.3631,
+      "recall": 0.3781,
+      "per_class": {
+        "stenosis": {
+          "ap50": 0.2914,
+          "precision": 0.3631,
+          "recall": 0.3781,
+          "f1": 0.3704
+        }
+      },
+      "stenosis_AP50": 0.2914
+    },
+    "cc_results": {
+      "30": {
+        "raw": {
+          "precision": 0.5503,
+          "recall": 0.1715,
+          "f1": 0.2616,
+          "tp": 82,
+          "fp": 67,
+          "fn": 396
+        },
+        "filtered": {
+          "precision": 0.5503,
+          "recall": 0.1715,
+          "f1": 0.2616,
+          "tp": 82,
+          "fp": 67,
+          "fn": 396
+        },
+        "min_area_px": 30
+      },
+      "50": {
+        "raw": {
+          "precision": 0.5503,
+          "recall": 0.1715,
+          "f1": 0.2616,
+          "tp": 82,
+          "fp": 67,
+          "fn": 396
+        },
+        "filtered": {
+          "precision": 0.5503,
+          "recall": 0.1715,
+          "f1": 0.2616,
+          "tp": 82,
+          "fp": 67,
+          "fn": 396
+        },
+        "min_area_px": 50
+      },
+      "100": {
+        "raw": {
+          "precision": 0.5503,
+          "recall": 0.1715,
+          "f1": 0.2616,
+          "tp": 82,
+          "fp": 67,
+          "fn": 396
+        },
+        "filtered": {
+          "precision": 0.5503,
+          "recall": 0.1715,
+          "f1": 0.2616,
+          "tp": 82,
+          "fp": 67,
+          "fn": 396
+        },
+        "min_area_px": 100
+      }
+    },
+    "best_cc_area": 30,
+    "best_cc_f1": 0.2616
+  },
+  "elapsed_hours": 1.43
+}

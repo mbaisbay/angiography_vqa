@@ -1,0 +1,36 @@
+[2026-04-18 01:29:38] ARCADE root: /home/c504-5090-x2/Documents/repos/angiography_vqa/arcade/submission
+[2026-04-18 01:29:38] Task: stenosis, Device: 1
+[2026-04-18 01:29:38] Pseudo rounds: [0.5, 0.4, 0.3]
+[2026-04-18 01:29:40] STENOSIS: Training initial model (S54 + CLAHE)
+[2026-04-18 01:29:49]     CLAHE applied to 998 images
+[2026-04-18 01:45:50]   Initial stenosis F1: 0.3954
+[2026-04-18 01:45:50] 
+STENOSIS round 1/3: conf>=0.5
+[2026-04-18 01:46:04]   Pseudo: 130 images, 136 instances
+[2026-04-18 01:46:04]   GT: 998, pseudo: 125
+[2026-04-18 01:46:23]     CLAHE applied to 1573 images
+[2026-04-18 01:46:23]   Total train (GT+pseudo+Bezier+CLAHE): 1573
+[2026-04-18 02:09:04]   Round 1 stenosis F1: 0.3731 (delta: -0.0223)
+[2026-04-18 02:09:04] 
+STENOSIS round 2/3: conf>=0.4
+[2026-04-18 02:09:18]   Pseudo: 282 images, 334 instances
+[2026-04-18 02:09:18]   GT: 998, pseudo: 257
+[2026-04-18 02:09:42]     CLAHE applied to 1764 images
+[2026-04-18 02:09:42]   Total train (GT+pseudo+Bezier+CLAHE): 1764
+[2026-04-18 02:32:47]   Round 2 stenosis F1: 0.3419 (delta: -0.0535)
+[2026-04-18 02:32:47] 
+STENOSIS round 3/3: conf>=0.3
+[2026-04-18 02:33:00]   Pseudo: 328 images, 415 instances
+[2026-04-18 02:33:00]   GT: 998, pseudo: 297
+[2026-04-18 02:33:22]     CLAHE applied to 1816 images
+[2026-04-18 02:33:22]   Total train (GT+pseudo+Bezier+CLAHE): 1816
+[2026-04-18 02:55:22]   Round 3 stenosis F1: 0.3704 (delta: -0.0250)
+[2026-04-18 02:55:22] 
+STENOSIS: CC post-processing sweep
+[2026-04-18 02:55:26]   min_area=30: raw=0.2616 filtered=0.2616
+[2026-04-18 02:55:29]   min_area=50: raw=0.2616 filtered=0.2616
+[2026-04-18 02:55:33]   min_area=100: raw=0.2616 filtered=0.2616
+[2026-04-18 02:55:33] 
+============================================================
+DONE in 1.4h. Results: /home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/best_combined/results_stenosis.json
+============================================================
