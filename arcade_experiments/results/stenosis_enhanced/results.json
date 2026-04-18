@@ -1,0 +1,67 @@
+{
+  "s54_baseline_f1": 0.4027,
+  "best_round_f1": 0.4027,
+  "best_model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/stenosis_strategies/S54_s43b_clahe/stenosis_model/stenosis_768_best.pt",
+  "best_cc_area": 30,
+  "best_cc_f1": 0.3102,
+  "cc_results": {
+    "30": {
+      "raw": {
+        "precision": 0.5538,
+        "recall": 0.2155,
+        "f1": 0.3102,
+        "tp": 103,
+        "fp": 83,
+        "fn": 375
+      },
+      "filtered": {
+        "precision": 0.5538,
+        "recall": 0.2155,
+        "f1": 0.3102,
+        "tp": 103,
+        "fp": 83,
+        "fn": 375
+      },
+      "min_area_px": 30
+    },
+    "50": {
+      "raw": {
+        "precision": 0.5538,
+        "recall": 0.2155,
+        "f1": 0.3102,
+        "tp": 103,
+        "fp": 83,
+        "fn": 375
+      },
+      "filtered": {
+        "precision": 0.5538,
+        "recall": 0.2155,
+        "f1": 0.3102,
+        "tp": 103,
+        "fp": 83,
+        "fn": 375
+      },
+      "min_area_px": 50
+    },
+    "100": {
+      "raw": {
+        "precision": 0.5538,
+        "recall": 0.2155,
+        "f1": 0.3102,
+        "tp": 103,
+        "fp": 83,
+        "fn": 375
+      },
+      "filtered": {
+        "precision": 0.5538,
+        "recall": 0.2155,
+        "f1": 0.3102,
+        "tp": 103,
+        "fp": 83,
+        "fn": 375
+      },
+      "min_area_px": 100
+    }
+  },
+  "elapsed_hours": 1.49
+}
