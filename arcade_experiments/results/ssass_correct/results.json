@@ -1,0 +1,77 @@
+{
+  "m1_f1": 0.435,
+  "best_conf": 0.3,
+  "best_m2_f1": 0.4727,
+  "sweep": {
+    "0.3": {
+      "pseudo_images": 378,
+      "pseudo_instances": 483,
+      "total_train": 1376,
+      "m2_f1": 0.4727,
+      "delta": 0.0377,
+      "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/ssass_correct/M2_conf0.3/m2_conf0.3_best.pt"
+    },
+    "0.4": {
+      "pseudo_images": 221,
+      "pseudo_instances": 244,
+      "total_train": 1219,
+      "m2_f1": 0.4689,
+      "delta": 0.0339,
+      "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/ssass_correct/M2_conf0.4/m2_conf0.4_best.pt"
+    },
+    "0.5": {
+      "pseudo_images": 111,
+      "pseudo_instances": 113,
+      "total_train": 1109,
+      "m2_f1": 0.4468,
+      "delta": 0.0118,
+      "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/ssass_correct/M2_conf0.5/m2_conf0.5_best.pt"
+    },
+    "0.6": {
+      "pseudo_images": 52,
+      "pseudo_instances": 53,
+      "total_train": 1050,
+      "m2_f1": 0.4433,
+      "delta": 0.0083,
+      "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/ssass_correct/M2_conf0.6/m2_conf0.6_best.pt"
+    }
+  },
+  "config": {
+    "model": "yolov8m-seg.pt",
+    "imgsz": 640,
+    "batch": 16,
+    "epochs": 300,
+    "patience": 0,
+    "optimizer": "SGD",
+    "lr0": 0.01,
+    "lrf": 0.01,
+    "weight_decay": 0.0005,
+    "momentum": 0.937,
+    "warmup_epochs": 3,
+    "seed": 42,
+    "deterministic": true,
+    "amp": true,
+    "cos_lr": true,
+    "device": "1",
+    "workers": 4,
+    "flipud": 0.5,
+    "fliplr": 0.5,
+    "translate": 0.3,
+    "degrees": 30.0,
+    "scale": 0.5,
+    "shear": 5.0,
+    "perspective": 0.001,
+    "hsv_h": 0.015,
+    "hsv_s": 0.7,
+    "hsv_v": 0.4,
+    "mosaic": 0.0,
+    "copy_paste": 0.0,
+    "mixup": 0.0,
+    "close_mosaic": 0,
+    "erasing": 0.0,
+    "box": 7.5,
+    "cls": 0.5,
+    "dfl": 1.5
+  },
+  "elapsed_hours": 3.23
+}
