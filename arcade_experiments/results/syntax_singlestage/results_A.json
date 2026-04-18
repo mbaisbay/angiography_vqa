@@ -1,0 +1,118 @@
+{
+  "exp": "A",
+  "label": "S54 aug + single-stage",
+  "mean_f1": 0.7373,
+  "mAP50": 0.7611,
+  "per_class": {
+    "1": {
+      "ap50": 0.9414,
+      "precision": 0.8697,
+      "recall": 0.8498,
+      "f1": 0.8596
+    },
+    "2": {
+      "ap50": 0.8449,
+      "precision": 0.8237,
+      "recall": 0.8072,
+      "f1": 0.8154
+    },
+    "3": {
+      "ap50": 0.8994,
+      "precision": 0.7835,
+      "recall": 0.844,
+      "f1": 0.8126
+    },
+    "4": {
+      "ap50": 0.8126,
+      "precision": 0.8177,
+      "recall": 0.7579,
+      "f1": 0.7867
+    },
+    "5": {
+      "ap50": 0.8877,
+      "precision": 0.8836,
+      "recall": 0.8431,
+      "f1": 0.8629
+    },
+    "6": {
+      "ap50": 0.7755,
+      "precision": 0.7428,
+      "recall": 0.752,
+      "f1": 0.7474
+    },
+    "7": {
+      "ap50": 0.7385,
+      "precision": 0.7488,
+      "recall": 0.7234,
+      "f1": 0.7359
+    },
+    "8": {
+      "ap50": 0.7658,
+      "precision": 0.7565,
+      "recall": 0.7471,
+      "f1": 0.7518
+    },
+    "9": {
+      "ap50": 0.3797,
+      "precision": 0.4628,
+      "recall": 0.431,
+      "f1": 0.4463
+    },
+    "11": {
+      "ap50": 0.8464,
+      "precision": 0.832,
+      "recall": 0.803,
+      "f1": 0.8172
+    },
+    "13": {
+      "ap50": 0.5644,
+      "precision": 0.6797,
+      "recall": 0.4804,
+      "f1": 0.5629
+    },
+    "16": {
+      "ap50": 0.6769,
+      "precision": 0.6436,
+      "recall": 0.6538,
+      "f1": 0.6487
+    }
+  },
+  "config": {
+    "model": "yolo11m-seg.pt",
+    "imgsz": 768,
+    "batch": 8,
+    "epochs": 300,
+    "patience": 50,
+    "optimizer": "SGD",
+    "lr0": 0.01,
+    "lrf": 0.01,
+    "weight_decay": 0.0005,
+    "momentum": 0.937,
+    "warmup_epochs": 5,
+    "seed": 42,
+    "deterministic": true,
+    "amp": true,
+    "cos_lr": true,
+    "device": "0",
+    "workers": 4,
+    "mosaic": 0.0,
+    "close_mosaic": 0,
+    "mixup": 0.0,
+    "copy_paste": 0.0,
+    "fliplr": 0.5,
+    "flipud": 0.0,
+    "degrees": 20.0,
+    "scale": 0.4,
+    "translate": 0.1,
+    "shear": 0.0,
+    "perspective": 0.0,
+    "hsv_h": 0.0,
+    "hsv_s": 0.0,
+    "hsv_v": 0.3,
+    "erasing": 0.0,
+    "box": 7.5,
+    "cls": 0.5,
+    "dfl": 1.5
+  },
+  "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/syntax_singlestage/exp_A/syntax_A_best.pt"
+}
