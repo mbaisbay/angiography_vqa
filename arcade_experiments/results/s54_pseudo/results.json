@@ -1,0 +1,12 @@
+{
+  "s54_f1": 0.4027,
+  "m2_f1": 0.4511,
+  "delta": 0.0484,
+  "pseudo_stats": {
+    "images_processed": 999,
+    "images_with_predictions": 233,
+    "total_pseudo_instances": 278
+  },
+  "pseudo_conf": 0.3,
+  "model": "/home/c504-5090-x2/Documents/repos/angiography_vqa/arcade_experiments/results/s54_pseudo/M2/s54_pseudo_m2_best.pt"
+}
