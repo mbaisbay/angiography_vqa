@@ -79,6 +79,14 @@ VARIANTS = {
         "batch": 8,
         "clahe": False,
     },
+    "V5": {
+        "label": "yolo11l + lr=0.01 + 768px (V2 winner at higher res)",
+        "model": "yolo11l-seg.pt",
+        "lr0": 0.01,
+        "imgsz": 768,
+        "batch": 4,
+        "clahe": False,
+    },
 }
 
 
