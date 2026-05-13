@@ -37,11 +37,19 @@ def log(msg, log_file):
         f.write(line + "\n")
 
 
-def generate_pseudo_labels(model_path, img_dir, output_dir, conf, imgsz, device, log_file):
-    """Run model on images in img_dir, write YOLO polygon labels to output_dir."""
+def generate_pseudo_labels(model_path, img_dir, out_img_dir, out_lbl_dir,
+                            conf, imgsz, device, log_file):
+    """Run model on images in img_dir, write YOLO labels + symlink images.
+
+    Output structure mirrors the original dataset:
+      out_img_dir/<image>.png  (symlink to source)
+      out_lbl_dir/<image>.txt  (pseudo-labels in YOLO format)
+    """
+    import os
     from ultralytics import YOLO
 
-    output_dir.mkdir(parents=True, exist_ok=True)
+    out_img_dir.mkdir(parents=True, exist_ok=True)
+    out_lbl_dir.mkdir(parents=True, exist_ok=True)
     model = YOLO(model_path)
 
     imgs = sorted(list(img_dir.glob("*.png")) + list(img_dir.glob("*.PNG"))
@@ -65,8 +73,12 @@ def generate_pseudo_labels(model_path, img_dir, output_dir, conf, imgsz, device,
             coords = " ".join(f"{pt[0]:.6f} {pt[1]:.6f}" for pt in mask_xyn)
             lines.append(f"{cls} {coords}")
         if lines:
-            (output_dir / f"{img_path.stem}.txt").write_text(
+            (out_lbl_dir / f"{img_path.stem}.txt").write_text(
                 "\n".join(lines) + "\n")
+            # Symlink the source image alongside the label
+            dst_img = out_img_dir / img_path.name
+            if not dst_img.exists() and not dst_img.is_symlink():
+                os.symlink(img_path.resolve(), dst_img)
             n_pseudo += 1
             n_inst += len(lines)
 
@@ -80,8 +92,6 @@ def main():
     parser.add_argument("--syntax-model", type=Path, required=True)
     parser.add_argument("--stenosis-model", type=Path, required=True)
     parser.add_argument("--device", type=str, default="0")
-    parser.add_argument("--output-dir", type=Path, default=None,
-                        help="Default: arcade_experiments/data/pseudo_labels")
     parser.add_argument("--conf", type=float, default=0.3,
                         help="Confidence threshold (default: 0.3, V2 SSASS best)")
     parser.add_argument("--syntax-imgsz", type=int, default=768)
@@ -89,23 +99,22 @@ def main():
     args = parser.parse_args()
 
     arcade_root = args.arcade_root.resolve()
-    output_dir = (args.output_dir or
-                  SCRIPT_DIR.parent / "data" / "pseudo_labels").resolve()
-    output_dir.mkdir(parents=True, exist_ok=True)
-    log_file = output_dir / "generation_log.txt"
+    # Output is written as siblings of syntax/ and stenosis/ under arcade_root:
+    #   pseudo_syntax/   = syntax labels predicted on stenosis images
+    #   pseudo_stenosis/ = stenosis labels predicted on syntax images
+    log_file = arcade_root / "pseudo_labels_log.txt"
 
     log(f"ARCADE root:    {arcade_root}", log_file)
     log(f"Syntax model:   {args.syntax_model}", log_file)
     log(f"Stenosis model: {args.stenosis_model}", log_file)
     log(f"Conf threshold: {args.conf}", log_file)
-    log(f"Output dir:     {output_dir}", log_file)
 
     t0 = time.time()
-    summary = {"syntax_on_stenosis": {}, "stenosis_on_syntax": {}}
+    summary = {"pseudo_syntax": {}, "pseudo_stenosis": {}}
 
-    # ── Syntax model -> stenosis images (cross-task) ──
+    # ── Syntax model -> stenosis images: produces pseudo_syntax/ ──
     log(f"\n{'='*60}", log_file)
-    log("Syntax model -> stenosis images (pseudo-syntax labels)", log_file)
+    log("Syntax model -> stenosis images (writing pseudo_syntax/)", log_file)
     log(f"{'='*60}", log_file)
 
     for split in ("train", "val", "test"):
@@ -113,16 +122,18 @@ def main():
         if not img_dir.exists():
             log(f"  [SKIP] {split}: {img_dir} not found", log_file)
             continue
-        out_dir = output_dir / "syntax_on_stenosis" / split
-        log(f"\n  [{split}] {img_dir}", log_file)
+        out_img = arcade_root / "pseudo_syntax" / split / "images"
+        out_lbl = arcade_root / "pseudo_syntax" / split / "labels"
+        log(f"\n  [{split}] images from: {img_dir}", log_file)
+        log(f"  [{split}] writing to:   {out_img.parent}", log_file)
         stats = generate_pseudo_labels(
-            str(args.syntax_model.resolve()), img_dir, out_dir,
+            str(args.syntax_model.resolve()), img_dir, out_img, out_lbl,
             args.conf, args.syntax_imgsz, args.device, log_file)
-        summary["syntax_on_stenosis"][split] = stats
+        summary["pseudo_syntax"][split] = stats
 
-    # ── Stenosis model -> syntax images (cross-task) ──
+    # ── Stenosis model -> syntax images: produces pseudo_stenosis/ ──
     log(f"\n{'='*60}", log_file)
-    log("Stenosis model -> syntax images (pseudo-stenosis labels)", log_file)
+    log("Stenosis model -> syntax images (writing pseudo_stenosis/)", log_file)
     log(f"{'='*60}", log_file)
 
     for split in ("train", "val", "test"):
@@ -130,12 +141,14 @@ def main():
         if not img_dir.exists():
             log(f"  [SKIP] {split}: {img_dir} not found", log_file)
             continue
-        out_dir = output_dir / "stenosis_on_syntax" / split
-        log(f"\n  [{split}] {img_dir}", log_file)
+        out_img = arcade_root / "pseudo_stenosis" / split / "images"
+        out_lbl = arcade_root / "pseudo_stenosis" / split / "labels"
+        log(f"\n  [{split}] images from: {img_dir}", log_file)
+        log(f"  [{split}] writing to:   {out_img.parent}", log_file)
         stats = generate_pseudo_labels(
-            str(args.stenosis_model.resolve()), img_dir, out_dir,
+            str(args.stenosis_model.resolve()), img_dir, out_img, out_lbl,
             args.conf, args.stenosis_imgsz, args.device, log_file)
-        summary["stenosis_on_syntax"][split] = stats
+        summary["pseudo_stenosis"][split] = stats
 
     # Summary
     log(f"\n{'='*60}", log_file)
@@ -150,14 +163,14 @@ def main():
             log(f"    {split}: {s['pseudo']}/{s['total']} ({s['instances']} inst)", log_file)
 
     log(f"\nTotal time: {(time.time()-t0)/60:.1f} min", log_file)
-    log(f"Output: {output_dir}", log_file)
+    log(f"Output: {arcade_root}/pseudo_syntax, {arcade_root}/pseudo_stenosis", log_file)
 
     json.dump({
         "conf": args.conf,
         "syntax_model": str(args.syntax_model),
         "stenosis_model": str(args.stenosis_model),
         "summary": summary,
-    }, open(output_dir / "generation_summary.json", "w"),
+    }, open(arcade_root / "pseudo_labels_summary.json", "w"),
        indent=2, default=str)
 
 
